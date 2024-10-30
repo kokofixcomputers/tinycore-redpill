@@ -70,11 +70,6 @@ jobs:
           sudo mkdir /opt/output
           sudo cp -rf ./* /home/tc
           ls -ltr /home/tc
-
-          #check model
-          cd /home/tc
-          sudo ./functions.sh ${{ env.model }}-${{ env.version }}
-          cd ${path}/
           
           LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/tinycore-redpill/releases/latest"`"
           TAG="${LATESTURL##*/}"
