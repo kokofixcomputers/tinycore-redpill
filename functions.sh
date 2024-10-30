@@ -646,7 +646,7 @@ function getvarsmshell()
     MODELS="DS3615xs DS218+ DS1019+ DS620slim DS1520+ DS1522+ DS220+ DS2419+ DS423+ DS718+ DS1621+ DS1821+ DS1823xs+ DS1621xs+ DS2422+ DS3617xs DS3622xs+ DS720+ DS723+ DS918+ DS920+ DS923+ DS1819+ DVA3219 DVA3221 DVA1622 FS2500 RS1221+ RS1619xs+ RS2423+ RS3413xs+ RS3618xs RS3621xs+ RS4021xs+ SA3410 SA3610 SA6400"
     if [ $(echo ${MODELS} | grep ${MODEL} | wc -l ) -eq 0 ]; then
         echo "This synology model not supported by TCRP."
-        exit 0
+        exit 99
     fi
     
     if [ "$TARGET_REVISION" == "42218" ]; then
@@ -3386,4 +3386,5 @@ function my() {
   fi
 }
 
-[ $# -ge 1 ] && my "$1" "$2" "$3"
+[ $# -eq 1 ] && getvarsmshell "$1"
+[ $# -eq 3 ] && my "$1" "$2" "$3"
