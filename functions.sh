@@ -914,6 +914,8 @@ function getvarsmshell()
         suffix="alpha"
         ;;        
     esac        
+
+    exit 0
 }
 
 # Function READ_YN, cecho                                                                                        
