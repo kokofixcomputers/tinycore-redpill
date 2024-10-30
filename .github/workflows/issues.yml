@@ -64,10 +64,17 @@ jobs:
           sudo apt update
           sudo apt-get install grub2 pciutils qemu-utils cpio kmod ncurses-bin
 
+          path=`pwd`
+          
           sudo mkdir /home/tc
           sudo mkdir /opt/output
           sudo cp -rf ./* /home/tc
           ls -ltr /home/tc
+
+          #check model
+          cd /home/tc
+          sudo ./functions.sh ${{ env.model }}-${{ env.version }}
+          cd ${path}/
           
           LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/tinycore-redpill/releases/latest"`"
           TAG="${LATESTURL##*/}"
@@ -77,8 +84,6 @@ jobs:
           pwd
           ls -ltr
           echo "::set-output name=TAG::${TAG}"
-
-          path=`pwd`
 
           LOOPX=$(sudo losetup -f)
           sudo losetup -P ${LOOPX} tinycore-redpill.${TAG}.m-shell.img
