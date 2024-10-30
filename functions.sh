@@ -915,7 +915,6 @@ function getvarsmshell()
         ;;        
     esac        
 
-    exit 0
 }
 
 # Function READ_YN, cecho                                                                                        
@@ -3388,5 +3387,4 @@ function my() {
   fi
 }
 
-[ $# -eq 1 ] && getvarsmshell "$1"
-[ $# -gt 2 ] && my "$1" "$2" "$3"
+[ $# -gt 1 ] && my "$1" "$2" "$3"
