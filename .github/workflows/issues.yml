@@ -76,7 +76,8 @@ jobs:
         id: build-loader
         if: env.iscustom == 'true'
         run: |
-          userconfigfile="/home/tc/user_config.json"
+          path=`pwd`        
+          userconfigfile="${path}\user_config.json"
           function writeConfigKey() {
               jsonfile=$(sudo jq ".$1+={\"$2\":\"$3\"}" $userconfigfile) && sudo echo $jsonfile | sudo jq . >$userconfigfile
           }        
@@ -84,8 +85,6 @@ jobs:
           sudo apt update
           sudo apt-get install grub2 pciutils qemu-utils cpio kmod ncurses-bin jq
 
-          path=`pwd`
-          
           sudo mkdir /home/tc
           sudo mkdir /opt/output
           sudo cp -rf ./* /home/tc
@@ -143,9 +142,10 @@ jobs:
             echo "set sn: ${{ env.sn }}"
             writeConfigKey "extra_cmdline" "sn" "${ env.sn }"
           fi
-          
+
+          sudo cp $userconfigfile /home/tc/user_config.json
           sudo ./functions.sh ${{ env.model }}-${{ env.version }} noconfig fri
-          sudo cat $userconfigfile
+          sudo cat /home/tc/user_config.json
           
           ls -ltr /mnt/${loaderdisk}p1
           ls -ltr /mnt/${loaderdisk}p2
