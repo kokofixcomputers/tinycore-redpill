@@ -2386,11 +2386,8 @@ function checkUserConfig() {
   tz="US"
 
   if [ "${BUS}" = "block"  ]; then
-    SN=$(echo $(generateSerial ${MODEL}))
-    writeConfigKey "extra_cmdline" "sn" "${SN}"
-    
-    MACADDR1=`./macgen.sh "randommac" "eth0" ${MODEL}`
-    writeConfigKey "extra_cmdline" "mac1" "${MACADDR1}"
+    [ ! -n "${SN}" ] && SN=$(echo $(generateSerial ${MODEL})) && writeConfigKey "extra_cmdline" "sn" "${SN}"
+    [ ! -n "${MACADDR1}" ] && MACADDR1=`./macgen.sh "randommac" "eth0" ${MODEL}` && writeConfigKey "extra_cmdline" "mac1" "${MACADDR1}"
   fi
 
   if [ ! -n "${SN}" ]; then
@@ -2404,15 +2401,16 @@ function checkUserConfig() {
     msgalert "The first MAC address is not set. Check user_config.json again. Abort the loader build !!!!!!"
     exit 99
   fi
-                    
-  if [ $netif_num != $netif_num_cnt ]; then
-    echo "netif_num = ${netif_num}"
-    echo "number of mac addresses = ${netif_num_cnt}"       
-    eval "echo \${MSG${tz}38}"
-    msgalert "The netif_num and the number of mac addresses do not match. Check user_config.json again. Abort the loader build !!!!!!"
-    exit 99
-  fi  
 
+  if [ "${BUS}" != "block"  ]; then
+      if [ $netif_num != $netif_num_cnt ]; then
+        echo "netif_num = ${netif_num}"
+        echo "number of mac addresses = ${netif_num_cnt}"       
+        eval "echo \${MSG${tz}38}"
+        msgalert "The netif_num and the number of mac addresses do not match. Check user_config.json again. Abort the loader build !!!!!!"
+        exit 99
+      fi  
+  fi
 }
 
 function buildloader() {
