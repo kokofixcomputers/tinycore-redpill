@@ -138,7 +138,7 @@ jobs:
           fi          
           if [ -n "${{ env.sn }}" ]; then
             echo "set sn: ${{ env.sn }}"
-            sudo ./writekey.sh "extra_cmdline" "sn" "${ env.sn }" $userconfigfile
+            sudo ./writekey.sh "extra_cmdline" "sn" "${{ env.sn }}" $userconfigfile
           fi
 
           sudo ./functions.sh ${{ env.model }}-${{ env.version }} noconfig fri
