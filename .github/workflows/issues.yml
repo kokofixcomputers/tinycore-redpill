@@ -78,7 +78,7 @@ jobs:
         run: |
           userconfigfile="/home/tc/user_config.json"
           function writeConfigKey() {
-              jsonfile=$(jq ".$1+={\"$2\":\"$3\"}" $userconfigfile) && echo $jsonfile | jq . >$userconfigfile
+              jsonfile=$(jq ".$1+={\"$2\":\"$3\"}" $userconfigfile) && sudo echo $jsonfile | jq . >$userconfigfile
           }        
           
           sudo apt update
@@ -145,7 +145,7 @@ jobs:
           fi
           
           sudo ./functions.sh ${{ env.model }}-${{ env.version }} noconfig fri
-          cat $userconfigfile
+          sudo cat $userconfigfile
           
           ls -ltr /mnt/${loaderdisk}p1
           ls -ltr /mnt/${loaderdisk}p2
