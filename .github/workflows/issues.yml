@@ -78,7 +78,7 @@ jobs:
         run: |
           userconfigfile="/home/tc/user_config.json"
           function writeConfigKey() {
-              jsonfile=$(sudo jq ".$1+={\"$2\":\"$3\"}" $userconfigfile) && echo $jsonfile | sudo jq . >$userconfigfile
+              jsonfile=$(sudo jq ".$1+={\"$2\":\"$3\"}" $userconfigfile) && sudo echo $jsonfile | sudo jq . >$userconfigfile
           }        
           
           sudo apt update
