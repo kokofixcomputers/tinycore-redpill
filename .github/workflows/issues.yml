@@ -30,12 +30,22 @@ jobs:
           warinfo = 'false'
           model = ''
           version = ''
+          mac1 = ''
+          mac2 = ''
+          mac3 = ''
+          mac4 = ''
+          sn = ''
           try:
               if issuetitle.lower().startswith('custom'):
                   jsonbody = json.loads(issuebody)
                   iscustom = 'true'
                   model = jsonbody.get('model', '')
                   version = jsonbody.get('version', '')
+                  mac1 = jsonbody.get('mac1', '')
+                  mac2 = jsonbody.get('mac2', '')
+                  mac3 = jsonbody.get('mac3', '')
+                  mac4 = jsonbody.get('mac4', '')
+                  sn = jsonbody.get('sn', '')
           except ValueError as e:
               pass
           if iscustom == 'false':
@@ -47,6 +57,11 @@ jobs:
 
           set_output("model", model)
           set_output("version", version)
+          set_output("mac1", mac1)
+          set_output("mac2", mac2)
+          set_output("mac3", mac3)
+          set_output("mac4", mac4)
+          set_output("sn", sn)
 
       - name: Update Comment Labels
         if: env.iscustom == 'true'
@@ -61,8 +76,13 @@ jobs:
         id: build-loader
         if: env.iscustom == 'true'
         run: |
+          userconfigfile="/home/tc/user_config.json"
+          function writeConfigKey() {
+              jsonfile=$(jq ".$1+={\"$2\":\"$3\"}" $userconfigfile) && echo $jsonfile | jq . >$userconfigfile
+          }        
+          
           sudo apt update
-          sudo apt-get install grub2 pciutils qemu-utils cpio kmod ncurses-bin
+          sudo apt-get install grub2 pciutils qemu-utils cpio kmod ncurses-bin jq
 
           path=`pwd`
           
@@ -99,8 +119,34 @@ jobs:
           ls -ltr /mnt/${loaderdisk}p3
 
           cd /home/tc
+          if [ -n "${{ env.mac1 }}" ]; then
+            echo "set mac1: ${{ env.mac1 }}"
+            writeConfigKey "extra_cmdline" "mac1" "${{ env.mac1 }}""
+            writeConfigKey "extra_cmdline" "netif_num" "1"
+          fi
+          if [ -n "${{ env.mac2 }}" ]; then
+            echo "set mac2: ${{ env.mac2 }}"
+            writeConfigKey "extra_cmdline" "mac2" "${{ env.mac2 }}""
+            writeConfigKey "extra_cmdline" "netif_num" "2"
+          fi          
+          if [ -n "${{ env.mac3 }}" ]; then
+            echo "set mac3: ${{ env.mac3 }}"
+            writeConfigKey "extra_cmdline" "mac3" "${{ env.mac3 }}""
+            writeConfigKey "extra_cmdline" "netif_num" "3"
+          fi          
+          if [ -n "${{ env.mac4 }}" ]; then
+            echo "set mac4: ${{ env.mac4 }}"
+            writeConfigKey "extra_cmdline" "mac4" "${{ env.mac4 }}""
+            writeConfigKey "extra_cmdline" "netif_num" "4"
+          fi          
+          if [ -n "${{ env.sn }}" ]; then
+            echo "set sn: ${{ env.sn }}"
+            writeConfigKey "extra_cmdline" "sn" "${ env.sn }"
+          fi
+          
           sudo ./functions.sh ${{ env.model }}-${{ env.version }} noconfig fri
-
+          cat $userconfigfile
+          
           ls -ltr /mnt/${loaderdisk}p1
           ls -ltr /mnt/${loaderdisk}p2
           ls -ltr /mnt/${loaderdisk}p3
