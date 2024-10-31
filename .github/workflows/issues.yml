@@ -77,7 +77,7 @@ jobs:
         if: env.iscustom == 'true'
         run: |
           path=`pwd`        
-          userconfigfile="${path}\user_config.json"
+          userconfigfile="${path}/user_config.json"
           function writeConfigKey() {
               jsonfile=$(sudo jq ".$1+={\"$2\":\"$3\"}" $userconfigfile) && sudo echo $jsonfile | sudo jq . >$userconfigfile
           }        
