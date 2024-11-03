@@ -1,4 +1,4 @@
-name: release tags
+name: build uefi
 
 on:
   #release:
