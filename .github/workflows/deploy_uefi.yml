@@ -16,7 +16,7 @@ jobs:
           sudo apt-get install grub2 qemu-utils
           #curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.2.4/tinycore-redpill.v1.0.2.4.m-shell.img.gz          
           curl -kLO# https://github.com/pocopico/tinycore-redpill/releases/download/v0.10.0.0/tinycore-redpill-uefi.v0.10.0.0.img.gz
-          gunzip tinycore-redpill.v1.0.2.4.m-shell.img.gz
+          gunzip tinycore-redpill-uefi.v0.10.0.0.img.gz
           pwd
           ls -ltr
       - name: Mount and copy mydata.tgz
