@@ -1,0 +1,96 @@
+name: release tags
+
+on:
+  #release:
+  #  types: [published]
+  workflow_dispatch:
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Bring last uploaded mydata.tgz files from tinycore-redpill & lastest img
+        run: |
+          sudo apt update
+          sudo apt-get install grub2 qemu-utils
+          #curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.2.4/tinycore-redpill.v1.0.2.4.m-shell.img.gz          
+          curl -kLO# https://github.com/pocopico/tinycore-redpill/releases/download/v0.10.0.0/tinycore-redpill-uefi.v0.10.0.0.img.gz
+          gunzip tinycore-redpill.v1.0.2.4.m-shell.img.gz
+          pwd
+          ls -ltr
+      - name: Mount and copy mydata.tgz
+        id: cp-mydata-tgz
+        run: |
+          path=`pwd`
+          VERSION=v`cat functions.sh | grep rploaderver= | cut -d\" -f2`
+          echo "Version: ${VERSION}"
+          echo "::set-output name=VERSION::${VERSION}"
+          mkdir /opt/output
+
+          LOOPX=$(sudo losetup -f)
+          #sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.2.4.m-shell.img
+          sudo losetup -P ${LOOPX} tinycore-redpill-uefi.v0.10.0.0.img
+
+          dd if=/dev/zero of=tinycore-redpill.${VERSION}.m-shell.img bs=1M seek=2048 count=0
+          echo -e "n\np\n1\n\n+72M\nn\np\n2\n\n+75M\nn\np\n3\n\n+1899M\nw\nq\n" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
+          echo -e "a\n1\nw" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
+
+          LOOPZ=$(sudo losetup -f)
+          sudo losetup -P ${LOOPZ} tinycore-redpill.${VERSION}.m-shell.img
+          echo "LOOPZ = ${LOOPZ}"
+          sudo fdisk -l ${LOOPZ}
+
+          #sudo mkfs.vfat -F16 ${LOOPZ}p1
+          #sudo mkfs.vfat -F16 ${LOOPZ}p2
+          sudo mkfs.vfat -i 6234C863 -F16 ${LOOPZ}p3
+          
+          sudo dd if="${LOOPX}p1" of="${LOOPZ}p1"
+          sudo mkdir -p /mnt/tarp1
+          sudo mount ${LOOPZ}p1 /mnt/tarp1
+          sudo grub-install --target=x86_64-efi --boot-directory="/mnt/tarp1/boot" --efi-directory="/mnt/tarp1" --removable
+          sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
+          
+          sudo dd if="${LOOPX}p2" of="${LOOPZ}p2"
+          
+          sudo mkdir -p /mnt/p3
+          sudo mount ${LOOPX}p3 /mnt/p3
+          sudo mkdir -p /mnt/tarp3
+          sudo mount ${LOOPZ}p3 /mnt/tarp3
+          cd /mnt/p3 && sudo find . | sudo cpio -pdm "/mnt/tarp3"
+          cd ${path}/
+          sudo cp -vf ${path}/mydata.tgz /mnt/tarp3
+          ls -ltr /mnt/tarp3
+          # from version 1.0.3.0 add gettext.tcz
+          sudo cp -vf ${path}/tce/optional/gettext.* /mnt/tarp3/cde/optional
+          sudo cp -vf ${path}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
+          ls -ltr /mnt/tarp3/cde/optional
+          sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
+          
+          sudo umount /mnt/p3
+          sudo umount /mnt/tarp3
+          
+          sudo losetup -d ${LOOPZ}
+          sudo losetup -d ${LOOPX}
+          
+          gzip -c tinycore-redpill.${VERSION}.m-shell.img > /opt/output/tinycore-redpill.${VERSION}.m-shell.img.gz
+
+          qemu-img convert -f raw -O vmdk tinycore-redpill.${VERSION}.m-shell.img tinycore-redpill.${VERSION}.m-shell.vmdk
+          gzip -c tinycore-redpill.${VERSION}.m-shell.vmdk > /opt/output/tinycore-redpill.${VERSION}.m-shell.vmdk.gz
+          
+          ls -ltr /opt/output
+      - name: Upload MshellImage-${{ steps.cp-mydata-tgz.outputs.VERSION }}
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: MshellImage-${{ steps.cp-mydata-tgz.outputs.VERSION }}
+          path: /opt/output
+      # Publish a release if is a tag
+      #- name: Release
+      #  uses: softprops/action-gh-release@v1
+      #  with:
+      #    tag_name: ${{ inputs.version }}
+      #    files: |
+      #      /opt/output/*.gz
+      #    body: |
+      #      ${{ inputs.version }}
