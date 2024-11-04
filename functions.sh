@@ -3468,17 +3468,19 @@ function my() {
   fi
 }
 
-case $1 in
-
-my) 
-    my "$2" "$3" "$4"
-    ;;
-update)
-    upgrademan "$2"
-    ;;
-autoupdate)
-    changeautoupdate "$2"
-    ;;
-*)
-    ;;
-esac    
+if [ $# -gt 1 ]; then
+    case $1 in
+    
+    my) 
+        my "$2" "$3" "$4"
+        ;;
+    update)
+        upgrademan "$2"
+        ;;
+    autoupdate)
+        changeautoupdate "$2"
+        ;;
+    *)
+        ;;
+    esac    
+fi
