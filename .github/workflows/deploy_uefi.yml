@@ -14,9 +14,9 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get install grub2 qemu-utils
-          #curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.2.4/tinycore-redpill.v1.0.2.4.m-shell.img.gz          
-          curl -kLO# https://github.com/pocopico/tinycore-redpill/releases/download/v0.10.0.0/tinycore-redpill-uefi.v0.10.0.0.img.gz
-          gunzip tinycore-redpill-uefi.v0.10.0.0.img.gz
+          #curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.2.4/tinycore-redpill.v1.0.2.4.m-shell.img.gz
+          curl -kLO# https://github.com/pocopico/tinycore-redpill/releases/download/v0.9.4.9c/tinycore-redpill-uefi.v0.9.4.9.img.gz
+          gunzip tinycore-redpill-uefi.v0.9.4.9.img.gz
           pwd
           ls -ltr
       - name: Mount and copy mydata.tgz
@@ -30,7 +30,7 @@ jobs:
 
           LOOPX=$(sudo losetup -f)
           #sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.2.4.m-shell.img
-          sudo losetup -P ${LOOPX} tinycore-redpill-uefi.v0.10.0.0.img
+          sudo losetup -P ${LOOPX} tinycore-redpill-uefi.v0.9.4.9.img
 
           dd if=/dev/zero of=tinycore-redpill.${VERSION}.m-shell.img bs=1M seek=2048 count=0
           echo -e "n\np\n1\n\n+72M\nn\np\n2\n\n+75M\nn\np\n3\n\n+1899M\nw\nq\n" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
