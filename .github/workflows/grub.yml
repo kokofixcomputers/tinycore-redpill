@@ -1,0 +1,85 @@
+#
+# Copyright (C) 2022 Ing <https://github.com/wjz304>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
+
+name: Build grub
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "push"
+        default: false
+        type: boolean
+      grubver:
+        description: "grub version"
+        default: "grub-2.12"
+        type: string
+      bioslst:
+        description: "bios list"
+        default: "i386-pc i386-efi x86_64-efi"
+        type: string
+      namestr:
+        description: "name string"
+        default: "mshell"
+        type: string
+
+jobs:
+  grub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          repository: PeterSuh-Q3/tinycore-redpill
+          token: ${{ secrets.PeterSuh-Q3 }}
+          path: grub
+
+      - name: Initialization environment
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          sudo timedatectl set-timezone "Asia/Seoul"
+
+          sudo apt update
+          sudo apt install -y autoconf automake autopoint gettext build-essential bison flex libtool dosfstools e2fsprogs
+          sudo apt install -y libfreetype6-dev unifont fonts-dejavu libfuse-dev liblzma-dev libzfslinux-dev
+
+      - name: Make Grub
+        run: |
+          . buildroot/grub_rr.sh "${{ inputs.grubver}}" "${{ inputs.bioslst}}" "${{ inputs.namestr}}"
+
+      - name: Upload artifact
+        if: success() && inputs.push == false
+        uses: actions/upload-artifact@v4
+        with:
+          name: grub
+          path: |
+            grub.img.gz
+          retention-days: 5
+
+      - name: Check and Push
+        if: success() && inputs.push == true
+        run: |
+          if [ -f "grub.img.gz" ]; then
+            echo "Copy img ..."
+            mv -f grub.img.gz rr/files/initrd/opt/rr/grub.img.gz
+
+            cd rr
+            echo "Git push ..."
+            git pull
+            status=$(git status -s | grep -E 'grub.img.gz' | awk '{printf " %s", $2}')
+            if [ -n "${status}" ]; then
+              git add ${status}
+              git commit -m "update $(date +%Y-%m-%d" "%H:%M:%S)"
+              git push -f
+            fi
+          else
+            echo "No change ..."
+          fi
