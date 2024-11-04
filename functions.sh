@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.5.0"
+rploaderver="1.0.5.1"
 build="master"
 redpillmake="prod"
 
@@ -128,6 +128,7 @@ function history() {
     1.0.4.8 Enable mmc (SD Card) bus type recognition for the bootloader
     1.0.4.9 When mmc bus type is used, module processing method is applied with priority given to eudev instead of ddsml.
     1.0.5.0 Improved internet check function in menu.sh
+    1.0.5.1 Added manual update feature to specified version, added disable/enable automatic update feature
     --------------------------------------------------------------------------------------
 EOF
 
@@ -409,6 +410,8 @@ EOF
 # When mmc bus type is used, module processing method is applied with priority given to eudev instead of ddsml.
 # 2024.10.26 v1.0.5.0 
 # Improved internet check function in menu.sh
+# 2024.11.04 v1.0.5.1 
+# Added manual update feature to specified version, added disable/enable automatic update feature
     
 function showlastupdate() {
     cat <<EOF
@@ -486,6 +489,10 @@ function showlastupdate() {
 
 # 2024.10.26 v1.0.5.0 
 # Improved internet check function in menu.sh
+
+# 2024.11.04 v1.0.5.1 
+# Added manual update feature to specified version, added disable/enable automatic update feature
+# ( usage : ./functions.sh update v0.1.1j | ./functions.sh autoupdate off | ./functions.sh autoupdate on )
 
 EOF
 }
@@ -2930,6 +2937,68 @@ function getredpillko() {
 
 }
 
+function changeautoupdate {
+    if [ -z "$1" ]; then
+      echo -en "\r$(msgalert "There is no on or off parameter.!!!")\n"
+      exit 99
+    elif [ "$1" != "on" ] && [ "$1" != "off" ]; then
+      echo -en "\r$(msgalert "There is no on or off parameter.!!!")\n"
+      exit 99
+    fi
+
+    jsonfile=$(jq . $userconfigfile)
+    
+    echo -n "friendautoupd on User config file needs update, updating -> "
+    if [ "$1" = "on" ]; then
+        jsonfile=$(echo $jsonfile | jq '.general |= . + { "friendautoupd":"true" }' || echo $jsonfile | jq .)
+    else
+        jsonfile=$(echo $jsonfile | jq '.general |= . + { "friendautoupd":"false" }' || echo $jsonfile | jq .)
+    fi
+    cp $userconfigfile /mnt/${loaderdisk}3/
+    echo $jsonfile | jq . >$userconfigfile && echo "Done" || echo "Failed"
+    
+    cat $userconfigfile | grep friendautoupd
+}
+
+function upgrademan() {
+    if [ -z "$1" ]; then
+      echo -en "\r$(msgalert "There is no TCRP Friend version.!!!")\n"
+      exit 99
+    fi
+    
+    friendautoupd="$(jq -r -e '.general .friendautoupd' $userconfigfile)"
+    if [ "${friendautoupd}" = "false" ]; then
+        echo -en "\r$(msgwarning "TCRP Friend auto update disabled")\n"
+    else
+        echo -en "\r$(msgwarning "TCRP Friend auto update enabled")\n"	
+    fi
+    FRIENDVERSION="$1"
+    msgwarning "Found target version, bringing over new friend version : $FRIENDVERSION \n"
+    echo -n "Checking for version $FRIENDVERSION friend -> "
+    URL=$(curl --connect-timeout 15 -s --insecure -L https://api.github.com/repos/PeterSuh-Q3/tcrpfriend/releases/tags/"${FRIENDVERSION}" | jq -r -e .assets[].browser_download_url | grep chksum)
+    if [ $? -ne 0 ]; then
+        msgalert "Error downloading version of $FRIENDVERSION friend...\n"
+        exit 99
+    fi
+
+    # download file chksum
+    [ -n "$URL" ] && curl -s --insecure -L $URL -O
+    if [ $? -ne 0 ]; then
+        msgalert "Error downloading version of $FRIENDVERSION friend...\n"
+        exit 99
+    fi
+    URLS=$(curl --insecure -s https://api.github.com/repos/PeterSuh-Q3/tcrpfriend/releases/tags/"${FRIENDVERSION}" | jq -r ".assets[].browser_download_url")
+    for file in $URLS; do curl --insecure --location --progress-bar "$file" -O; done
+    FRIENDVERSION="$(grep VERSION chksum | awk -F= '{print $2}')"
+    BZIMAGESHA256="$(grep bzImage-friend chksum | awk '{print $1}')"
+    INITRDSHA256="$(grep initrd-friend chksum | awk '{print $1}')"
+    [ "$(sha256sum bzImage-friend | awk '{print $1}')" = "$BZIMAGESHA256" ] && [ "$(sha256sum initrd-friend | awk '{print $1}')" = "$INITRDSHA256" ] && cp -f bzImage-friend /mnt/tcrp${chgpart}/ && msgnormal "bzImage OK! \n"
+    [ "$(sha256sum bzImage-friend | awk '{print $1}')" = "$BZIMAGESHA256" ] && [ "$(sha256sum initrd-friend | awk '{print $1}')" = "$INITRDSHA256" ] && cp -f initrd-friend /mnt/tcrp${chgpart}/ && msgnormal "initrd-friend OK! \n"
+    echo -e "$(msgnormal "TCRP FRIEND HAS BEEN UPDATED!!!")"
+    changeautoupdate "off"
+
+}
+
 function rploader() {
 
     getloaderdisk
@@ -3385,4 +3454,17 @@ function my() {
   fi
 }
 
-[ $# -gt 1 ] && my "$1" "$2" "$3"
+case $1 in
+
+my) 
+    my "$2" "$3" "$4"
+
+update)
+    upgrademan "$2"
+    ;;
+autoupdate)
+    changeautoupdate "$2"
+    ;;
+*)
+    ;;
+esac    
