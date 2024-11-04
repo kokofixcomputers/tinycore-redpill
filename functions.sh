@@ -2946,6 +2946,9 @@ function changeautoupdate {
       exit 99
     fi
 
+    getloaderdisk
+    tcrppart="${loaderdisk}3"
+
     jsonfile=$(jq . $userconfigfile)
     
     echo -n "friendautoupd on User config file needs update, updating -> "
@@ -2965,6 +2968,9 @@ function upgrademan() {
       echo -en "\r$(msgalert "There is no TCRP Friend version.!!!")\n"
       exit 99
     fi
+
+    getloaderdisk
+    tcrppart="${loaderdisk}3"
 
     [ ! -d /home/tc/friend ] && mkdir /home/tc/friend/ && cd /home/tc/friend
     
@@ -3468,11 +3474,9 @@ my)
     my "$2" "$3" "$4"
     ;;
 update)
-    getvars "DS3622xs+"
     upgrademan "$2"
     ;;
 autoupdate)
-    getvars "DS3622xs+"
     changeautoupdate "$2"
     ;;
 *)
