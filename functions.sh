@@ -3458,7 +3458,7 @@ case $1 in
 
 my) 
     my "$2" "$3" "$4"
-
+    ;;
 update)
     upgrademan "$2"
     ;;
