@@ -2965,6 +2965,8 @@ function upgrademan() {
       echo -en "\r$(msgalert "There is no TCRP Friend version.!!!")\n"
       exit 99
     fi
+
+    [ ! -d /home/tc/friend ] && mkdir /home/tc/friend/ && cd /home/tc/friend
     
     friendautoupd="$(jq -r -e '.general .friendautoupd' $userconfigfile)"
     if [ "${friendautoupd}" = "false" ]; then
@@ -2992,10 +2994,16 @@ function upgrademan() {
     FRIENDVERSION="$(grep VERSION chksum | awk -F= '{print $2}')"
     BZIMAGESHA256="$(grep bzImage-friend chksum | awk '{print $1}')"
     INITRDSHA256="$(grep initrd-friend chksum | awk '{print $1}')"
-    [ "$(sha256sum bzImage-friend | awk '{print $1}')" = "$BZIMAGESHA256" ] && [ "$(sha256sum initrd-friend | awk '{print $1}')" = "$INITRDSHA256" ] && cp -f bzImage-friend /mnt/tcrp${chgpart}/ && msgnormal "bzImage OK! \n"
-    [ "$(sha256sum bzImage-friend | awk '{print $1}')" = "$BZIMAGESHA256" ] && [ "$(sha256sum initrd-friend | awk '{print $1}')" = "$INITRDSHA256" ] && cp -f initrd-friend /mnt/tcrp${chgpart}/ && msgnormal "initrd-friend OK! \n"
+    [ "$(sha256sum bzImage-friend | awk '{print $1}')" = "$BZIMAGESHA256" ] && [ "$(sha256sum initrd-friend | awk '{print $1}')" = "$INITRDSHA256" ] && cp -f bzImage-friend /mnt/${loaderdisk}3/ && msgnormal "bzImage OK! \n"
+    [ "$(sha256sum bzImage-friend | awk '{print $1}')" = "$BZIMAGESHA256" ] && [ "$(sha256sum initrd-friend | awk '{print $1}')" = "$INITRDSHA256" ] && cp -f initrd-friend /mnt/${loaderdisk}3/ && msgnormal "initrd-friend OK! \n"
     echo -e "$(msgnormal "TCRP FRIEND HAS BEEN UPDATED!!!")"
     changeautoupdate "off"
+
+    if [ -f /home/tc/friend/initrd-friend ] && [ -f /home/tc/friend/bzImage-friend ]; then
+        cp /home/tc/friend/initrd-friend /mnt/${loaderdisk}3/
+        cp /home/tc/friend/bzImage-friend /mnt/${loaderdisk}3/
+        sudo rm -rf /home/tc/friend
+    fi
 
 }
 
