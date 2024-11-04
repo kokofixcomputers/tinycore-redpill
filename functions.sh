@@ -3468,11 +3468,11 @@ my)
     my "$2" "$3" "$4"
     ;;
 update)
-    getvars
+    getvars "DS3622xs+"
     upgrademan "$2"
     ;;
 autoupdate)
-    getvars
+    getvars "DS3622xs+"
     changeautoupdate "$2"
     ;;
 *)
