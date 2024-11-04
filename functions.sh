@@ -128,7 +128,7 @@ function history() {
     1.0.4.8 Enable mmc (SD Card) bus type recognition for the bootloader
     1.0.4.9 When mmc bus type is used, module processing method is applied with priority given to eudev instead of ddsml.
     1.0.5.0 Improved internet check function in menu.sh
-    1.0.5.1 Added manual update feature to specified version, added disable/enable automatic update feature
+    1.0.5.1 Added manual update feature to friend specified version, added disable/enable friend automatic update feature
     --------------------------------------------------------------------------------------
 EOF
 
@@ -411,7 +411,7 @@ EOF
 # 2024.10.26 v1.0.5.0 
 # Improved internet check function in menu.sh
 # 2024.11.04 v1.0.5.1 
-# Added manual update feature to specified version, added disable/enable automatic update feature
+# Added manual update feature to friend specified version, added disable/enable friend automatic update feature
     
 function showlastupdate() {
     cat <<EOF
@@ -491,7 +491,7 @@ function showlastupdate() {
 # Improved internet check function in menu.sh
 
 # 2024.11.04 v1.0.5.1 
-# Added manual update feature to specified version, added disable/enable automatic update feature
+# Added manual update feature to friend specified version, added disable/enable friend automatic update feature
 # ( usage : ./functions.sh update v0.1.1j | ./functions.sh autoupdate off | ./functions.sh autoupdate on )
 
 EOF
