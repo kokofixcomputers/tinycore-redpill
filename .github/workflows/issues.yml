@@ -143,7 +143,6 @@ jobs:
 
           echo "Build loader for ${{ env.model }}-${{ env.version }}"
           ls -ltr ./functions.sh
-          cat ./functions.sh
           sudo ./functions.sh my ${{ env.model }}-${{ env.version }} noconfig fri
           sudo cat /home/tc/user_config.json
           
