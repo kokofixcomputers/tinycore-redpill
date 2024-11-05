@@ -15,26 +15,36 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential bison flex libgmp3-dev xorriso
           #sudo apt-get install grub2 qemu-utils grub-efi-amd64-bin
-          curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.2.4/tinycore-redpill.v1.0.2.4.m-shell.img.gz
-          gunzip tinycore-redpill.v1.0.2.4.m-shell.img.gz
+          #curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.2.4/tinycore-redpill.v1.0.2.4.m-shell.img.gz
+          #gunzip tinycore-redpill.v1.0.2.4.m-shell.img.gz
           #curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/raw/refs/heads/main/grub/grub.img.gz
           #gunzip grub.img.gz
           pwd
           ls -ltr
 
-      - name: Configure Grub 2.12
+      - name: Download GRUB 2.12 source
+        run: |
+          wget https://ftp.gnu.org/gnu/grub/grub-2.12.tar.gz
+          tar xzf grub-2.12.tar.gz
+          cd grub-2.12
+  
+      - name: Configure GRUB
+        working-directory: grub-2.12
         run: |
           ./configure --prefix=/usr --sysconfdir=/etc --disable-werror
-
-      - name: Build Grub 2.12
+  
+      - name: Build GRUB
+        working-directory: grub-2.12
         run: make
   
       - name: Run tests
+        working-directory: grub-2.12
         run: make check
-             grub-install --version
   
-      - name: Install Grub 2.12
-        run: sudo make install
+      - name: Install GRUB
+        working-directory: grub-2.12
+        run: sudo make install          
+             grub-install --version        
       
       - name: Mount and copy mydata.tgz
         id: cp-mydata-tgz
