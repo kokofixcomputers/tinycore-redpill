@@ -90,9 +90,9 @@ jobs:
 
           echo "Generate and install GRUB images"
           cd grub-2.12
-          GRUB_MODULES="normal linux echo all_video search test multiboot biosdisk part_msdos fat ntfs exfat"          
+          GRUB_MODULES=(normal linux echo all_video search test multiboot)
           echo "Create UEFI GRUB image"
-          sudo ./grub-mkimage -O x86_64-efi -p\(hd0,msdos1\)/boot/grub ${GRUB_MODULES} -o grubx64.efi
+          sudo ./grub-mkimage -O x86_64-efi -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o grubx64.efi
           
           echo "Install GRUB for UEFI"
           sudo mkdir -p /mnt/tarp1/EFI/BOOT
@@ -100,7 +100,7 @@ jobs:
           
           echo "Create and install GRUB for Legacy BIOS"
           cd grub-core
-          sudo ../grub-mkimage -v -O i386-pc -d. -p\(hd0,msdos1\)/boot/grub ${GRUB_MODULES} -o core.img
+          sudo ../grub-mkimage -v -O i386-pc -d. -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o core.img
           #sudo ./grub-mkimage -O i386-pc -p /boot/grub ${GRUB_MODULES} -o core.img
           echo "Write the first sector of core.img to the MBR"
           sudo dd if=./core.img of="${LOOPZ}" bs=512 count=1
