@@ -20,7 +20,6 @@ jobs:
           gunzip tinycore-redpill.v1.0.2.4.m-shell.img.gz
           pwd
           ls -ltr
-          sudo grub-install --version
 
       - name: Download GRUB 2.12 source
         run: |
@@ -87,40 +86,39 @@ jobs:
           echo "Create and install GRUB for Legacy BIOS"
           export GRUB_VERSION=2.12
           sudo grub-install --version
-          #sudo grub-install --target=x86_64-efi --boot-directory="/mnt/tarp1/boot" --efi-directory="/mnt/tarp1" --removable
-          #sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
+          sudo grub-install --target=x86_64-efi --efi-directory="/mnt/tarp1" --boot-directory="/mnt/tarp1/boot" --bootloader-id=GRUB --removable
+          sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
 
-          echo "Generate and install GRUB images"
-          cd grub-2.12
-          GRUB_MODULES=(normal linux echo all_video search test multiboot)
-          echo "Create UEFI GRUB image"
-          sudo ./grub-mkimage -O x86_64-efi -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o grubx64.efi
+          #echo "Generate and install GRUB images"
+          #cd grub-2.12
+          #GRUB_MODULES=(normal linux echo all_video search test multiboot)
+          #echo "Create UEFI GRUB image"
+          #sudo ./grub-mkimage -O x86_64-efi -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o grubx64.efi
           
-          echo "Install GRUB for UEFI"
-          sudo mkdir -p /mnt/tarp1/EFI/BOOT
-          sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
+          #echo "Install GRUB for UEFI"
+          #sudo mkdir -p /mnt/tarp1/EFI/BOOT
+          #sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
           
-          echo "Create and install GRUB for Legacy BIOS"
-          cd grub-core
-          sudo ../grub-mkimage -v -O i386-pc -d. -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o core.img
-          #sudo ./grub-mkimage -O i386-pc -p /boot/grub ${GRUB_MODULES} -o core.img
-          echo "Write the first sector of core.img to the MBR"
-          sudo dd if=./core.img of="${LOOPZ}" bs=512 count=1
-          echo "Write the rest of core.img after the MBR"
-          sudo dd if=./core.img of="${LOOPZ}" bs=512 seek=1 skip=1
+          #echo "Create and install GRUB for Legacy BIOS"
+          #cd grub-core
+          #sudo ../grub-mkimage -v -O i386-pc -d. -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o core.img
+          #echo "Write the first sector of core.img to the MBR"
+          #sudo dd if=./core.img of="${LOOPZ}" bs=512 count=1
+          #echo "Write the rest of core.img after the MBR"
+          #sudo dd if=./core.img of="${LOOPZ}" bs=512 seek=1 skip=1
           
-          echo "Copy GRUB modules"
-          sudo mkdir -p /mnt/tarp1/boot
-          sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
-          sudo cp -vf *.mod /mnt/tarp1/boot/grub/x86_64-efi/
-          sudo cp -vf *.mod /mnt/tarp1/boot/grub/i386-pc/
+          #echo "Copy GRUB modules"
+          #sudo mkdir -p /mnt/tarp1/boot
+          #sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
+          #sudo cp -vf *.mod /mnt/tarp1/boot/grub/x86_64-efi/
+          #sudo cp -vf *.mod /mnt/tarp1/boot/grub/i386-pc/
           
-          ls -ltr /mnt/tarp1/boot/grub/i386-pc/
+          #ls -ltr /mnt/tarp1/boot/grub/i386-pc/
 
-          echo "Copy grub.cfg"
-          sudo mkdir -p /mnt/p1
-          sudo mount ${LOOPX}p1 /mnt/p1
-          sudo cp -vf /mnt/p1/boot/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
+          #echo "Copy grub.cfg"
+          #sudo mkdir -p /mnt/p1
+          #sudo mount ${LOOPX}p1 /mnt/p1
+          #sudo cp -vf /mnt/p1/boot/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
 
           ##  Copy 2nd partition from source to target ##
           sudo dd if="${LOOPX}p2" of="${LOOPZ}p2"
@@ -144,7 +142,7 @@ jobs:
           sudo fdisk -l ${LOOPZ}
 
           ##  Finalize ##
-          sudo umount /mnt/p1
+          #sudo umount /mnt/p1
           sudo umount /mnt/p3
           sudo umount /mnt/tarp1
           sudo umount /mnt/tarp3
