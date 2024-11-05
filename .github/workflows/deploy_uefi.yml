@@ -97,9 +97,9 @@ jobs:
           echo "Create and install GRUB for Legacy BIOS"
           sudo ./grub-mkimage -O i386-pc -o core.img -p /boot/grub ${GRUB_MODULES}
           echo "Write the first sector of core.img to the MBR"
-          sudo dd if=./core.img of="${LOOPZ}" bs=512 count=1
+          sudo dd if=./core.img of="${LOOPZ}p1" bs=512 count=1
           echo "Write the rest of core.img after the MBR"
-          sudo dd if=./core.img of="${LOOPZ}" bs=512 seek=1 skip=1
+          sudo dd if=./core.img of="${LOOPZ}p1" bs=512 seek=1 skip=1
           
           # Copy GRUB modules
           sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
