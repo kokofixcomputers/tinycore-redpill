@@ -1,4 +1,4 @@
-name: build uefi
+name: build grub 2.12
 
 on:
   #release:
