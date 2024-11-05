@@ -3129,6 +3129,10 @@ function add-addons() {
 
 function my() {
 
+  echo "$1"
+  echo "$2"
+  echo "$3"
+  
   getloaderdisk
   if [ -z "${loaderdisk}" ]; then
       echo "Not Supported Loader BUS Type, program Exit!!!"
