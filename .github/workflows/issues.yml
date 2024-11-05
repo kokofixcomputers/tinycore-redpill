@@ -79,7 +79,7 @@ jobs:
           path=`pwd`        
           userconfigfile="/home/tc/user_config.json"
           
-          sudo apt update
+          sudo apt-get update
           sudo apt-get install grub2 pciutils qemu-utils cpio kmod ncurses-bin jq
 
           sudo mkdir /home/tc
