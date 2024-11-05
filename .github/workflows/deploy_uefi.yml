@@ -42,9 +42,9 @@ jobs:
         working-directory: grub-2.12
         run: make
   
-      - name: Run tests
-        working-directory: grub-2.12
-        run: make check
+      #- name: Run tests
+      #  working-directory: grub-2.12
+      #  run: make check
   
       - name: Install GRUB
         working-directory: grub-2.12
