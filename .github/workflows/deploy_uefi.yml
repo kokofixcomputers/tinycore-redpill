@@ -139,6 +139,8 @@ jobs:
           ls -ltr /mnt/tarp3/cde/optional
           sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
 
+          sudo fdisk -l ${LOOPZ}
+
           ##  Finalize ##
           sudo umount /mnt/p1
           sudo umount /mnt/p3
