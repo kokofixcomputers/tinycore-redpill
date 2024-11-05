@@ -81,18 +81,13 @@ jobs:
           sudo dd if="${LOOPX}p1" of="${LOOPZ}p1"
           sudo mkdir -p /mnt/tarp1
           sudo mount ${LOOPZ}p1 /mnt/tarp1
-          
-          export GRUB_VERSION=2.12
 
-          cd grub-2.12
           echo "Generate and install GRUB images"
-          GRUB_MODULES="normal linux echo all_video search test multiboot"
-          # Create UEFI GRUB image
+          cd grub-2.12
+          export GRUB_VERSION=2.12
+          GRUB_MODULES="normal linux echo all_video search test multiboot"          
+          echo "Create UEFI GRUB image"
           sudo ./grub-mkimage -O x86_64-efi -o grubx64.efi -p /boot/grub ${GRUB_MODULES}
-
-          echo "Install GRUB for UEFI"
-          sudo mkdir -p /mnt/tarp1/EFI/BOOT
-          sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
           
           echo "Create and install GRUB for Legacy BIOS"
           sudo ./grub-mkimage -O i386-pc -o core.img -p /boot/grub ${GRUB_MODULES}
@@ -100,8 +95,13 @@ jobs:
           sudo dd if=./core.img of="${LOOPZ}p1" bs=512 count=1
           echo "Write the rest of core.img after the MBR"
           sudo dd if=./core.img of="${LOOPZ}p1" bs=512 seek=1 skip=1
+
+          echo "Install GRUB for UEFI"
+          sudo mkdir -p /mnt/tarp1/EFI/BOOT
+          sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
           
           # Copy GRUB modules
+          sudo mkdir -p /mnt/tarp1/boot
           sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
           sudo cp grub-core/*.mod /mnt/tarp1/boot/grub/x86_64-efi/
           sudo cp grub-core/*.mod /mnt/tarp1/boot/grub/i386-pc/
