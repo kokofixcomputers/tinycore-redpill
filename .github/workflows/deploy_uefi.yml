@@ -98,14 +98,14 @@ jobs:
           sudo mkdir -p /mnt/tarp1/EFI/BOOT
           sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
           
-          #echo "Create and install GRUB for Legacy BIOS"
-          #sudo ./grub-mkimage -O i386-pc -o core.img -p /boot/grub ${GRUB_MODULES}
+          echo "Create and install GRUB for Legacy BIOS"
+          sudo ./grub-mkimage -O i386-pc -o core.img -p /boot/grub ${GRUB_MODULES}
           #echo "Write the first sector of core.img to the MBR"
           #sudo dd if=./core.img of="${LOOPZ}" bs=512 count=1
           #echo "Write the rest of core.img after the MBR"
           #sudo dd if=./core.img of="${LOOPZ}" bs=512 seek=1 skip=1
           
-          # Copy GRUB modules
+          echo "Copy GRUB modules"
           sudo mkdir -p /mnt/tarp1/boot
           sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
           sudo cp grub-core/*.mod /mnt/tarp1/boot/grub/x86_64-efi/
@@ -114,9 +114,9 @@ jobs:
           ls -ltr /mnt/tarp1/boot/grub/i386-pc/
 
           # Copy grub.cfg
-          sudo mkdir -p /mnt/p1
-          sudo mount ${LOOPX}p1 /mnt/p1
-          sudo cp /mnt/p1/boot/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
+          #sudo mkdir -p /mnt/p1
+          #sudo mount ${LOOPX}p1 /mnt/p1
+          #sudo cp /mnt/p1/boot/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
 
           ##  Copy 2nd partition from source to target ##
           sudo dd if="${LOOPX}p2" of="${LOOPZ}p2"
@@ -138,7 +138,7 @@ jobs:
           sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
 
           ##  Finalize ##
-          sudo umount /mnt/p1
+          #sudo umount /mnt/p1
           sudo umount /mnt/p3
           sudo umount /mnt/tarp1
           sudo umount /mnt/tarp3
