@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.5.1"
+rploaderver="1.0.5.2"
 build="master"
 redpillmake="prod"
 
@@ -129,6 +129,7 @@ function history() {
     1.0.4.9 When mmc bus type is used, module processing method is applied with priority given to eudev instead of ddsml.
     1.0.5.0 Improved internet check function in menu.sh
     1.0.5.1 Added manual update feature to friend specified version, added disable/enable friend automatic update feature
+    1.0.5.2 Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
     --------------------------------------------------------------------------------------
 EOF
 
@@ -412,6 +413,8 @@ EOF
 # Improved internet check function in menu.sh
 # 2024.11.04 v1.0.5.1 
 # Added manual update feature to friend specified version, added disable/enable friend automatic update feature
+# 2024.11.05 v1.0.5.2 
+# Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
     
 function showlastupdate() {
     cat <<EOF
@@ -493,6 +496,9 @@ function showlastupdate() {
 # 2024.11.04 v1.0.5.1 
 # Added manual update feature to friend specified version, added disable/enable friend automatic update feature
 # ( usage : ./functions.sh update v0.1.1j | ./functions.sh autoupdate off | ./functions.sh autoupdate on )
+
+# 2024.11.05 v1.0.5.2 
+# Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
 
 EOF
 }
