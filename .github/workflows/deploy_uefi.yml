@@ -48,6 +48,13 @@ jobs:
         working-directory: grub-2.12
         run: sudo make install          
 
+      - name: Generate and install GRUB images
+        working-directory: grub-2.12
+        run: |
+          GRUB_MODULES="normal linux echo all_video search test multiboot"
+          # Create UEFI GRUB image
+          ./grub-mkimage -O x86_64-efi -o grubx64.efi -p /boot/grub ${GRUB_MODULES}
+
       - name: Return to workflow home directory
         run: cd $GITHUB_WORKSPACE
       
@@ -82,9 +89,32 @@ jobs:
           sudo mkdir -p /mnt/tarp1
           sudo mount ${LOOPZ}p1 /mnt/tarp1
           export GRUB_VERSION=2.12
-          sudo grub-install --target=x86_64-efi --boot-directory="/mnt/tarp1/boot" --efi-directory="/mnt/tarp1" --removable
-          sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
+          #sudo grub-install --target=x86_64-efi --boot-directory="/mnt/tarp1/boot" --efi-directory="/mnt/tarp1" --removable
+          #sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
+
+          # Install GRUB for UEFI
+          sudo mkdir -p /mnt/tarp1/EFI/BOOT
+          cd grub-2.12
+          sudo cp ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
+          
+          # Create and install GRUB for Legacy BIOS
+          sudo ./grub-mkimage -O i386-pc -o core.img -p /boot/grub ${GRUB_MODULES}
+          # Write the first sector of core.img to the MBR
+          sudo dd if=./core.img of="${LOOPZ}" bs=512 count=1
+          # Write the rest of core.img after the MBR
+          sudo dd if=./core.img of="${LOOPZ}" bs=512 seek=1 skip=1
+          
+          # Copy GRUB modules
+          sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
+          sudo cp grub-core/*.mod /mnt/tarp1/boot/grub/x86_64-efi/
+          sudo cp grub-core/*.mod /mnt/tarp1/boot/grub/i386-pc/
+          
           ls -ltr /mnt/tarp1/boot/grub/i386-pc/
+
+          # Copy grub.cfg
+          sudo mkdir -p /mnt/p1
+          sudo mount ${LOOPX}p1 /mnt/p1
+          sudo cp /mnt/p1/boot/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
 
           ##  Copy 2nd partition from source to target ##
           sudo dd if="${LOOPX}p2" of="${LOOPZ}p2"
@@ -106,6 +136,7 @@ jobs:
           sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
 
           ##  Finalize ##
+          sudo umount /mnt/p1
           sudo umount /mnt/p3
           sudo umount /mnt/tarp1
           sudo umount /mnt/tarp3
