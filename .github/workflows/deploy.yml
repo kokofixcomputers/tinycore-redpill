@@ -39,7 +39,7 @@ jobs:
         
       - name: Build GRUB
         working-directory: grub-2.12
-        run: make
+        run: make -j4
   
       #- name: Run tests
       #  working-directory: grub-2.12
