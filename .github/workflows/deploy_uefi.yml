@@ -32,7 +32,12 @@ jobs:
         working-directory: grub-2.12
         run: |
           ./configure --prefix=/usr --sysconfdir=/etc --disable-werror
-  
+
+      - name: Create extra_deps.lst
+        working-directory: grub-2.12
+        run: |
+          echo "depends bli part_gpt" > grub-core/extra_deps.lst
+        
       - name: Build GRUB
         working-directory: grub-2.12
         run: make
