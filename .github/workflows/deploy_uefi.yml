@@ -109,6 +109,7 @@ jobs:
 
           ##  Finalize ##
           sudo umount /mnt/p3
+          sudo umount /mnt/tarp1
           sudo umount /mnt/tarp3
           sudo losetup -d ${LOOPZ}
           sudo losetup -d ${LOOPX}
