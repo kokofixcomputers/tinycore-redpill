@@ -15,8 +15,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential bison flex libgmp3-dev xorriso qemu-utils
           #sudo apt-get install grub2 qemu-utils grub-efi-amd64-bin
-          curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.5.1/tinycore-redpill.v1.0.5.1.m-shell.img.gz
-          gunzip tinycore-redpill.v1.0.5.1.m-shell.img.gz
+          curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.2.4/tinycore-redpill.v1.0.2.4.m-shell.img.gz
+          gunzip tinycore-redpill.v1.0.2.4.m-shell.img.gz
           pwd
           ls -ltr
 
@@ -61,7 +61,7 @@ jobs:
           mkdir /opt/output
 
           LOOPX=$(sudo losetup -f)
-          sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.5.1.m-shell.img
+          sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.2.4.m-shell.img
 
           dd if=/dev/zero of=tinycore-redpill.${VERSION}.m-shell.img bs=1M seek=2048 count=0
           echo -e "n\np\n1\n\n+72M\nn\np\n2\n\n+75M\nn\np\n3\n\n+1899M\nw\nq\n" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
@@ -94,10 +94,10 @@ jobs:
           sudo cp -vf ${path}/mydata.tgz /mnt/tarp3
           ls -ltr /mnt/tarp3
           # from version 1.0.3.0 add gettext.tcz
-          #sudo cp -vf ${path}/tce/optional/gettext.* /mnt/tarp3/cde/optional
-          #sudo cp -vf ${path}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
-          #ls -ltr /mnt/tarp3/cde/optional
-          #sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
+          sudo cp -vf ${path}/tce/optional/gettext.* /mnt/tarp3/cde/optional
+          sudo cp -vf ${path}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
+          ls -ltr /mnt/tarp3/cde/optional
+          sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
           
           sudo umount /mnt/p3
           sudo umount /mnt/tarp3
