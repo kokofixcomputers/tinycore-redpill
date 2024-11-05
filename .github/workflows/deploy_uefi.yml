@@ -13,12 +13,10 @@ jobs:
       - name: Bring last uploaded mydata.tgz files from tinycore-redpill & lastest img
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bison flex libgmp3-dev xorriso
+          sudo apt-get install -y build-essential bison flex libgmp3-dev xorriso qemu-utils
           #sudo apt-get install grub2 qemu-utils grub-efi-amd64-bin
-          #curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.2.4/tinycore-redpill.v1.0.2.4.m-shell.img.gz
-          #gunzip tinycore-redpill.v1.0.2.4.m-shell.img.gz
-          #curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/raw/refs/heads/main/grub/grub.img.gz
-          #gunzip grub.img.gz
+          curl -kLO# https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.0.5.1/tinycore-redpill.v1.0.5.1.m-shell.img.gz
+          gunzip tinycore-redpill.v1.0.5.1.m-shell.img.gz
           pwd
           ls -ltr
 
@@ -49,7 +47,9 @@ jobs:
       - name: Install GRUB
         working-directory: grub-2.12
         run: sudo make install          
-             grub-install --version        
+
+      - name: Return to workflow home directory
+        run: cd $GITHUB_WORKSPACE
       
       - name: Mount and copy mydata.tgz
         id: cp-mydata-tgz
@@ -61,10 +61,7 @@ jobs:
           mkdir /opt/output
 
           LOOPX=$(sudo losetup -f)
-          sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.2.4.m-shell.img
-
-          #LOOPY=$(sudo losetup -f)
-          #sudo losetup -P ${LOOPY} grub.img
+          sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.5.1.m-shell.img
 
           dd if=/dev/zero of=tinycore-redpill.${VERSION}.m-shell.img bs=1M seek=2048 count=0
           echo -e "n\np\n1\n\n+72M\nn\np\n2\n\n+75M\nn\np\n3\n\n+1899M\nw\nq\n" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
