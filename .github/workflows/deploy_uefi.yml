@@ -74,14 +74,12 @@ jobs:
           echo "LOOPZ = ${LOOPZ}"
           sudo fdisk -l ${LOOPZ}
 
-      - name: Format 3rd partition with vfat
-        run: |
+          ## Format 3rd partition with vfat ##
           #sudo mkfs.vfat -F16 ${LOOPZ}p1
           #sudo mkfs.vfat -F16 ${LOOPZ}p2
           sudo mkfs.vfat -i 6234C863 -F16 ${LOOPZ}p3
 
-      - name: Copy 1st partition from source to target (with grub 2.12 install)
-        run: |
+          ## Copy 1st,2nd,3rd partition from source to target (with grub 2.12 install) ##
           sudo dd if="${LOOPX}p1" of="${LOOPZ}p1"
           sudo mkdir -p /mnt/tarp1
           sudo mount ${LOOPZ}p1 /mnt/tarp1
@@ -90,12 +88,10 @@ jobs:
           sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
           ls -ltr /mnt/tarp1/boot/grub/i386-pc/
 
-      - name: Copy 2nd partition from source to target
-        run: |
+          ##  Copy 2nd partition from source to target ##
           sudo dd if="${LOOPX}p2" of="${LOOPZ}p2"
 
-      - name: Copy 3rd partition from source to target
-        run: |
+          ## Copy 3rd partition from source to target ##
           sudo mkdir -p /mnt/p3
           sudo mount ${LOOPX}p3 /mnt/p3
           sudo mkdir -p /mnt/tarp3
@@ -104,6 +100,7 @@ jobs:
           cd ${path}/
           sudo cp -vf ${path}/mydata.tgz /mnt/tarp3
           ls -ltr /mnt/tarp3
+          
           # from version 1.0.3.0 add gettext.tcz
           sudo cp -vf ${path}/tce/optional/gettext.* /mnt/tarp3/cde/optional
           sudo cp -vf ${path}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
