@@ -51,7 +51,7 @@ jobs:
       - name: Return to workflow home directory
         run: cd $GITHUB_WORKSPACE
       
-      - name: Get mshell version
+      - name: Mount source img and make target img
         id: get-version
         run: |
           VERSION=v`cat functions.sh | grep rploaderver= | cut -d\" -f2`
@@ -59,8 +59,6 @@ jobs:
           echo "::set-output name=VERSION::${VERSION}"
           mkdir /opt/output
 
-      - name: Mount source img and make target img
-        run: |
           path=`pwd`        
           LOOPX=$(sudo losetup -f)
           sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.2.4.m-shell.img
