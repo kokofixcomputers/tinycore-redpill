@@ -89,15 +89,15 @@ jobs:
           sudo grub-install --target=x86_64-efi --efi-directory="/mnt/tarp1" --boot-directory="/mnt/tarp1/boot" --bootloader-id=GRUB --removable
           sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
 
-          echo "Generate and install GRUB images"
-          cd grub-2.12
-          GRUB_MODULES=(normal linux echo all_video search test multiboot efi_gop efi_uga font gfxterm part_gpt fat)
-          echo "Create UEFI GRUB image"
-          sudo ./grub-mkimage -O x86_64-efi -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o grubx64.efi
+          #echo "Generate and install GRUB images"
+          #cd grub-2.12
+          #GRUB_MODULES=(normal linux echo all_video search test multiboot efi_gop efi_uga font gfxterm part_gpt fat)
+          #echo "Create UEFI GRUB image"
+          #sudo ./grub-mkimage -O x86_64-efi -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o grubx64.efi
           
-          echo "Install GRUB for UEFI"
-          sudo mkdir -p /mnt/tarp1/EFI/BOOT
-          sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
+          #echo "Install GRUB for UEFI"
+          #sudo mkdir -p /mnt/tarp1/EFI/BOOT
+          #sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
           
           #echo "Create and install GRUB for Legacy BIOS"
           #cd grub-core
@@ -139,8 +139,6 @@ jobs:
           sudo cp -vf ${path}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
           ls -ltr /mnt/tarp3/cde/optional
           sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
-
-          sudo fdisk -l ${LOOPZ}
 
           ##  Finalize ##
           #sudo umount /mnt/p1
