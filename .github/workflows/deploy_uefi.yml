@@ -110,6 +110,7 @@ jobs:
           echo "Copy GRUB modules"
           sudo mkdir -p /mnt/tarp1/boot
           sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
+          cd grub-core
           sudo cp -vf *.mod /mnt/tarp1/boot/grub/x86_64-efi/
           sudo cp -vf *.mod /mnt/tarp1/boot/grub/i386-pc/
           
