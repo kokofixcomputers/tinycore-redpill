@@ -89,15 +89,15 @@ jobs:
           sudo grub-install --target=x86_64-efi --efi-directory="/mnt/tarp1" --boot-directory="/mnt/tarp1/boot" --bootloader-id=GRUB --removable
           sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
 
-          #echo "Generate and install GRUB images"
-          #cd grub-2.12
-          #GRUB_MODULES=(normal linux echo all_video search test multiboot)
-          #echo "Create UEFI GRUB image"
-          #sudo ./grub-mkimage -O x86_64-efi -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o grubx64.efi
+          echo "Generate and install GRUB images"
+          cd grub-2.12
+          GRUB_MODULES=(normal linux echo all_video search test multiboot efi_gop efi_uga font gfxterm part_gpt fat)
+          echo "Create UEFI GRUB image"
+          sudo ./grub-mkimage -O x86_64-efi -p\(hd0,msdos1\)/boot/grub "${GRUB_MODULES[@]}" -o grubx64.efi
           
-          #echo "Install GRUB for UEFI"
-          #sudo mkdir -p /mnt/tarp1/EFI/BOOT
-          #sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
+          echo "Install GRUB for UEFI"
+          sudo mkdir -p /mnt/tarp1/EFI/BOOT
+          sudo cp -vf ./grubx64.efi /mnt/tarp1/EFI/BOOT/BOOTX64.EFI
           
           #echo "Create and install GRUB for Legacy BIOS"
           #cd grub-core
@@ -107,13 +107,13 @@ jobs:
           #echo "Write the rest of core.img after the MBR"
           #sudo dd if=./core.img of="${LOOPZ}" bs=512 seek=1 skip=1
           
-          #echo "Copy GRUB modules"
-          #sudo mkdir -p /mnt/tarp1/boot
-          #sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
-          #sudo cp -vf *.mod /mnt/tarp1/boot/grub/x86_64-efi/
-          #sudo cp -vf *.mod /mnt/tarp1/boot/grub/i386-pc/
+          echo "Copy GRUB modules"
+          sudo mkdir -p /mnt/tarp1/boot
+          sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
+          sudo cp -vf *.mod /mnt/tarp1/boot/grub/x86_64-efi/
+          sudo cp -vf *.mod /mnt/tarp1/boot/grub/i386-pc/
           
-          #ls -ltr /mnt/tarp1/boot/grub/i386-pc/
+          ls -ltr /mnt/tarp1/boot/grub/x86_64-efi/
 
           #echo "Copy grub.cfg"
           #sudo mkdir -p /mnt/p1
