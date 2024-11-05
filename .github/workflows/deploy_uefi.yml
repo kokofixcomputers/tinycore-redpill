@@ -54,7 +54,6 @@ jobs:
       - name: Get mshell version
         id: get-version
         run: |
-          path=`pwd`
           VERSION=v`cat functions.sh | grep rploaderver= | cut -d\" -f2`
           echo "Version: ${VERSION}"
           echo "::set-output name=VERSION::${VERSION}"
@@ -62,6 +61,7 @@ jobs:
 
       - name: Mount source img and make target img
         run: |
+          path=`pwd`        
           LOOPX=$(sudo losetup -f)
           sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.2.4.m-shell.img
 
@@ -97,7 +97,7 @@ jobs:
           sudo mkdir -p /mnt/tarp3
           sudo mount ${LOOPZ}p3 /mnt/tarp3
           cd /mnt/p3 && sudo find . | sudo cpio -pdm "/mnt/tarp3"
-          cd ${path}/
+          cd $GITHUB_WORKSPACE
           sudo cp -vf ${path}/mydata.tgz /mnt/tarp3
           ls -ltr /mnt/tarp3
           
