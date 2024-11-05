@@ -107,21 +107,15 @@ jobs:
           ls -ltr /mnt/tarp3/cde/optional
           sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
 
-      - name: Finalize
-        run: |
+          ##  Finalize ##
           sudo umount /mnt/p3
           sudo umount /mnt/tarp3
-          
           sudo losetup -d ${LOOPZ}
           sudo losetup -d ${LOOPX}
 
-      - name: Zip img and vmdk
-        run: |
           gzip -c tinycore-redpill.${VERSION}.m-shell.img > /opt/output/tinycore-redpill.${VERSION}.m-shell.img.gz
-
           qemu-img convert -f raw -O vmdk tinycore-redpill.${VERSION}.m-shell.img tinycore-redpill.${VERSION}.m-shell.vmdk
           gzip -c tinycore-redpill.${VERSION}.m-shell.vmdk > /opt/output/tinycore-redpill.${VERSION}.m-shell.vmdk.gz
-          
           ls -ltr /opt/output
           
       - name: Upload MshellImage-${{ steps.get-version.outputs.VERSION }}
