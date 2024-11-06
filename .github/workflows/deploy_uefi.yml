@@ -32,24 +32,14 @@ jobs:
         run: |
           #./configure --prefix=/usr --sysconfdir=/etc --disable-werror
           
-          #./configure --prefix=/usr \
-          #  --sysconfdir=/etc    \
-          #  --disable-efiemu     \
-          #  --enable-grub-mkfont \
-          #  --with-platform=efi  \
-          #  --target=x86_64      \
-          #  --disable-werror &&
-          #  unset TARGET_CC
-
           ./configure --prefix=/usr \
-            --sysconfdir=/etc \
-            --enable-efiemu \            
+            --sysconfdir=/etc    \
+            --disable-efiemu     \
             --enable-grub-mkfont \
-            --with-platform=pc \
-            --target=i386-pc \
-            --disable-werror \
-            --build=$(./build-aux/config.guess) &&
-          unset TARGET_CC            
+            --with-platform=efi  \
+            --target=i386      \
+            --disable-werror &&
+            unset TARGET_CC
 
       - name: Create extra_deps.lst
         working-directory: grub-2.12
