@@ -110,9 +110,8 @@ jobs:
           echo "Copy GRUB modules"
           sudo mkdir -p /mnt/tarp1/boot
           sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
-          cd grub-core
-          sudo cp -vf *.mod /mnt/tarp1/boot/grub/x86_64-efi/
-          sudo cp -vf *.mod /mnt/tarp1/boot/grub/i386-pc/
+          sudo cp -vf ./grub-core/*.mod /mnt/tarp1/boot/grub/x86_64-efi/
+          sudo cp -vf ./grub-core/*.mod /mnt/tarp1/boot/grub/i386-pc/
           
           ls -ltr /mnt/tarp1/boot/grub/x86_64-efi/
 
@@ -121,12 +120,13 @@ jobs:
           sudo mount ${LOOPX}p1 /mnt/p1
           sudo cp -vf /mnt/p1/boot/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
 
+          ls -ltr /mnt/p1/EFI/BOOT/
           sudo cp -vf /mnt/p1/EFI/BOOT/grub.cfg /mnt/tarp1/EFI/BOOT/grub.cfg
-          sudo cp -vf /mnt/p1/EFI/BOOT/SynoBootLoader.* /mnt/tarp1/EFI/BOOT/
+          #sudo cp -vf /mnt/p1/EFI/BOOT/SynoBootLoader.* /mnt/tarp1/EFI/BOOT/
 
           ls -ltr /mnt/tarp1/EFI/BOOT/
           sudo cat /mnt/tarp1/EFI/BOOT/grub.cfg
-          sudo cat /mnt/tarp1/EFI/BOOT/SynoBootLoader.conf
+          #sudo cat /mnt/tarp1/EFI/BOOT/SynoBootLoader.conf
           sudo blkid "${LOOPZ}p1"
 
           ##  Copy 2nd partition from source to target ##
