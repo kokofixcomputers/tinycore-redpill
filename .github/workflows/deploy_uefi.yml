@@ -128,7 +128,7 @@ jobs:
           #sudo cp -vf /mnt/p1/EFI/BOOT/SynoBootLoader.* /mnt/tarp1/EFI/BOOT/
           
           sudo cat /mnt/tarp1/EFI/BOOT/grub.cfg
-          sudo cat /mnt/tarp1/EFI/BOOT/SynoBootLoader.conf
+          #sudo cat /mnt/tarp1/EFI/BOOT/SynoBootLoader.conf
           sudo blkid "${LOOPX}p1"
           sudo blkid "${LOOPZ}p1"
 
