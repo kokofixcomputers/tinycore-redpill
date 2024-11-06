@@ -107,11 +107,11 @@ jobs:
           #echo "Write the rest of core.img after the MBR"
           #sudo dd if=./core.img of="${LOOPZ}" bs=512 seek=1 skip=1
           
-          echo "Copy GRUB modules"
-          sudo mkdir -p /mnt/tarp1/boot
-          sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
-          sudo cp -vf ./grub-core/*.mod /mnt/tarp1/boot/grub/x86_64-efi/
-          sudo cp -vf ./grub-core/*.mod /mnt/tarp1/boot/grub/i386-pc/
+          #echo "Copy GRUB modules"
+          #sudo mkdir -p /mnt/tarp1/boot
+          #sudo mkdir -p /mnt/tarp1/boot/grub/{x86_64-efi,i386-pc}
+          #sudo cp -vf ./grub-core/*.mod /mnt/tarp1/boot/grub/x86_64-efi/
+          #sudo cp -vf ./grub-core/*.mod /mnt/tarp1/boot/grub/i386-pc/
           
           ls -ltr /mnt/tarp1/boot/grub/x86_64-efi/
 
