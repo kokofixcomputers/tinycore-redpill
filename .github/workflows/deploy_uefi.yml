@@ -31,14 +31,24 @@ jobs:
         working-directory: grub-2.12
         run: |
           #./configure --prefix=/usr --sysconfdir=/etc --disable-werror
-          ./configure --prefix=/usr        \
-            --sysconfdir=/etc    \
-            --disable-efiemu     \
+          
+          #./configure --prefix=/usr \
+          #  --sysconfdir=/etc    \
+          #  --disable-efiemu     \
+          #  --enable-grub-mkfont \
+          #  --with-platform=efi  \
+          #  --target=x86_64      \
+          #  --disable-werror &&
+          #  unset TARGET_CC
+
+          ./configure --prefix=/usr \
+            --sysconfdir=/etc \
+            --enable-efiemu \            
             --enable-grub-mkfont \
-            --with-platform=efi  \
-            --target=x86_64      \
+            --with-platform=pc \
+            --target=i386-pc \
             --disable-werror &&
-            unset TARGET_CC
+          unset TARGET_CC            
 
       - name: Create extra_deps.lst
         working-directory: grub-2.12
@@ -95,8 +105,7 @@ jobs:
           echo "Create and install GRUB for Legacy BIOS"
           export GRUB_VERSION=2.12
           sudo grub-install --version
-          sudo grub-install --target=x86_64-efi --removable --efi-directory="/mnt/tarp1" --boot-directory="/mnt/tarp1/boot" --bootloader-id=GRUB
-          #sudo grub-install --target=x86_64-efi --removable
+          sudo grub-install --target=i386-efi --removable --efi-directory="/mnt/tarp1" --boot-directory="/mnt/tarp1/boot" --bootloader-id=GRUB
           sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
 
           #echo "Generate and install GRUB images"
