@@ -63,7 +63,6 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           mkdir /opt/output
           
-          path=`pwd`        
           LOOPX=$(sudo losetup -f)
           echo "LOOPX: ${LOOPX}"
           echo "LOOPX=${LOOPX}" >> $GITHUB_ENV
@@ -132,14 +131,14 @@ jobs:
           sudo mount ${LOOPZ}p3 /mnt/tarp3
           cd /mnt/p3 && sudo find . | sudo cpio -pdm "/mnt/tarp3"
           cd $GITHUB_WORKSPACE
-          sudo cp -vf ${path}/mydata.tgz /mnt/tarp3
+          sudo cp -vf ${GITHUB_WORKSPACE}/mydata.tgz /mnt/tarp3
           ls -ltr /mnt/tarp3
       
           # from version 1.0.3.0 add gettext.tcz
-          sudo cp -vf ${path}/tce/optional/gettext.* /mnt/tarp3/cde/optional
-          sudo cp -vf ${path}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
+          sudo cp -vf ${GITHUB_WORKSPACE}/tce/optional/gettext.* /mnt/tarp3/cde/optional
+          sudo cp -vf ${GITHUB_WORKSPACE}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
           ls -ltr /mnt/tarp3/cde/optional
-          sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
+          sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst          
       
           ## Finalize ##
           #sudo umount /mnt/p1
