@@ -73,15 +73,15 @@ jobs:
           echo "LOOPZ = ${LOOPZ}"
           sudo fdisk -l ${LOOPZ}
 
-          ## Copy 1st,2nd,3rd partition from source to target (with grub 2.12 install) ##
-          sudo dd if="${LOOPX}p1" of="${LOOPZ}p1"
-          sudo mkdir -p /mnt/tarp1
-          sudo mount ${LOOPZ}p1 /mnt/tarp1
-
           ## Format 3rd partition with vfat ##
           sudo mkfs.vfat -F16 ${LOOPZ}p1
           #sudo mkfs.vfat -F16 ${LOOPZ}p2
           sudo mkfs.vfat -i 6234C863 -F16 ${LOOPZ}p3
+
+          ## Copy 1st,2nd,3rd partition from source to target (with grub 2.12 install) ##
+          #sudo dd if="${LOOPX}p1" of="${LOOPZ}p1"
+          sudo mkdir -p /mnt/tarp1
+          sudo mount ${LOOPZ}p1 /mnt/tarp1
 
           echo "Create and install GRUB for Legacy BIOS"
           export GRUB_VERSION=2.12
