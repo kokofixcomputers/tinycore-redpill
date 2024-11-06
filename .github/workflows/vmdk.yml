@@ -17,6 +17,7 @@ jobs:
           ls -ltr
 
           qemu-img convert -f raw -O vmdk tinycore-redpill-uefi.v0.9.4.9.img tinycore-redpill-uefi.v0.9.4.9.vmdk
+          mkdir -p /opt/output
           sudo cp -vf tinycore-redpill-uefi.v0.9.4.9.vmdk /opt/output/
           ls -ltr /opt/output
           
