@@ -30,7 +30,15 @@ jobs:
       - name: Configure GRUB
         working-directory: grub-2.12
         run: |
-          ./configure --prefix=/usr --sysconfdir=/etc --disable-werror
+          #./configure --prefix=/usr --sysconfdir=/etc --disable-werror
+          ./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --disable-efiemu     \
+            --enable-grub-mkfont \
+            --with-platform=efi  \
+            --target=x86_64      \
+            --disable-werror &&
+            unset TARGET_CC
 
       - name: Create extra_deps.lst
         working-directory: grub-2.12
@@ -47,7 +55,7 @@ jobs:
   
       - name: Install GRUB
         working-directory: grub-2.12
-        run: sudo make install          
+        run: sudo make install && sudo mv -v /etc/bash_completion.d/grub /usr/share/bash-completion/completions         
 
       - name: Return to workflow home directory
         run: cd $GITHUB_WORKSPACE
