@@ -1,0 +1,37 @@
+name: convert vmdk
+
+on:
+  workflow_dispatch:
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: convert vmdk
+        run: |
+          sudo apt-get update
+          sudo apt-get install qemu-utils
+          curl -kLO# https://github.com/pocopico/tinycore-redpill/releases/download/v0.9.4.9c/tinycore-redpill-uefi.v0.9.4.9.img.gz
+          gunzip tinycore-redpill-uefi.v0.9.4.9.img.gz
+          ls -ltr
+
+          qemu-img convert -f raw -O vmdk tinycore-redpill-uefi.v0.9.4.9.img tinycore-redpill-uefi.v0.9.4.9.vmdk
+          gzip -c tinycore-redpill-uefi.v0.9.4.9.vmdk > /opt/output/tinycore-redpill-uefi.v0.9.4.9.vmdk.gz
+          ls -ltr /opt/output
+          
+      - name: Upload vmdk
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: vmdkImage
+          path: /opt/output
+      # Publish a release if is a tag
+      #- name: Release
+      #  uses: softprops/action-gh-release@v1
+      #  with:
+      #    tag_name: ${{ inputs.version }}
+      #    files: |
+      #      /opt/output/*.gz
+      #    body: |
+      #      ${{ inputs.version }}
