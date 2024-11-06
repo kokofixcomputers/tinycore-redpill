@@ -1,14 +1,11 @@
 name: build grub 2.12
 
 on:
-  #release:
-  #  types: [published]
   workflow_dispatch:
       
 jobs:
   build:
     runs-on: ubuntu-latest
-    #container: ubuntu:23.10
     steps:
       - uses: actions/checkout@v3
       - name: Bring last uploaded mydata.tgz files from tinycore-redpill & lastest img
