@@ -115,6 +115,7 @@ jobs:
           #sudo cp -vf *.mod /mnt/tarp1/boot/grub/i386-pc/
           
           ls -ltr /mnt/tarp1/boot/grub/x86_64-efi/
+          ls -ltr /mnt/tarp1/EFI/BOOT/
 
           echo "Copy grub.cfg"
           sudo mkdir -p /mnt/p1
