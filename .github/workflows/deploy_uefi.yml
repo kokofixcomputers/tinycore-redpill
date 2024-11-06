@@ -47,7 +47,8 @@ jobs:
             --enable-grub-mkfont \
             --with-platform=pc \
             --target=i386-pc \
-            --disable-werror &&
+            --disable-werror \
+            --build=$(./build-aux/config.guess) &&
           unset TARGET_CC            
 
       - name: Create extra_deps.lst
