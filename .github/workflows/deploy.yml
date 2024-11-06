@@ -30,7 +30,14 @@ jobs:
       - name: Configure GRUB
         working-directory: grub-2.12
         run: |
-          ./configure --prefix=/usr --sysconfdir=/etc --disable-werror
+          ./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --disable-efiemu     \
+            --enable-grub-mkfont \
+            --with-platform=efi  \
+            --target=x86_64      \
+            --disable-werror &&
+            unset TARGET_CC
           
       - name: Create extra_deps.lst
         working-directory: grub-2.12
@@ -47,7 +54,7 @@ jobs:
   
       - name: Install GRUB
         working-directory: grub-2.12
-        run: sudo make install          
+        run: sudo make install && sudo mv -v /etc/bash_completion.d/grub /usr/share/bash-completion/completions 
 
       - name: Return to workflow home directory
         run: cd $GITHUB_WORKSPACE
@@ -60,13 +67,14 @@ jobs:
           echo "::set-output name=VERSION::${VERSION}"
           mkdir /opt/output
           
-          path=`pwd`        
           LOOPX=$(sudo losetup -f)
+          echo "LOOPX = ${LOOPX}"          
           sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.2.4.m-shell.img
           
           dd if=/dev/zero of=tinycore-redpill.${VERSION}.m-shell.img bs=1M seek=2048 count=0
           echo -e "n\np\n1\n\n+72M\nn\np\n2\n\n+75M\nn\np\n3\n\n+1899M\nw\nq\n" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
           echo -e "a\n1\nw" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
+          #echo -e "t\n1\nuefi\nw" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
           
           LOOPZ=$(sudo losetup -f)
           sudo losetup -P ${LOOPZ} tinycore-redpill.${VERSION}.m-shell.img
@@ -82,10 +90,19 @@ jobs:
           sudo dd if="${LOOPX}p1" of="${LOOPZ}p1"
           sudo mkdir -p /mnt/tarp1
           sudo mount ${LOOPZ}p1 /mnt/tarp1
+
           export GRUB_VERSION=2.12
           sudo grub-install --version
-          sudo grub-install --target=x86_64-efi --boot-directory="/mnt/tarp1/boot" --efi-directory="/mnt/tarp1" --removable
+          sudo grub-install --target=x86_64-efi --removable --efi-directory="/mnt/tarp1" --boot-directory="/mnt/tarp1/boot" --bootloader-id=GRUB
           sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
+
+          ls -ltr /mnt/tarp1/boot/grub/x86_64-efi/
+          echo "Copy and check EFI files"
+          ls -ltr /mnt/tarp1/EFI/BOOT/
+          
+          sudo cat /mnt/tarp1/EFI/BOOT/grub.cfg
+          sudo blkid "${LOOPX}p1"
+          sudo blkid "${LOOPZ}p1"
 
           ##  Copy 2nd partition from source to target ##
           sudo dd if="${LOOPX}p2" of="${LOOPZ}p2"
@@ -97,14 +114,14 @@ jobs:
           sudo mount ${LOOPZ}p3 /mnt/tarp3
           cd /mnt/p3 && sudo find . | sudo cpio -pdm "/mnt/tarp3"
           cd $GITHUB_WORKSPACE
-          sudo cp -vf ${path}/mydata.tgz /mnt/tarp3
+          sudo cp -vf ${GITHUB_WORKSPACE}/mydata.tgz /mnt/tarp3
           ls -ltr /mnt/tarp3
           
           # from version 1.0.3.0 add gettext.tcz
-          sudo cp -vf ${path}/tce/optional/gettext.* /mnt/tarp3/cde/optional
-          sudo cp -vf ${path}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
+          sudo cp -vf ${GITHUB_WORKSPACE}/tce/optional/gettext.* /mnt/tarp3/cde/optional
+          sudo cp -vf ${GITHUB_WORKSPACE}/tce/optional/ncursesw.* /mnt/tarp3/cde/optional
           ls -ltr /mnt/tarp3/cde/optional
-          sudo cp -vf ${path}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst    
+          sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst    
           
           ##  Finalize ##
           sudo umount /mnt/p3
