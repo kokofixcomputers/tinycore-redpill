@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.4.0"
+rploaderver="1.0.5.2"
 build="master"
 redpillmake="prod"
 
@@ -16,6 +16,9 @@ userconfigfile="/home/tc/user_config.json"
 gitdomain="raw.githubusercontent.com"
 mshellgz="my.sh.gz"
 mshtarfile="https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/my.sh.gz"
+
+#Defaults
+smallfixnumber="0"
 
 function history() {
 
@@ -114,6 +117,19 @@ function history() {
     1.0.3.9 NVMe-related function supplementation and error correction
             Discontinue use of sortnetif addon, discontinue use of sortnetif if there is only 1 NIC
     1.0.4.0 Added sata_remap processing menu for SataPort reordering.
+    1.0.4.1 Added a feature to check whether the pre-counted number of disks matches when booting Friend
+    1.0.4.2 Add Support DSM 7.2.2-72803 Official Version
+    1.0.4.3 No separation between USB/SATA menus in Jot Mod (boot menu merge)
+    1.0.4.4 Loader building is blocked when using Apollolake + proxmox(kvm)/qemu(kvm) (KP occurs in versions after lkm 24.8.29)
+    1.0.4.5 Solved the KP occurrence issue when using SATA-type bootloader in proxmox(kvm), 
+            SA6400(epyc7002) integration from lkm5 (lkm 24.9.8)
+    1.0.4.6 Rearrange menu order, automatically enter Gen value when S/N or mac is not selected
+    1.0.4.7 Fix from DSM 7.2.2-72803 to DSM 7.2.2-72806
+    1.0.4.8 Enable mmc (SD Card) bus type recognition for the bootloader
+    1.0.4.9 When mmc bus type is used, module processing method is applied with priority given to eudev instead of ddsml.
+    1.0.5.0 Improved internet check function in menu.sh
+    1.0.5.1 Added manual update feature to friend specified version, added disable/enable friend automatic update feature
+    1.0.5.2 Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
     --------------------------------------------------------------------------------------
 EOF
 
@@ -374,6 +390,31 @@ EOF
 # Discontinue use of sortnetif addon, discontinue use of sortnetif if there is only 1 NIC
 # 2024.07.07 v1.0.4.0 
 # Added sata_remap processing menu for SataPort reordering.
+# 2024.08.23 v1.0.4.1 
+# Added a feature to check whether the pre-counted number of disks matches when booting Friend
+# 2024.08.26 v1.0.4.2
+# Update : Add Support DSM 7.2.2-72803 Official Version
+# 2024.08.31 v1.0.4.3 
+# No separation between USB/SATA menus in Jot Mod (boot menu merge)
+# 2024.09.05 v1.0.4.4 
+# Loader building is blocked when using Apollolake + proxmox(kvm)/qemu(kvm) (KP occurs in versions after lkm 24.8.29)
+# 2024.09.08 v1.0.4.5 
+# Solved the KP occurrence issue when using SATA-type bootloader in proxmox(kvm), 
+# SA6400(epyc7002) integration from lkm5 (lkm 24.9.8)
+# 2024.09.09 v1.0.4.6 
+# Rearrange menu order, automatically enter Gen value when S/N or mac is not selected
+# 2024.09.12 v1.0.4.7 
+# Fix from DSM 7.2.2-72803 to DSM 7.2.2-72806
+# 2024.10.14 v1.0.4.8 
+# Enable mmc (SD Card) bus type recognition for the bootloader
+# 2024.10.15 v1.0.4.9 
+# When mmc bus type is used, module processing method is applied with priority given to eudev instead of ddsml.
+# 2024.10.26 v1.0.5.0 
+# Improved internet check function in menu.sh
+# 2024.11.04 v1.0.5.1 
+# Added manual update feature to friend specified version, added disable/enable friend automatic update feature
+# 2024.11.05 v1.0.5.2 
+# Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
     
 function showlastupdate() {
     cat <<EOF
@@ -420,7 +461,45 @@ function showlastupdate() {
 
 # 2024.07.07 v1.0.4.0 
 # Added sata_remap processing menu for SataPort reordering.
+
+# 2024.08.23 v1.0.4.1 
+# Added a feature to check whether the pre-counted number of disks matches when booting Friend
     
+# 2024.08.26 v1.0.4.2
+# Update : Add Support DSM 7.2.2-72803 Official Version
+
+# 2024.08.31 v1.0.4.3 
+# No separation between USB/SATA menus in Jot Mod (boot menu merge)
+
+# 2024.09.05 v1.0.4.4 
+# Loader building is blocked when using Apollolake + proxmox(kvm)/qemu(kvm) (KP occurs in versions after lkm 24.8.29)
+
+# 2024.09.08 v1.0.4.5 
+# Solved the KP occurrence issue when using SATA-type bootloader in proxmox(kvm), 
+# SA6400(epyc7002) integration from lkm5 (lkm 24.9.8)
+
+# 2024.09.09 v1.0.4.6 
+# Rearrange menu order, automatically enter Gen value when S/N or mac is not selected
+
+# 2024.09.12 v1.0.4.7 
+# Fix from DSM 7.2.2-72803 to DSM 7.2.2-72806
+
+# 2024.10.14 v1.0.4.8 
+# Enable mmc (SD Card) bus type recognition for the bootloader
+
+# 2024.10.15 v1.0.4.9 
+# When mmc bus type is used, module processing method is applied with priority given to eudev instead of ddsml.
+
+# 2024.10.26 v1.0.5.0 
+# Improved internet check function in menu.sh
+
+# 2024.11.04 v1.0.5.1 
+# Added manual update feature to friend specified version, added disable/enable friend automatic update feature
+# ( usage : ./functions.sh update v0.1.1j | ./functions.sh autoupdate off | ./functions.sh autoupdate on )
+
+# 2024.11.05 v1.0.5.2 
+# Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
+
 EOF
 }
 
@@ -513,6 +592,13 @@ function getloaderdisk() {
         fi    
         done
     fi
+    if [ -z "${loaderdisk}" ]; then
+        for edisk in $(sudo fdisk -l | grep "Disk /dev/loop" | awk '{print $2}' | sed 's/://' ); do
+        if [ $(sudo fdisk -l | grep "83 Linux" | grep ${edisk} | wc -l ) -eq 3 ]; then
+            loaderdisk="$(echo ${edisk} | cut -c 1-12 | awk -F\/ '{print $3}')"
+        fi    
+        done
+    fi
 }
 
 # ==============================================================================          
@@ -573,7 +659,7 @@ function getvarsmshell()
     MODELS="DS3615xs DS218+ DS1019+ DS620slim DS1520+ DS1522+ DS220+ DS2419+ DS423+ DS718+ DS1621+ DS1821+ DS1823xs+ DS1621xs+ DS2422+ DS3617xs DS3622xs+ DS720+ DS723+ DS918+ DS920+ DS923+ DS1819+ DVA3219 DVA3221 DVA1622 FS2500 RS1221+ RS1619xs+ RS2423+ RS3413xs+ RS3618xs RS3621xs+ RS4021xs+ SA3410 SA3610 SA6400"
     if [ $(echo ${MODELS} | grep ${MODEL} | wc -l ) -eq 0 ]; then
         echo "This synology model not supported by TCRP."
-        exit 0
+        exit 99
     fi
     
     if [ "$TARGET_REVISION" == "42218" ]; then
@@ -596,6 +682,9 @@ function getvarsmshell()
         if [ "${MODEL}" = "DS218+" ]; then
           SUVP="-1"
         fi
+    elif [ "$TARGET_REVISION" == "72806" ]; then
+        KVER="4.4.302"
+        SUVP="" 
     else
         echo "Synology model revision not supported by TCRP."
         exit 0
@@ -838,6 +927,7 @@ function getvarsmshell()
         suffix="alpha"
         ;;        
     esac        
+
 }
 
 # Function READ_YN, cecho                                                                                        
@@ -940,6 +1030,40 @@ echo
 function generateMacAddress() {
     printf '00:11:32:%02X:%02X:%02X' $((RANDOM % 256)) $((RANDOM % 256)) $((RANDOM % 256))
 
+}
+function random() {
+        printf "%06d" $(($RANDOM % 30000 + 1))
+}
+function randomhex() {
+        val=$(($RANDOM % 255 + 1))
+        echo "obase=16; $val" | bc
+}
+function generateRandomLetter() {
+        for i in a b c d e f g h j k l m n p q r s t v w x y z; do
+            echo $i
+        done | sort -R | tail -1
+}
+function generateRandomValue() {
+        for i in 0 1 2 3 4 5 6 7 8 9 a b c d e f g h j k l m n p q r s t v w x y z; do
+            echo $i
+        done | sort -R | tail -1
+}
+function toupper() {
+       echo $1 | tr '[:lower:]' '[:upper:]'
+}
+function generateSerial() {
+    case ${suffix} in
+    numeric)
+        serialnum="$(echo "$serialstart" | tr ' ' '\n' | sort -R | tail -1)$permanent"$(random)
+        ;;
+    alpha)
+        serialnum=$(toupper "$(echo "$serialstart" | tr ' ' '\n' | sort -R | tail -1)$permanent"$(generateRandomLetter)$(generateRandomValue)$(generateRandomValue)$(generateRandomValue)$(generateRandomValue)$(generateRandomLetter))
+        ;;
+    *)    
+        serialnum="$(echo "$serialstart" | tr ' ' '\n' | sort -R | tail -1)$permanent"$(random)
+        ;;  
+    esac
+    echo $serialnum
 }
 
 function msgalert() {
@@ -1065,10 +1189,10 @@ function checkcpu() {
         CPU="INTEL"
     else
         if [ $(awk -F':' '/^model name/ {print $2}' /proc/cpuinfo | uniq | sed -e 's/^[ \t]*//' | grep -e N36L -e N40L -e N54L | wc -l) -gt 0 ]; then
-        CPU="HP"
+            CPU="HP"
             LDRMODE="JOT"
             writeConfigKey "general" "loadermode" "${LDRMODE}"
-    else
+        else
             CPU="AMD"
         fi        
     fi
@@ -1123,6 +1247,8 @@ function getBus() {
   [ -z "${BUS}" ] && BUS=$(udevadm info --query property --name "${1}" 2>/dev/null | grep ID_BUS | cut -d= -f2 | sed 's/ata/sata/')
   # usb/sata(sata/ide)/nvme
   [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,TRAN 2>/dev/null | grep "${1} " | awk '{print $2}') #Spaces are intentional
+  # loop block
+  [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,SUBSYSTEMS 2>/dev/null | grep "${1} " | awk '{print $2}') #Spaces are intentional
   # usb/scsi(sata/ide)/virtio(scsi/virtio)/mmc/nvme
   [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,SUBSYSTEMS 2>/dev/null | grep "${1} " | cut -d: -f2) #Spaces are intentional
   echo "${BUS}"
@@ -1160,8 +1286,6 @@ function _pat_process() {
   #mirrors=("global.synologydownload.com" "global.download.synology.com" "cndl.synology.cn")
   mirrors=("global.synologydownload.com" "global.download.synology.com")
 
-  SPACELEFT=$(df --block-size=1 | awk '/'${loaderdisk}'3/{print $4}') # Check disk space left
-
   fastest=$(_get_fastest "${mirrors[@]}")
   echo "fastest = " "${fastest}"
   mirror="$(echo ${PATURL} | sed 's|^http[s]*://\([^/]*\).*|\1|')"
@@ -1172,22 +1296,25 @@ function _pat_process() {
   fi
 
   # Discover remote file size
-  FILESIZE=$(curl -k -sLI "${PATURL}" | grep -i Content-Length | awk '{print$2}')
-
-  FILESIZE_FORMATTED=$(printf "%'d" "${FILESIZE}")
-  SPACELEFT_FORMATTED=$(printf "%'d" "${SPACELEFT}")
-  FILESIZE_MB=$((FILESIZE / 1024 / 1024))
-  SPACELEFT_MB=$((SPACELEFT / 1024 / 1024))    
-
-  echo "FILESIZE  = ${FILESIZE_FORMATTED} bytes (${FILESIZE_MB} MB)"
-  echo "SPACELEFT = ${SPACELEFT_FORMATTED} bytes (${SPACELEFT_MB} MB)"
-
-  if [ 0${FILESIZE} -ge 0${SPACELEFT} ]; then
-      # No disk space to download, change it to RAMDISK
-      echo "No adequate space on ${local_cache} to download file into cache folder, clean up PAT file now ....."
-      sudo sh -c "rm -vf $(ls -t ${local_cache}/*.pat | head -n 1)"
+  if [ "${BUS}" != "block"  ]; then
+      SPACELEFT=$(df --block-size=1 | awk '/'${loaderdisk}'3/{print $4}') # Check disk space left
+      FILESIZE=$(curl -k -sLI "${PATURL}" | grep -i Content-Length | awk '{print$2}')
+    
+      FILESIZE_FORMATTED=$(printf "%'d" "${FILESIZE}")
+      SPACELEFT_FORMATTED=$(printf "%'d" "${SPACELEFT}")
+      FILESIZE_MB=$((FILESIZE / 1024 / 1024))
+      SPACELEFT_MB=$((SPACELEFT / 1024 / 1024))    
+    
+      echo "FILESIZE  = ${FILESIZE_FORMATTED} bytes (${FILESIZE_MB} MB)"
+      echo "SPACELEFT = ${SPACELEFT_FORMATTED} bytes (${SPACELEFT_MB} MB)"
+    
+      if [ 0${FILESIZE} -ge 0${SPACELEFT} ]; then
+          # No disk space to download, change it to RAMDISK
+          echo "No adequate space on ${local_cache} to download file into cache folder, clean up PAT file now ....."
+          sudo sh -c "rm -vf $(ls -t ${local_cache}/*.pat | head -n 1)"
+      fi
   fi
-
+  
   echo "PATURL = " "${PATURL}"
   STATUS=$(curl -k -w "%{http_code}" -L "${PATURL}" -o "${PAT_PATH}" --progress-bar)
   if [ $? -ne 0 -o ${STATUS} -ne 200 ]; then
@@ -1224,18 +1351,24 @@ function getip() {
     ethdevs=$(ls /sys/class/net/ | grep eth || true)
     for eth in $ethdevs; do 
         DRIVER=$(ls -ld /sys/class/net/${eth}/device/driver 2>/dev/null | awk -F '/' '{print $NF}')
-        BUSID=$(ls -ld /sys/class/net/${eth}/device 2>/dev/null | awk -F '0000:' '{print $NF}')
+        if [ $(ls -l /sys/class/net/${eth}/device | grep "0000:" | wc -l) -gt 0 ]; then
+            BUSID=$(ls -ld /sys/class/net/${eth}/device 2>/dev/null | awk -F '0000:' '{print $NF}')
+        else
+            BUSID=""
+        fi
         IP="$(ifconfig ${eth} | grep inet | awk '{print $2}' | awk -F \: '{print $2}')"
         HWADDR="$(ifconfig ${eth} | grep HWaddr | awk '{print $5}')"
-        VENDOR=$(cat /sys/class/net/${eth}/device/vendor | sed 's/0x//')
-        DEVICE=$(cat /sys/class/net/${eth}/device/device | sed 's/0x//')
-        if [ ! -z "${VENDOR}" ] && [ ! -z "${DEVICE}" ]; then
-            MATCHDRIVER=$(echo "$(matchpciidmodule ${VENDOR} ${DEVICE})")
-            if [ ! -z "${MATCHDRIVER}" ]; then
-                if [ "${MATCHDRIVER}" != "${DRIVER}" ]; then
-                    DRIVER=${MATCHDRIVER}
+        if [ -f /sys/class/net/${eth}/device/vendor ] && [ -f /sys/class/net/${eth}/device/device ]; then
+            VENDOR=$(cat /sys/class/net/${eth}/device/vendor | sed 's/0x//')
+            DEVICE=$(cat /sys/class/net/${eth}/device/device | sed 's/0x//')
+            if [ ! -z "${VENDOR}" ] && [ ! -z "${DEVICE}" ]; then
+                MATCHDRIVER=$(echo "$(matchpciidmodule ${VENDOR} ${DEVICE})")
+                if [ ! -z "${MATCHDRIVER}" ]; then
+                    if [ "${MATCHDRIVER}" != "${DRIVER}" ]; then
+                        DRIVER=${MATCHDRIVER}
+                    fi
                 fi
-            fi
+            fi    
         fi    
         echo "IP Addr : $(msgnormal "${IP}"), ${HWADDR}, ${BUSID}, ${eth} (${DRIVER})"
     done
@@ -1296,10 +1429,13 @@ function monitor() {
 
     getBus "${loaderdisk}" 
     [ "${BUS}" = "nvme" ] && loaderdisk="${loaderdisk}p"
-    [ "${BUS}" = "mmc"  ] && loaderdisk="${loaderdisk}p"    
+    [ "${BUS}" = "mmc"  ] && loaderdisk="${loaderdisk}p"
+    [ "${BUS}" = "block"  ] && loaderdisk="${loaderdisk}p"    
 
     [ "$(mount | grep /dev/${loaderdisk}1 | wc -l)" -eq 0 ] && mount /dev/${loaderdisk}1
     [ "$(mount | grep /dev/${loaderdisk}2 | wc -l)" -eq 0 ] && mount /dev/${loaderdisk}2
+
+    HYPERVISOR=$(dmesg | grep -i "Hypervisor detected" | awk '{print $5}')
 
     while true; do
         clear
@@ -1315,7 +1451,7 @@ function monitor() {
         echo -e "Processor Name:\t\t"$(awk -F':' '/^model name/ {print $2}' /proc/cpuinfo | uniq | sed -e 's/^[ \t]*//')
         echo -e "Machine Type:\t\t"$(
             vserver=$(lscpu | grep Hypervisor | wc -l)
-            if [ $vserver -gt 0 ]; then echo "VM"; else echo "Physical"; fi
+            if [ $vserver -gt 0 ]; then echo "VM (${HYPERVISOR})"; else echo "Physical"; fi
         ) 
         msgnormal "CPU Threads:\t\t"$(lscpu |grep CPU\(s\): | awk '{print $2}')
         echo -e "Current Date Time:\t"$(date)
@@ -1371,6 +1507,14 @@ function copyextractor() {
     [ ! -f /home/tc/extractor.gz ] && sudo curl -kL -# "https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/extractor.gz" -o /home/tc/extractor.gz
     sudo tar -zxvf /home/tc/extractor.gz -C ${local_cache}/extractor
 
+    if [ "${BUS}" = "block"  ]; then
+      git clone https://github.com/technorabilia/syno-extract-system-patch.git
+      cd syno-extract-system-patch
+      sudo docker build --tag syno-extract-system-patch .
+      sudo mkdir -p ~/data/in
+      sudo mkdir -p ~/data/out
+    fi
+
     echo "Copying required libraries to local lib directory"
     sudo cp /mnt/${tcrppart}/auxfiles/extractor/lib* /lib/
     echo "Linking lib to lib64"
@@ -1378,7 +1522,7 @@ function copyextractor() {
     echo "Copying executable"
     sudo cp /mnt/${tcrppart}/auxfiles/extractor/scemd /bin/syno_extract_system_patch
     echo "pigz copy for multithreaded compression"
-    sudo cp /mnt/${tcrppart}/auxfiles/extractor/pigz /usr/local/bin/pigz
+    sudo cp /mnt/${tcrppart}/auxfiles/extractor/pigz /usr/bin/pigz
 
 }
 
@@ -1444,43 +1588,58 @@ st "extractor" "Extraction tools" "Extraction Tools downloaded"
     echo "Removing temp folder /tmp/synoesp"
     rm -rf $temp_folder
 
-    msgnormal "Checking if tool is accessible"
-    if [ -d ${local_cache/extractor /} ] && [ -f ${local_cache}/extractor/scemd ]; then    
-        /bin/syno_extract_system_patch 2>&1 >/dev/null
-    else
-        /bin/syno_extract_system_patch
+    if [ "${BUS}" != "block" ]; then
+        msgnormal "Checking if tool is accessible"
+        if [ -d ${local_cache/extractor /} ] && [ -f ${local_cache}/extractor/scemd ]; then    
+            /bin/syno_extract_system_patch 2>&1 >/dev/null
+        else
+            /bin/syno_extract_system_patch
+        fi
+        if [ $? -eq 255 ]; then echo "Executed succesfully"; else echo "Cound not execute"; fi    
     fi
-    if [ $? -eq 255 ]; then echo "Executed succesfully"; else echo "Cound not execute"; fi    
-
 }
 
 function testarchive() {
 
     archive="$1"
-    archiveheader="$(od -bc ${archive} | head -1 | awk '{print $3}')"
-
-    case ${archiveheader} in
-    105)
-        echo "${archive}, is a Tar file"
-        isencrypted="no"
-        return 0
-        ;;
-    255)
-        echo "File ${archive}, is  encrypted"
-        isencrypted="yes"
-        return 1
-        ;;
-    213)
-        echo "File ${archive}, is a compressed tar"
-        isencrypted="no"
-        ;;
-    *)
-        echo "Could not determine if file ${archive} is encrypted or not, maybe corrupted"
-        ls -ltr ${archive}
-        echo ${archiveheader}
-        exit 99
-        ;;
-    esac
+    if [ "${BUS}" != "block" ]; then
+        archiveheader="$(od -bc ${archive} | awk 'NR==1 {print $3; exit}')"
+    
+        case ${archiveheader} in
+        105)
+            echo "${archive}, is a Tar file"
+            isencrypted="no"
+            return 0
+            ;;
+        255)
+            echo "File ${archive}, is  encrypted"
+            isencrypted="yes"
+            return 1
+            ;;
+        213)
+            echo "File ${archive}, is a compressed tar"
+            isencrypted="no"
+            ;;
+        *)
+            echo "Could not determine if file ${archive} is encrypted or not, maybe corrupted"
+            ls -ltr ${archive}
+            echo ${archiveheader}
+            exit 99
+            ;;
+        esac
+    else
+        if [ ${TARGET_REVISION} -gt 42218 ]; then
+            echo "Found build request for revision greater than 42218"
+            echo "File ${archive}, is  encrypted"
+            isencrypted="yes"
+            return 1
+        else
+            echo "Found build request for revision less equal than 42218"
+            echo "${archive}, is a Tar file"
+            isencrypted="no"
+            return 0
+        fi
+    fi
 
 }
 
@@ -1520,14 +1679,26 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
             if [ -f /home/tc/redpill-load/cache/${SYNOMODEL}.pat ] && [ ${isencrypted} = "no" ]; then
                 echo "Unecrypted file is already cached in :  /home/tc/redpill-load/cache/${SYNOMODEL}.pat"
             else
-                echo "Copy encrypted pat file : ${patfile} to ${temp_dsmpat_folder}"
-                mv -f ${patfile} ${temp_dsmpat_folder}/${SYNOMODEL}.pat
-                echo "Extracting encrypted pat file : ${temp_dsmpat_folder}/${SYNOMODEL}.pat to ${temp_pat_folder}"
-                sudo /bin/syno_extract_system_patch ${temp_dsmpat_folder}/${SYNOMODEL}.pat ${temp_pat_folder} || echo "extract latest pat"
+                if [ "${BUS}" = "block"  ]; then            
+                  echo "Copy encrypted pat file : ${patfile} to ~/data/in"
+                  mv -f ${patfile} ~/data/in/${SYNOMODEL}.pat
+                  echo "Extracting encrypted pat file : ~/data/in/${SYNOMODEL}.pat to ~/data/out"
+                  sudo docker run --rm -v ~/data:/data syno-extract-system-patch /data/in/${SYNOMODEL}.pat /data/out/. || echo "extract latest pat"
+                  rsync -a --remove-source-files ~/data/out/ ${temp_pat_folder}/
+                else
+                  echo "Copy encrypted pat file : ${patfile} to ${temp_dsmpat_folder}"
+                  mv -f ${patfile} ${temp_dsmpat_folder}/${SYNOMODEL}.pat
+                  echo "Extracting encrypted pat file : ${temp_dsmpat_folder}/${SYNOMODEL}.pat to ${temp_pat_folder}"
+                  sudo /bin/syno_extract_system_patch ${temp_dsmpat_folder}/${SYNOMODEL}.pat ${temp_pat_folder} || echo "extract latest pat"
+                fi
                 echo "Creating unecrypted pat file ${SYNOMODEL}.pat to /home/tc/redpill-load/cache folder (multithreaded comporession)"
                 mkdir -p /home/tc/redpill-load/cache/
                 thread=$(lscpu |grep CPU\(s\): | awk '{print $2}')
-                cd ${temp_pat_folder} && tar -cf - ./ | pigz -p $thread > ${temp_dsmpat_folder}/${SYNOMODEL}.pat && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat                
+                if [ "${BUS}" = "block"  ]; then
+                  cd ${temp_pat_folder} && tar -cf ${temp_dsmpat_folder}/${SYNOMODEL}.pat ./ && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
+                else
+                  cd ${temp_pat_folder} && tar -cf - ./ | pigz -p $thread > ${temp_dsmpat_folder}/${SYNOMODEL}.pat && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
+                fi
             fi
             patfile="/home/tc/redpill-load/cache/${SYNOMODEL}.pat"            
 
@@ -1780,8 +1951,8 @@ function getbspatch() {
         #curl -kL "https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/$build/tools/bspatch" -O
          
         echo "bspatch does not exist, copy from tools"
-        chmod 777 ~/tools/bspatch
-        sudo cp -vf ~/tools/bspatch /usr/local/bin/
+        chmod 777 /home/tc/tools/bspatch
+        sudo cp -vf /home/tc/tools/bspatch /usr/local/bin/
     fi
 }
 
@@ -1944,12 +2115,13 @@ function cleanloader() {
 
 function backuploader() {
 
+  if [ "${BUS}" != "block"  ]; then
 #Apply pigz for fast backup  
     if [ ! -n "$(which pigz)" ]; then
         echo "pigz does not exist, bringing over from repo"
         curl -s -k -L "https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/$build/tools/pigz" -O
         chmod 777 pigz
-        sudo mv pigz /usr/local/bin/
+        sudo mv pigz /usr/bin/
     fi
 
     thread=$(lscpu |grep CPU\(s\): | awk '{print $2}')
@@ -1957,7 +2129,7 @@ function backuploader() {
         sudo sed -i "s/\-czvf/\-cvf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
         sudo sed -i "s/\-czf/\-cf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
     fi
-    
+  fi  
 #    loaderdisk=$(mount | grep -i optional | grep cde | awk -F / '{print $3}' | uniq | cut -c 1-3)
     homesize=$(du -sh /home/tc | awk '{print $1}')
 
@@ -2226,6 +2398,11 @@ function checkUserConfig() {
   
   tz="US"
 
+  if [ "${BUS}" = "block"  ]; then
+    [ ! -n "${SN}" ] && SN=$(echo $(generateSerial ${MODEL})) && writeConfigKey "extra_cmdline" "sn" "${SN}"
+    [ ! -n "${MACADDR1}" ] && MACADDR1=`./macgen.sh "randommac" "eth0" ${MODEL}` && writeConfigKey "extra_cmdline" "mac1" "${MACADDR1}"
+  fi
+
   if [ ! -n "${SN}" ]; then
     eval "echo \${MSG${tz}36}"
     msgalert "Synology serial number not set. Check user_config.json again. Abort the loader build !!!!!!"
@@ -2237,15 +2414,16 @@ function checkUserConfig() {
     msgalert "The first MAC address is not set. Check user_config.json again. Abort the loader build !!!!!!"
     exit 99
   fi
-                    
-  if [ $netif_num != $netif_num_cnt ]; then
-    echo "netif_num = ${netif_num}"
-    echo "number of mac addresses = ${netif_num_cnt}"       
-    eval "echo \${MSG${tz}38}"
-    msgalert "The netif_num and the number of mac addresses do not match. Check user_config.json again. Abort the loader build !!!!!!"
-    exit 99
-  fi  
 
+  if [ "${BUS}" != "block"  ]; then
+      if [ $netif_num != $netif_num_cnt ]; then
+        echo "netif_num = ${netif_num}"
+        echo "number of mac addresses = ${netif_num_cnt}"       
+        eval "echo \${MSG${tz}38}"
+        msgalert "The netif_num and the number of mac addresses do not match. Check user_config.json again. Abort the loader build !!!!!!"
+        exit 99
+      fi  
+  fi
 }
 
 function buildloader() {
@@ -2305,7 +2483,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     fi
 
     #if [ "$WITHFRIEND" != "YES" ]; then
-    #    jsonfile=$(jq "del(.[\"localrss\"])" ~/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > ~/redpill-load/bundled-exts.json
+    #    jsonfile=$(jq "del(.[\"localrss\"])" /home/tc/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > /home/tc/redpill-load/bundled-exts.json
     #fi 
     
     if [ "$JUNLOADER" == "YES" ]; then
@@ -2330,7 +2508,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
         sudo sed -i '31,34d' /tmp/grub.cfg
         # Check dom size and set max size accordingly for jot
         if [ "${BUS}" = "sata" ]; then
-        DOM_PARA="dom_szmax=$(fdisk -l /dev/${loaderdisk} | head -1 | awk -F: '{print $2}' | awk '{ print $1*1024}')"
+            DOM_PARA="dom_szmax=$(fdisk -l /dev/${loaderdisk} | head -1 | awk -F: '{print $2}' | awk '{ print $1*1024}')"
             sed -i "s/synoboot_satadom/${DOM_PARA} synoboot_satadom/" /tmp/tempentry.txt
         fi
         tinyjotfunc | sudo tee --append /tmp/grub.cfg
@@ -2371,7 +2549,7 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         tcrpentry_juniorsata | sudo tee --append /tmp/grub.cfg
     else
         echo "Creating tinycore Jot entry"
-        echo "$(cat /tmp/tempentry.txt)" | sudo tee --append /tmp/grub.cfg
+        echo "$(head -n 10 /tmp/tempentry.txt | sed 's/USB/USB\/SATA/g')" | sudo tee --append /tmp/grub.cfg
     fi
 
     cd /home/tc/redpill-load
@@ -2396,22 +2574,24 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         SATA_LINE="${SATA_LINE} modprobe.blacklist=mpt3sas "
     fi
 
-    if [ "${CPU}" == "AMD" ]; then
-        echo "Add configuration disable_mtrr_trim for AMD"
-        USB_LINE="${USB_LINE} disable_mtrr_trim=1 "
-        SATA_LINE="${SATA_LINE} disable_mtrr_trim=1 "
-    else
-        #if echo "epyc7002 apollolake geminilake" | grep -wq "${ORIGIN_PLATFORM}"; then
-        #    if [ "$MACHINE" = "VIRTUAL" ]; then
-        #        USB_LINE="${USB_LINE} intel_iommu=igfx_off "
-        #        SATA_LINE="${SATA_LINE} intel_iommu=igfx_off "
-        #    fi   
-        #fi    
-
-        if [ -d "/home/tc/redpill-load/custom/extensions/nvmesystem" ]; then
-            echo "Add configuration pci=nommconf for nvmesystem addon"
-            USB_LINE="${USB_LINE} pci=nommconf "
-            SATA_LINE="${SATA_LINE} pci=nommconf "
+    if [ -v CPU ]; then
+        if [ "${CPU}" == "AMD" ]; then
+            echo "Add configuration disable_mtrr_trim for AMD"
+            USB_LINE="${USB_LINE} disable_mtrr_trim=1 "
+            SATA_LINE="${SATA_LINE} disable_mtrr_trim=1 "
+        else
+            #if echo "epyc7002 apollolake geminilake" | grep -wq "${ORIGIN_PLATFORM}"; then
+            #    if [ "$MACHINE" = "VIRTUAL" ]; then
+            #        USB_LINE="${USB_LINE} intel_iommu=igfx_off "
+            #        SATA_LINE="${SATA_LINE} intel_iommu=igfx_off "
+            #    fi   
+            #fi    
+    
+            if [ -d "/home/tc/redpill-load/custom/extensions/nvmesystem" ]; then
+                echo "Add configuration pci=nommconf for nvmesystem addon"
+                USB_LINE="${USB_LINE} pci=nommconf "
+                SATA_LINE="${SATA_LINE} pci=nommconf "
+            fi
         fi
     fi
     
@@ -2497,11 +2677,11 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     else
         echo
         msgnormal "Setting default boot entry to JOT ${BUS}"    
-        if [ "${BUS}" = "usb" ]; then
+        #if [ "${BUS}" = "usb" ]; then
             sudo sed -i "/set default=\"*\"/cset default=\"2\"" /tmp/grub.cfg
-    else
-            sudo sed -i "/set default=\"*\"/cset default=\"3\"" /tmp/grub.cfg
-        fi
+        #else
+        #    sudo sed -i "/set default=\"*\"/cset default=\"3\"" /tmp/grub.cfg
+        #fi
     fi
     sudo cp -vf /tmp/grub.cfg /mnt/${loaderdisk}1/boot/grub/grub.cfg
 st "gen grub     " "Gen GRUB entries" "Finished Gen GRUB entries : ${MODEL}"
@@ -2511,47 +2691,51 @@ st "gen grub     " "Gen GRUB entries" "Finished Gen GRUB entries : ${MODEL}"
     [ -f /mnt/${loaderdisk}3/initrd-dsm72 ] && rm /mnt/${loaderdisk}3/initrd-dsm72
 
     sudo rm -rf /home/tc/rd.temp /home/tc/friend /home/tc/cache/*.pat
+
+    if [ "${BUS}" != "block" ]; then
+        msgnormal "Caching files for future use"
+        [ ! -d ${local_cache} ] && mkdir ${local_cache}
     
-    msgnormal "Caching files for future use"
-    [ ! -d ${local_cache} ] && mkdir ${local_cache}
-
-    # Discover remote file size
-    patfile=$(ls /home/tc/redpill-load/cache/*${TARGET_REVISION}*.pat | head -1)    
-    FILESIZE=$(stat -c%s "${patfile}")
-    SPACELEFT=$(df --block-size=1 | awk '/'${loaderdisk}'3/{print $4}') # Check disk space left    
-
-    FILESIZE_FORMATTED=$(printf "%'d" "${FILESIZE}")
-    SPACELEFT_FORMATTED=$(printf "%'d" "${SPACELEFT}")
-    FILESIZE_MB=$((FILESIZE / 1024 / 1024))
-    SPACELEFT_MB=$((SPACELEFT / 1024 / 1024))    
-
-    echo "FILESIZE  = ${FILESIZE_FORMATTED} bytes (${FILESIZE_MB} MB)"
-    echo "SPACELEFT = ${SPACELEFT_FORMATTED} bytes (${SPACELEFT_MB} MB)"
-
-    if [ 0${FILESIZE} -ge 0${SPACELEFT} ]; then
-        # No disk space to download, change it to RAMDISK
-        echo "No adequate space on ${local_cache} to backup cache pat file, clean up PAT file now ....."
-        sudo sh -c "rm -vf $(ls -t ${local_cache}/*.pat | head -n 1)"
-    fi
-
-    if [ -f ${patfile} ]; then
-        echo "Found ${patfile}, moving to cache directory : ${local_cache} "
-        cp -vf ${patfile} ${local_cache} && rm -vf /home/tc/redpill-load/cache/*.pat
-    fi
+        # Discover remote file size
+        patfile=$(ls /home/tc/redpill-load/cache/*${TARGET_REVISION}*.pat | head -1)    
+        FILESIZE=$(stat -c%s "${patfile}")
+        SPACELEFT=$(df --block-size=1 | awk '/'${loaderdisk}'3/{print $4}') # Check disk space left    
+    
+        FILESIZE_FORMATTED=$(printf "%'d" "${FILESIZE}")
+        SPACELEFT_FORMATTED=$(printf "%'d" "${SPACELEFT}")
+        FILESIZE_MB=$((FILESIZE / 1024 / 1024))
+        SPACELEFT_MB=$((SPACELEFT / 1024 / 1024))    
+    
+        echo "FILESIZE  = ${FILESIZE_FORMATTED} bytes (${FILESIZE_MB} MB)"
+        echo "SPACELEFT = ${SPACELEFT_FORMATTED} bytes (${SPACELEFT_MB} MB)"
+    
+        if [ 0${FILESIZE} -ge 0${SPACELEFT} ]; then
+            # No disk space to download, change it to RAMDISK
+            echo "No adequate space on ${local_cache} to backup cache pat file, clean up PAT file now ....."
+            sudo sh -c "rm -vf $(ls -t ${local_cache}/*.pat | head -n 1)"
+        fi
+    
+        if [ -f ${patfile} ]; then
+            echo "Found ${patfile}, moving to cache directory : ${local_cache} "
+            cp -vf ${patfile} ${local_cache} && rm -vf /home/tc/redpill-load/cache/*.pat
+        fi
 st "cachingpat" "Caching pat file" "Cached file to: ${local_cache}"
-
+    fi    
 }
 
 function curlfriend() {
 
-    msgwarning "Download failed from ${domain}..."
-    curl -kLO# "https://${domain}/PeterSuh-Q3/tcrpfriend/main/chksum" \
-    -O "https://${domain}/PeterSuh-Q3/tcrpfriend/main/bzImage-friend" \
-    -O "https://${domain}/PeterSuh-Q3/tcrpfriend/main/initrd-friend"
+    LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest"`"
+    FRTAG="${LATESTURL##*/}"
+    echo "FRIEND TAG is ${FRTAG}"        
+    curl -kLO# "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/chksum" \
+    -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/bzImage-friend" \
+    -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/initrd-friend"
+
     if [ $? -ne 0 ]; then
-        msgalert "Download failed from ${domain}... !!!!!!!!"
+        msgalert "Download failed from github.com friend... !!!!!!!!"
     else
-        msgnormal "Bringing over my friend from ${domain} Done!!!!!!!!!!!!!!"            
+        msgnormal "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"            
     fi
 
 }
@@ -2567,10 +2751,6 @@ function bringoverfriend() {
   
   URL="https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest/download/chksum"
   [ -n "$URL" ] && curl --connect-timeout 5 -s -k -L $URL -O
-  if [ ! -f chksum ]; then
-    URL="https://raw.githubusercontent.com/PeterSuh-Q3/tcrpfriend/main/chksum"
-    [ -n "$URL" ] && curl --connect-timeout 5 -s -k -L $URL -O
-  fi
 
   if [ -f chksum ]; then
     FRIENDVERSION="$(grep VERSION chksum | awk -F= '{print $2}')"
@@ -2580,8 +2760,6 @@ function bringoverfriend() {
         msgnormal "OK, latest \n"
     else
         msgwarning "Found new version, bringing over new friend version : $FRIENDVERSION \n"
-
-        domain="raw.githubusercontent.com"
         curlfriend
 
         if [ -f bzImage-friend ] && [ -f initrd-friend ] && [ -f chksum ]; then
@@ -2595,13 +2773,10 @@ function bringoverfriend() {
         else
             msgalert "Could not find friend files !!!!!!!!!!!!!!!!!!!!!!!"
         fi
-        
     fi
-    
   else
     msgalert "No IP yet to check for latest friend \n"
   fi
-
 
 }
 
@@ -2712,7 +2887,7 @@ function getredpillko() {
     DSMVER=$(echo ${TARGET_VERSION} | cut -c 1-3 )
     echo "KERNEL VERSION of getredpillko() is ${KVER}, DSMVER is ${DSMVER}"
     if [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then
-        v="5"
+        v=""
     else
         v=""
     fi
@@ -2722,18 +2897,24 @@ function getredpillko() {
         echo "Downloading ${ORIGIN_PLATFORM} ${KVER}+ redpill.ko ..."    
         LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/redpill-lkm${v}/releases/latest"`"
         #echo "? = $?"
-        if [ $? -ne 0 ]; then
-            echo "Error downloading last version of ${ORIGIN_PLATFORM} ${KVER}+ rp-lkms.zip tring other path..."
-            curl -skL https://raw.githubusercontent.com/PeterSuh-Q3/redpill-lkm${v}/master/rp-lkms.zip -o /mnt/${tcrppart}/rp-lkms${v}.zip
-            if [ $? -ne 0 ]; then
-                echo "Error downloading https://raw.githubusercontent.com/PeterSuh-Q3/redpill-lkm${v}/master/rp-lkms${v}.zip"
-                exit 99
-            fi    
-        else
-            TAG="${LATESTURL##*/}"
-            echo "TAG is ${TAG}"
+        #if [ $? -ne 0 ]; then
+        #    echo "Error downloading last version of ${ORIGIN_PLATFORM} ${KVER}+ rp-lkms.zip tring other path..."
+        #    curl -skL https://raw.githubusercontent.com/PeterSuh-Q3/redpill-lkm${v}/master/rp-lkms.zip -o /mnt/${tcrppart}/rp-lkms${v}.zip
+        #    if [ $? -ne 0 ]; then
+        #        echo "Error downloading https://raw.githubusercontent.com/PeterSuh-Q3/redpill-lkm${v}/master/rp-lkms${v}.zip"
+        #        exit 99
+        #    fi    
+        #else
+        #    if [ "${ORIGIN_PLATFORM}" = "apollolake" ]; then
+                TAG="${LATESTURL##*/}"
+        #    elif [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then
+        #        TAG="${LATESTURL##*/}"
+        #    else
+        #        TAG="24.4.11"
+        #    fi
+            echo "TAG is ${TAG}"        
             STATUS=`curl --connect-timeout 5 -skL -w "%{http_code}" "https://github.com/PeterSuh-Q3/redpill-lkm${v}/releases/download/${TAG}/rp-lkms.zip" -o "/mnt/${tcrppart}/rp-lkms${v}.zip"`
-        fi
+        #fi
     else
         echo "Unzipping ${ORIGIN_PLATFORM} ${KVER}+ redpill.ko ..."        
     fi    
@@ -2741,24 +2922,100 @@ function getredpillko() {
     sudo rm -f /home/tc/custom-module/*.gz
     sudo rm -f /home/tc/custom-module/*.ko
     if [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then    
-        unzip /mnt/${tcrppart}/rp-lkms${v}.zip        rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-prod.ko.gz -d /tmp >/dev/null 2>&1
-        gunzip -f /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-prod.ko.gz >/dev/null 2>&1
-        cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-prod.ko /home/tc/custom-module/redpill.ko
+        unzip /mnt/${tcrppart}/rp-lkms${v}.zip        rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko.gz -d /tmp >/dev/null 2>&1
+        gunzip -f /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko.gz >/dev/null 2>&1
+        cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
     else    
-        unzip /mnt/${tcrppart}/rp-lkms${v}.zip        rp-${ORIGIN_PLATFORM}-${KVER}-prod.ko.gz -d /tmp >/dev/null 2>&1
-        gunzip -f /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-prod.ko.gz >/dev/null 2>&1
-        cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-prod.ko /home/tc/custom-module/redpill.ko
+        unzip /mnt/${tcrppart}/rp-lkms${v}.zip        rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko.gz -d /tmp >/dev/null 2>&1
+        gunzip -f /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko.gz >/dev/null 2>&1
+        cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
     fi
 
     if [ -z "${TAG}" ]; then
         unzip /mnt/${tcrppart}/rp-lkms${v}.zip        VERSION -d /tmp >/dev/null 2>&1
-    TAG=$(cat /tmp/VERSION )
-     echo "TAG of VERSION is ${TAG}"
+        TAG=$(cat /tmp/VERSION )
+        echo "TAG of VERSION is ${TAG}"
     fi
 
     REDPILL_MOD_NAME="redpill-linux-v$(modinfo /home/tc/custom-module/redpill.ko | grep vermagic | awk '{print $2}').ko"
     cp -vf /home/tc/custom-module/redpill.ko /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
     strip --strip-debug /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
+
+}
+
+function changeautoupdate {
+    if [ -z "$1" ]; then
+      echo -en "\r$(msgalert "There is no on or off parameter.!!!")\n"
+      exit 99
+    elif [ "$1" != "on" ] && [ "$1" != "off" ]; then
+      echo -en "\r$(msgalert "There is no on or off parameter.!!!")\n"
+      exit 99
+    fi
+
+    getloaderdisk
+    tcrppart="${loaderdisk}3"
+
+    jsonfile=$(jq . $userconfigfile)
+    
+    echo -n "friendautoupd on User config file needs update, updating -> "
+    if [ "$1" = "on" ]; then
+        jsonfile=$(echo $jsonfile | jq '.general |= . + { "friendautoupd":"true" }' || echo $jsonfile | jq .)
+    else
+        jsonfile=$(echo $jsonfile | jq '.general |= . + { "friendautoupd":"false" }' || echo $jsonfile | jq .)
+    fi
+    cp $userconfigfile /mnt/${tcrppart}/
+    echo $jsonfile | jq . >$userconfigfile && echo "Done" || echo "Failed"
+    
+    cat $userconfigfile | grep friendautoupd
+}
+
+function upgrademan() {
+    if [ -z "$1" ]; then
+      echo -en "\r$(msgalert "There is no TCRP Friend version.!!!")\n"
+      exit 99
+    fi
+
+    getloaderdisk
+    tcrppart="${loaderdisk}3"
+
+    [ ! -d /home/tc/friend ] && mkdir /home/tc/friend/ && cd /home/tc/friend
+    
+    friendautoupd="$(jq -r -e '.general .friendautoupd' $userconfigfile)"
+    if [ "${friendautoupd}" = "false" ]; then
+        echo -en "\r$(msgwarning "TCRP Friend auto update disabled")\n"
+    else
+        echo -en "\r$(msgwarning "TCRP Friend auto update enabled")\n"	
+    fi
+    FRIENDVERSION="$1"
+    msgwarning "Found target version, bringing over new friend version : $FRIENDVERSION \n"
+    echo -n "Checking for version $FRIENDVERSION friend -> "
+    URL=$(curl --connect-timeout 15 -s --insecure -L https://api.github.com/repos/PeterSuh-Q3/tcrpfriend/releases/tags/"${FRIENDVERSION}" | jq -r -e .assets[].browser_download_url | grep chksum)
+    if [ $? -ne 0 ]; then
+        msgalert "Error downloading version of $FRIENDVERSION friend...\n"
+        exit 99
+    fi
+
+    # download file chksum
+    [ -n "$URL" ] && curl -s --insecure -L $URL -O
+    if [ $? -ne 0 ]; then
+        msgalert "Error downloading version of $FRIENDVERSION friend...\n"
+        exit 99
+    fi
+    URLS=$(curl --insecure -s https://api.github.com/repos/PeterSuh-Q3/tcrpfriend/releases/tags/"${FRIENDVERSION}" | jq -r ".assets[].browser_download_url")
+    for file in $URLS; do curl --insecure --location --progress-bar "$file" -O; done
+    FRIENDVERSION="$(grep VERSION chksum | awk -F= '{print $2}')"
+    BZIMAGESHA256="$(grep bzImage-friend chksum | awk '{print $1}')"
+    INITRDSHA256="$(grep initrd-friend chksum | awk '{print $1}')"
+    [ "$(sha256sum bzImage-friend | awk '{print $1}')" = "$BZIMAGESHA256" ] && [ "$(sha256sum initrd-friend | awk '{print $1}')" = "$INITRDSHA256" ] && cp -f bzImage-friend /mnt/${tcrppart}/ && msgnormal "bzImage OK! \n"
+    [ "$(sha256sum bzImage-friend | awk '{print $1}')" = "$BZIMAGESHA256" ] && [ "$(sha256sum initrd-friend | awk '{print $1}')" = "$INITRDSHA256" ] && cp -f initrd-friend /mnt/${tcrppart}/ && msgnormal "initrd-friend OK! \n"
+    echo -e "$(msgnormal "TCRP FRIEND HAS BEEN UPDATED!!!")"
+    changeautoupdate "off"
+
+    if [ -f /home/tc/friend/initrd-friend ] && [ -f /home/tc/friend/bzImage-friend ]; then
+        cp /home/tc/friend/initrd-friend /mnt/${tcrppart}/
+        cp /home/tc/friend/bzImage-friend /mnt/${tcrppart}/
+        sudo rm -rf /home/tc/friend
+    fi
 
 }
 
@@ -2775,6 +3032,7 @@ function rploader() {
 
     [ "${BUS}" = "nvme" ] && loaderdisk="${loaderdisk}p"
     [ "${BUS}" = "mmc"  ] && loaderdisk="${loaderdisk}p"
+    [ "${BUS}" = "block"  ] && loaderdisk="${loaderdisk}p"
 
     tcrppart="${loaderdisk}3"
     tcrpdisk=$loaderdisk
@@ -2866,11 +3124,15 @@ echo "$3"
 }
 
 function add-addons() {
-    jsonfile=$(jq ". |= .+ {\"${1}\": \"https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/${1}/rpext-index.json\"}" ~/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > ~/redpill-load/bundled-exts.json    
+    jsonfile=$(jq ". |= .+ {\"${1}\": \"https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/${1}/rpext-index.json\"}" /home/tc/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > /home/tc/redpill-load/bundled-exts.json    
 }
 
 function my() {
 
+  echo "$1"
+  echo "$2"
+  echo "$3"
+  
   getloaderdisk
   if [ -z "${loaderdisk}" ]; then
       echo "Not Supported Loader BUS Type, program Exit!!!"
@@ -2880,9 +3142,17 @@ function my() {
   getBus "${loaderdisk}" 
   
   [ "${BUS}" = "nvme" ] && loaderdisk="${loaderdisk}p"
-  [ "${BUS}" = "mmc"  ] && loaderdisk="${loaderdisk}p"
+  [ "${BUS}" = "mmc" ] && loaderdisk="${loaderdisk}p"
+  [ "${BUS}" = "block" ] && loaderdisk="${loaderdisk}p"
   
   tcrppart="${loaderdisk}3"
+
+  if [ "${BUS}" = "block" ]; then
+    git clone --depth=1 "https://github.com/PeterSuh-Q3/tcrp-addons.git"
+    mkdir -p /dev/shm/tcrp-addons
+    rm -rf ./tcrp-addons/.git/
+    mv -f ./tcrp-addons/* /dev/shm/tcrp-addons/
+  fi
   
   if [ -d /mnt/${tcrppart}/redpill-load/ ]; then
       offline="YES"
@@ -2974,7 +3244,7 @@ function my() {
   
   if [ ! -d "/mnt/${tcrppart}/auxfiles" ]; then
       cecho g "making directory  /mnt/${tcrppart}/auxfiles"  
-      mkdir /mnt/${tcrppart}/auxfiles 
+      mkdir -p /mnt/${tcrppart}/auxfiles 
   fi
   if [ ! -h /home/tc/custom-module ]; then
       cecho y "making link /home/tc/custom-module"  
@@ -3018,10 +3288,10 @@ function my() {
   fi
   cecho y "Device Module Processing Method is ${DMPM}"
   
-  [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("mac-spoof")') = true ] && spoof=true || spoof=false
-  [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("nvmesystem")') = true ] && nvmes=true || nvmes=false
-  [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("dbgutils")') = true ] && dbgutils=true || dbgutils=false
-  [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("sortnetif")') = true ] && sortnetif=true || sortnetif=false
+  [ $(cat /home/tc/redpill-load/bundled-exts.json | jq 'has("mac-spoof")') = true ] && spoof=true || spoof=false
+  [ $(cat /home/tc/redpill-load/bundled-exts.json | jq 'has("nvmesystem")') = true ] && nvmes=true || nvmes=false
+  [ $(cat /home/tc/redpill-load/bundled-exts.json | jq 'has("dbgutils")') = true ] && dbgutils=true || dbgutils=false
+  [ $(cat /home/tc/redpill-load/bundled-exts.json | jq 'has("sortnetif")') = true ] && sortnetif=true || sortnetif=false
   
   echo  "download original bundled-exts.json file..."
   curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/redpill-load/master/bundled-exts.json -o /home/tc/redpill-load/bundled-exts.json
@@ -3036,6 +3306,10 @@ function my() {
       cecho p "Device Module Processing Method is Undefined, Program Exit!!!!!!!!"
       exit 0
   fi
+
+  #if [ "$MACHINE" = "VIRTUAL" ]; then
+  #    jsonfile=$(jq 'del(.acpid)' /home/tc/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > /home/tc/redpill-load/bundled-exts.json
+  #fi
   
   [ "$spoof" = true ] && add-addons "mac-spoof" 
   [ "$nvmes" = true ] && add-addons "nvmesystem" 
@@ -3198,7 +3472,25 @@ function my() {
       cecho r "An error occurred while building the loader!!! Clean the redpill-load directory!!! "
       rploader clean
   else
+      [ "${BUS}" = "block" ] && exit 0
       [ "$MACHINE" != "VIRTUAL" ] && sleep 2
       echo "y"|rploader backup
   fi
 }
+
+if [ $# -gt 1 ]; then
+    case $1 in
+    
+    my) 
+        my "$2" "$3" "$4"
+        ;;
+    update)
+        upgrademan "$2"
+        ;;
+    autoupdate)
+        changeautoupdate "$2"
+        ;;
+    *)
+        ;;
+    esac    
+fi
