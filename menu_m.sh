@@ -303,23 +303,57 @@ function seleudev() {
 function selectldrmode() {
   eval "MSG28=\"\${MSG${tz}28}\""
   eval "MSG29=\"\${MSG${tz}29}\""  
-  while true; do
-    dialog --clear --backtitle "`backtitle`" \
-      --menu "Choose a option" 0 0 0 \
-      f "${MSG28}" \
-      j "${MSG29}" \
-    2>${TMP_PATH}/resp
-    [ $? -ne 0 ] && return
-    resp=$(<${TMP_PATH}/resp)
-    [ -z "${resp}" ] && return
-    if [ "${resp}" = "f" ]; then
-      LDRMODE="FRIEND"
-      break
-    elif [ "${resp}" = "j" ]; then
-      LDRMODE="JOT"
-      break
-    fi
-  done
+  if [ "${MODEL}" = "SA6400" ]||[ "${MODEL}" = "DS3615xs" ]; then  
+    while true; do
+      dialog --clear --backtitle "`backtitle`" \
+        --menu "Choose a option" 0 0 0 \
+        f "${MSG28}, all-modules(tcrp)" \
+        j "${MSG29}, all-modules(tcrp)" \
+      2>${TMP_PATH}/resp
+      [ $? -ne 0 ] && return
+      resp=$(<${TMP_PATH}/resp)
+      [ -z "${resp}" ] && return
+      if [ "${resp}" = "f" ]; then
+        LDRMODE="FRIEND"
+        MDLNAME="all-modules"
+        break
+      elif [ "${resp}" = "j" ]; then
+        LDRMODE="JOT"
+        MDLNAME="all-modules"      
+        break
+      fi
+    done
+  else
+    while true; do
+      dialog --clear --backtitle "`backtitle`" \
+        --menu "Choose a option" 0 0 0 \
+        f "${MSG28}, all-modules(tcrp)" \
+        j "${MSG29}, all-modules(tcrp)" \
+        k "${MSG28}, rr-modules"\
+        l "${MSG29}, rr-modules" \
+      2>${TMP_PATH}/resp
+      [ $? -ne 0 ] && return
+      resp=$(<${TMP_PATH}/resp)
+      [ -z "${resp}" ] && return
+      if [ "${resp}" = "f" ]; then
+        LDRMODE="FRIEND"
+        MDLNAME="all-modules"
+        break
+      elif [ "${resp}" = "j" ]; then
+        LDRMODE="JOT"
+        MDLNAME="all-modules"      
+        break
+      elif [ "${resp}" = "k" ]; then
+        LDRMODE="FRIEND"
+        MDLNAME="rr-modules"
+        break
+      elif [ "${resp}" = "l" ]; then
+        LDRMODE="JOT"
+        MDLNAME="rr-modules"
+        break
+      fi
+    done
+  fi
 
   writeConfigKey "general" "loadermode" "${LDRMODE}"
   writeConfigKey "general" "modulename" "${MDLNAME}"
@@ -2202,7 +2236,7 @@ while true; do
     [ $(ifconfig | grep eth1 | wc -l) -gt 0 ] && eval "echo \"f \\\"\${MSG${tz}04} 2\\\"\""         >> "${TMP_PATH}/menu"
     [ $(ifconfig | grep eth2 | wc -l) -gt 0 ] && eval "echo \"g \\\"\${MSG${tz}04} 3\\\"\""         >> "${TMP_PATH}/menu"
     [ $(ifconfig | grep eth3 | wc -l) -gt 0 ] && eval "echo \"h \\\"\${MSG${tz}04} 4\\\"\""         >> "${TMP_PATH}/menu"
-    [ "${CPU}" != "HP" ] && eval "echo \"z \\\"\${MSG${tz}06} (${LDRMODE},${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"
+    [ "${CPU}" != "HP" ] && eval "echo \"z \\\"\${MSG${tz}06} (${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"
     eval "echo \"k \\\"\${MSG${tz}56}\\\"\""             >> "${TMP_PATH}/menu"
     eval "echo \"q \\\"\${MSG${tz}41} (${bay})\\\"\""      >> "${TMP_PATH}/menu"    
     eval "echo \"p \\\"\${MSG${tz}18} (${BUILD}, ${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"      
