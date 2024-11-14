@@ -144,6 +144,7 @@ KEYMAP=$(jq -r -e '.general.keymap' "$USER_CONFIG_FILE")
 
 DMPM=$(jq -r -e '.general.devmod' "$USER_CONFIG_FILE")
 LDRMODE=$(jq -r -e '.general.loadermode' "$USER_CONFIG_FILE")
+MDLNAME=$(jq -r -e '.general.modulename' "$USER_CONFIG_FILE")
 ucode=$(jq -r -e '.general.ucode' "$USER_CONFIG_FILE")
 lcode=$(echo $ucode | cut -c 4-)
 BLOCK_EUDEV="N"
@@ -163,6 +164,7 @@ function backtitle() {
   BACKTITLE+=" ${DMPM}"
   BACKTITLE+=" ${ucode}"
   BACKTITLE+=" ${LDRMODE}"
+  BACKTITLE+=" ${MDLNAME}"
   [ -n "${MODEL}" ] && BACKTITLE+=" ${MODEL}" || BACKTITLE+=" (no model)"
   [ -n "${BUILD}" ] && BACKTITLE+=" ${BUILD}" || BACKTITLE+=" (no build)"
   [ -n "${SN}" ] && BACKTITLE+=" ${SN}" || BACKTITLE+=" (no SN)"
@@ -320,6 +322,7 @@ function selectldrmode() {
   done
 
   writeConfigKey "general" "loadermode" "${LDRMODE}"
+  writeConfigKey "general" "modulename" "${MDLNAME}"
 
 }
 
@@ -2052,6 +2055,11 @@ if [ "${LDRMODE}" = "null" ]; then
     writeConfigKey "general" "loadermode" "${LDRMODE}"          
 fi
 
+if [ "${MDLNAME}" = "null" ]; then
+    MDLNAME="all-modules"
+    writeConfigKey "general" "modulename" "${MDLNAME}"          
+fi
+
 # Get actual IP
 IP="$(ifconfig | grep -i "inet " | grep -v "127.0.0.1" | awk '{print $2}' | cut -c 6- )"
 
@@ -2194,10 +2202,10 @@ while true; do
     [ $(ifconfig | grep eth1 | wc -l) -gt 0 ] && eval "echo \"f \\\"\${MSG${tz}04} 2\\\"\""         >> "${TMP_PATH}/menu"
     [ $(ifconfig | grep eth2 | wc -l) -gt 0 ] && eval "echo \"g \\\"\${MSG${tz}04} 3\\\"\""         >> "${TMP_PATH}/menu"
     [ $(ifconfig | grep eth3 | wc -l) -gt 0 ] && eval "echo \"h \\\"\${MSG${tz}04} 4\\\"\""         >> "${TMP_PATH}/menu"
-    [ "${CPU}" != "HP" ] && eval "echo \"z \\\"\${MSG${tz}06} (${LDRMODE})\\\"\""   >> "${TMP_PATH}/menu"
+    [ "${CPU}" != "HP" ] && eval "echo \"z \\\"\${MSG${tz}06} (${LDRMODE},${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"
     eval "echo \"k \\\"\${MSG${tz}56}\\\"\""             >> "${TMP_PATH}/menu"
     eval "echo \"q \\\"\${MSG${tz}41} (${bay})\\\"\""      >> "${TMP_PATH}/menu"    
-    eval "echo \"p \\\"\${MSG${tz}18} (${BUILD}, ${LDRMODE})\\\"\""   >> "${TMP_PATH}/menu"      
+    eval "echo \"p \\\"\${MSG${tz}18} (${BUILD}, ${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"      
   fi
   echo "n \"Additional Functions\""  >> "${TMP_PATH}/menu"      
   eval "echo \"u \\\"\${MSG${tz}10}\\\"\""               >> "${TMP_PATH}/menu"  
