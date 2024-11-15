@@ -97,4 +97,5 @@ unifont.tcz
 rxvt.tcz
 firmware-broadcom_bnx2x.tcz
 gettext.tcz
-ncursesw.tcz
+ethtool.tcz
+iproute2.tcz
