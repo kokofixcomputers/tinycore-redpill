@@ -485,8 +485,15 @@ done
   writeConfigKey "general" "model" "${MODEL}"
   setSuggest $MODEL
 
+  if [ "${MODEL}" = "SA6400" ]; then
+      MDLNAME="all-modules"
+      writeConfigKey "general" "modulename" "${MDLNAME}"
+  fi
+
   if [ "${MODEL}" = "DS3615xs" ]; then
       BUILD="7.1.1-42962"
+      MDLNAME="all-modules"
+      writeConfigKey "general" "modulename" "${MDLNAME}"
   else    
   #elif [ "${MODEL}" = "DS923+" ] || [ "${MODEL}" = "DS723+" ] || [ "${MODEL}" = "DS1823+" ] || [ "${MODEL}" = "DVA1622" ]; then
       BUILD="7.2.2-72806"
@@ -495,7 +502,7 @@ done
 
   if [ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
     if [ "$HBADETECT" = "ON" ]; then
-    DMPM="DDSML+EUDEV"
+        DMPM="DDSML+EUDEV"
     else
         DMPM="EUDEV"
     fi 
