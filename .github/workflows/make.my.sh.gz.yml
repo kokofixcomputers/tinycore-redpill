@@ -16,6 +16,10 @@ jobs:
           VERSION=v`cat functions.sh | grep rploaderver= | cut -d\" -f2`
           echo "Version: ${VERSION}"
           echo "::set-output name=VERSION::${VERSION}"
+
+          vers=`cat functions.sh | grep rploaderver= | cut -d\" -f2`
+          note=`cat functions.sh | grep "${vers} " | head -n 1`
+          echo "    "${note} > RELEASE_NOTES.md
           
           tar -zcvf my.sh.gz lang.tgz i18n.h functions.sh monitor.sh menu.sh menu_m.sh ntp.sh sngen.sh macgen.sh edisk.sh custom_config.json modules.alias.4.json extractor.gz
           mkdir -p ./mydata/home/tc/
