@@ -146,5 +146,4 @@ jobs:
           tag_name: ${{ inputs.version }}
           files: |
             /opt/output/*.gz
-          body: |
-            ${{ inputs.version }}
+          body_path: RELEASE_NOTES.md            
