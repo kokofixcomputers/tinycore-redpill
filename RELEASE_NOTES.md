@@ -1,1 +1,1 @@
-    1.0.6.1 Improved bootloader boot partition detection method
+     1.0.6.1 Improved bootloader boot partition detection method
