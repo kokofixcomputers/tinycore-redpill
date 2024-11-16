@@ -20,6 +20,8 @@ jobs:
           vers=`cat functions.sh | grep rploaderver= | cut -d\" -f2`
           note=`cat functions.sh | grep "${vers} " | head -n 1`
           echo "    "${note} > RELEASE_NOTES.md
+          echo "note: ${note}"
+          echo "::set-output name=note::${note}"
           
           tar -zcvf my.sh.gz lang.tgz i18n.h functions.sh monitor.sh menu.sh menu_m.sh ntp.sh sngen.sh macgen.sh edisk.sh custom_config.json modules.alias.4.json extractor.gz
           mkdir -p ./mydata/home/tc/
@@ -31,6 +33,6 @@ jobs:
         run: |
           git config --global user.name "PeterSuh-Q3"
           git config --global user.email dante9000@gmail.com
-          git add my.sh.gz mydata.tgz
-          git commit -m "Update ${{ steps.remake-mydata-tgz.outputs.VERSION }} my.sh.gz, mydata.tgz"
+          git add my.sh.gz mydata.tgz RELEASE_NOTES.md
+          git commit -m "${{ steps.remake-mydata-tgz.outputs.note }}"
           git push  
