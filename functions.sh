@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.0"
+rploaderver="1.0.6.1"
 build="master"
 redpillmake="prod"
 
@@ -131,6 +131,7 @@ function history() {
     1.0.5.1 Added manual update feature to friend specified version, added disable/enable friend automatic update feature
     1.0.5.2 Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
     1.0.6.0 Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
+    1.0.6.1 Improved bootloader boot partition detection method
     --------------------------------------------------------------------------------------
 EOF
 
@@ -418,6 +419,8 @@ EOF
 # Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
 # 2024.11.14 v1.0.6.0 
 # Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
+# 2024.11.16 v1.0.6.1 
+# Improved bootloader boot partition detection method
     
 function showlastupdate() {
     cat <<EOF
@@ -506,6 +509,9 @@ function showlastupdate() {
 # 2024.11.14 v1.0.6.0 
 # Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
 
+# 2024.11.16 v1.0.6.1 
+# Improved bootloader boot partition detection method
+
 EOF
 }
 
@@ -586,18 +592,13 @@ EOF
 
 function getloaderdisk() {
     loaderdisk=""
-    for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
-        if [ $(sudo fdisk -l | grep "83 Linux" | grep ${edisk} | wc -l ) -eq 3 ]; then
-        loaderdisk="$(blkid | grep ${edisk} | grep "6234-C863" | cut -c 1-8 | awk -F\/ '{print $3}')"
-        fi    
-    done
-    if [ -z "${loaderdisk}" ]; then
-        for edisk in $(sudo fdisk -l | grep -e "Disk /dev/nvme" -e "Disk /dev/mmc" | awk '{print $2}' | sed 's/://' ); do
-        if [ $(sudo fdisk -l | grep "83 Linux" | grep ${edisk} | wc -l ) -eq 3 ]; then
-            loaderdisk="$(blkid | grep ${edisk} | grep "6234-C863" | cut -c 1-12 | awk -F\/ '{print $3}')"    
-        fi    
-        done
-    fi
+    while read -r edisk; do
+        if [ $(sudo fdisk -l "$edisk" | grep -c "83 Linux") -eq 3 ]; then
+            loaderdisk=$(sudo blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}')
+            [ -n "$loaderdisk" ] && break
+        fi
+    done < <(sudo fdisk -l | grep "Disk /dev/" | grep -v "/dev/loop" | awk '{print $2}' | sed 's/://')
+    
     if [ -z "${loaderdisk}" ]; then
         for edisk in $(sudo fdisk -l | grep "Disk /dev/loop" | awk '{print $2}' | sed 's/://' ); do
         if [ $(sudo fdisk -l | grep "83 Linux" | grep ${edisk} | wc -l ) -eq 3 ]; then
@@ -605,6 +606,8 @@ function getloaderdisk() {
         fi    
         done
     fi
+
+    echo "LOADER DISK: $loaderdisk"
 }
 
 # ==============================================================================          
@@ -1249,14 +1252,12 @@ function chkavail() {
 # 1 - device path
 function getBus() {
   BUS=""
-  # usb/ata(sata/ide)/scsi
-  [ -z "${BUS}" ] && BUS=$(udevadm info --query property --name "${1}" 2>/dev/null | grep ID_BUS | cut -d= -f2 | sed 's/ata/sata/')
-  # usb/sata(sata/ide)/nvme
-  [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,TRAN 2>/dev/null | grep "${1} " | awk '{print $2}') #Spaces are intentional
+  # usb/ata(ide)/sata/sas/spi(scsi)/virtio/mmc/nvme
+  [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,TRAN 2>/dev/null | grep "${1} " | awk '{print $2}' | sed 's/^ata$/ide/' | sed 's/^spi$/scsi/') #Spaces are intentional
+  # usb/scsi(ide/sata/sas)/virtio/mmc/nvme/vmbus/xen(xvd)
+  [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,SUBSYSTEMS 2>/dev/null | grep "${1} " | awk '{print $2}' | awk -F':' '{print $(NF-1)}' | sed 's/_host//' | sed 's/^.*xen.*$/xen/') # Spaces are intentional
   # loop block
   [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,SUBSYSTEMS 2>/dev/null | grep "${1} " | awk '{print $2}') #Spaces are intentional
-  # usb/scsi(sata/ide)/virtio(scsi/virtio)/mmc/nvme
-  [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,SUBSYSTEMS 2>/dev/null | grep "${1} " | cut -d: -f2) #Spaces are intentional
   echo "${BUS}"
 }
 
