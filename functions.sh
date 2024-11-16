@@ -3443,15 +3443,16 @@ function my() {
   
   st "download pat" "Downloading pat  " "${SYNOMODEL}.pat"        
   
-      if [ 1 = 0 ]; then
-        STATUS=`curl --insecure -w "%{http_code}" -L "${URL}" -o ${patfile} --progress-bar`
-        if [ $? -ne 0 -o ${STATUS} -ne 200 ]; then
-          echo  "Check internet or cache disk space"
-          exit 99
-        fi
-      else
+      #if [ 1 = 0 ]; then
+      #  STATUS=`curl --insecure -w "%{http_code}" -L "${URL}" -o ${patfile} --progress-bar`
+      #  if [ $? -ne 0 -o ${STATUS} -ne 200 ]; then
+      #    echo  "Check internet or cache disk space"
+      #    exit 99
+      #  fi
+      #else
+      echo "offline = ${offline}"
         [ "${offline}" = "NO" ] && _pat_process    
-      fi
+      #fi
   
       os_sha256=$(sha256sum ${patfile} | awk '{print $1}')                                
       cecho y "Pat file  sha256sum is : $os_sha256"                                       
