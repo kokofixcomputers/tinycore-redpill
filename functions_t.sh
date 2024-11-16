@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.5.2"
+rploaderver="1.0.6.0"
 build="master"
 redpillmake="prod"
 
@@ -130,6 +130,7 @@ function history() {
     1.0.5.0 Improved internet check function in menu.sh
     1.0.5.1 Added manual update feature to friend specified version, added disable/enable friend automatic update feature
     1.0.5.2 Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
+    1.0.6.0 Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
     --------------------------------------------------------------------------------------
 EOF
 
@@ -415,6 +416,8 @@ EOF
 # Added manual update feature to friend specified version, added disable/enable friend automatic update feature
 # 2024.11.05 v1.0.5.2 
 # Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
+# 2024.11.14 v1.0.6.0 
+# Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
     
 function showlastupdate() {
     cat <<EOF
@@ -499,6 +502,9 @@ function showlastupdate() {
 
 # 2024.11.05 v1.0.5.2 
 # Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
+
+# 2024.11.14 v1.0.6.0 
+# Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
 
 EOF
 }
@@ -3287,6 +3293,13 @@ function my() {
       writeConfigKey "general" "devmod" "${DMPM}"
   fi
   cecho y "Device Module Processing Method is ${DMPM}"
+
+  MDLNAME="$(jq -r -e '.general.modulename' $userconfigfile)"
+  if [ "${MDLNAME}" = "null" ]; then
+      MDLNAME="all-modules"
+      writeConfigKey "general" "modulename" "${MDLNAME}"
+  fi
+  cecho y "The selected integrated module pack is ${MDLNAME}"
   
   [ $(cat /home/tc/redpill-load/bundled-exts.json | jq 'has("mac-spoof")') = true ] && spoof=true || spoof=false
   [ $(cat /home/tc/redpill-load/bundled-exts.json | jq 'has("nvmesystem")') = true ] && nvmes=true || nvmes=false
@@ -3325,6 +3338,12 @@ function my() {
         curl -skLO# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/functions.sh
       fi
   fi
+
+  if [ "${MDLNAME}" = "all-modules" ]; then
+      sed -i "s/rr-modules/all-modules/g" custom_config.json
+  elif [ "${MDLNAME}" = "rr-modules" ]; then
+      sed -i "s/all-modules/rr-modules/g" custom_config.json
+  fi  
   
   echo
   if [ "$jot" = "N" ]; then    
