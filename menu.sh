@@ -47,10 +47,6 @@ fi
 
 getBus "${loaderdisk}" 
 
-[ "${BUS}" = "nvme" ] && loaderdisk="${loaderdisk}p"
-[ "${BUS}" = "mmc"  ] && loaderdisk="${loaderdisk}p"
-[ "${BUS}" = "block"  ] && loaderdisk="${loaderdisk}p"
-
 tcrppart="${loaderdisk}3"
 
 if [ -d /mnt/${tcrppart}/redpill-load/ ] && [ -d /mnt/${tcrppart}/tcrp-addons/ ] && [ -d /mnt/${tcrppart}/tcrp-modules/ ]; then
