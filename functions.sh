@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.1"
+rploaderver="1.0.6.2"
 build="master"
 redpillmake="prod"
 
@@ -132,6 +132,7 @@ function history() {
     1.0.5.2 Upgraded grub version from 2.06 to 2.12 ( improved uefi, legacy boot compatibility [especially in jot mode] )
     1.0.6.0 Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
     1.0.6.1 Improved bootloader boot partition detection method
+    1.0.6.2 Changed to use only the first one when multiple bootloaders exist
     --------------------------------------------------------------------------------------
 EOF
 
@@ -421,6 +422,8 @@ EOF
 # Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
 # 2024.11.16 v1.0.6.1 
 # Improved bootloader boot partition detection method
+# 2024.11.19 v1.0.6.2 
+# Changed to use only the first one when multiple bootloaders exist
     
 function showlastupdate() {
     cat <<EOF
@@ -512,6 +515,9 @@ function showlastupdate() {
 # 2024.11.16 v1.0.6.1 
 # Improved bootloader boot partition detection method
 
+# 2024.11.19 v1.0.6.2 
+# Changed to use only the first one when multiple bootloaders exist
+
 EOF
 }
 
@@ -594,7 +600,7 @@ function getloaderdisk() {
     loaderdisk=""
     while read -r edisk; do
         if [ $(sudo fdisk -l "$edisk" | grep -c "83 Linux") -eq 3 ]; then
-            loaderdisk=$(sudo blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}')
+            loaderdisk=$(sudo blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}' | head -n 1)
             [ -n "$loaderdisk" ] && break
         fi
     done < <(sudo fdisk -l | grep "Disk /dev/" | grep -v "/dev/loop" | awk '{print $2}' | sed 's/://')
