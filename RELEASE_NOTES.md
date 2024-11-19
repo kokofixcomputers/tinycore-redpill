@@ -1,1 +1,1 @@
-     1.0.6.1 Improved bootloader boot partition detection method
+     1.0.6.2 Changed to use only the first one when multiple bootloaders exist
