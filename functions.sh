@@ -1266,9 +1266,9 @@ function getBus() {
   [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,SUBSYSTEMS 2>/dev/null | grep "${1} " | awk '{print $2}' | awk -F':' '{print (NF>1) ? $2 : $0}') #Spaces are intentional
   echo "${BUS}"
 
-  [ "${BUS}" = "nvme" ] && loaderdisk="${loaderdisk}p"
-  [ "${BUS}" = "mmc"  ] && loaderdisk="${loaderdisk}p"
-  [ "${BUS}" = "block"  ] && loaderdisk="${loaderdisk}p"
+  #[ "${BUS}" = "nvme" ] && loaderdisk="${loaderdisk}p"
+  #[ "${BUS}" = "mmc"  ] && loaderdisk="${loaderdisk}p"
+  #[ "${BUS}" = "block"  ] && loaderdisk="${loaderdisk}p"
 }
 
 ###############################################################################
