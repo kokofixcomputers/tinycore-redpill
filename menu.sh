@@ -38,6 +38,24 @@ function gitdownload() {
     
 }
 
+function mmc_modprobe() {
+  echo "excute modprobe for mmc(include sd)..."
+  sudo /sbin/modprobe mmc_block
+  sudo /sbin/modprobe mmc_core
+  sudo /sbin/modprobe rtsx_pci
+  sudo /sbin/modprobe rtsx_pci_sdmmc
+  sudo /sbin/modprobe sdhci
+  sudo /sbin/modprobe sdhci_pci
+  sleep 1
+  if [ `/sbin/lsmod |grep -i mmc|wc -l` -gt 0 ] ; then
+      echo "Module mmc loaded succesfully!!!"
+  else
+      echo "Module mmc failed to load successfully!!!"
+  fi
+}
+
+mmc_modprobe
+
 getloaderdisk
 
 if [ -z "${loaderdisk}" ]; then
