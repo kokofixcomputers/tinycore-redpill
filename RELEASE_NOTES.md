@@ -1,1 +1,1 @@
-     1.0.6.2 Changed to use only the first one when multiple bootloaders exist
+     1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
