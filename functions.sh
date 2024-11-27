@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.2"
+rploaderver="1.0.6.3"
 build="master"
 redpillmake="prod"
 
@@ -133,6 +133,7 @@ function history() {
     1.0.6.0 Added the ability to choose between the integrated modules all-modules (tcrp) and rr-modules
     1.0.6.1 Improved bootloader boot partition detection method
     1.0.6.2 Changed to use only the first one when multiple bootloaders exist
+    1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
     --------------------------------------------------------------------------------------
 EOF
 
@@ -424,6 +425,8 @@ EOF
 # Improved bootloader boot partition detection method
 # 2024.11.19 v1.0.6.2 
 # Changed to use only the first one when multiple bootloaders exist
+# 2024.11.27 v1.0.6.3
+# Added ability to force loading mmc and sd modules when loading Tinycore Linux
     
 function showlastupdate() {
     cat <<EOF
@@ -517,6 +520,9 @@ function showlastupdate() {
 
 # 2024.11.19 v1.0.6.2 
 # Changed to use only the first one when multiple bootloaders exist
+
+# 2024.11.27 v1.0.6.3
+# Added ability to force loading mmc and sd modules when loading Tinycore Linux
 
 EOF
 }
