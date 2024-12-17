@@ -854,7 +854,7 @@ function checkUserConfig() {
       # Check if the MAC address is not NULL
       if [ -n "$mac_value" ]; then
         # Check if this MAC address already exists in our array
-        if [ -n "${mac_array[$mac_value]}" ]; then
+        if [ -n "${mac_array[$mac_value]+x}" ]; then
           duplicate_found=true
           break
         else
