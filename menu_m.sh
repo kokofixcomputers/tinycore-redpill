@@ -2370,7 +2370,15 @@ while true; do
     [ $(ifconfig | grep eth2 | wc -l) -gt 0 ] && NEXT="g" || NEXT="p" ;;
     g) macMenu "eth2"
     [ $(ifconfig | grep eth3 | wc -l) -gt 0 ] && NEXT="h" || NEXT="p" ;;
-    h) macMenu "eth3";    NEXT="p" ;; 
+    h) macMenu "eth3"
+    [ $(ifconfig | grep eth4 | wc -l) -gt 0 ] && NEXT="i" || NEXT="p" ;;
+    i) macMenu "eth4"
+    [ $(ifconfig | grep eth5 | wc -l) -gt 0 ] && NEXT="o" || NEXT="p" ;;
+    o) macMenu "eth5"
+    [ $(ifconfig | grep eth6 | wc -l) -gt 0 ] && NEXT="t" || NEXT="p" ;;
+    t) macMenu "eth6"
+    [ $(ifconfig | grep eth7 | wc -l) -gt 0 ] && NEXT="v" || NEXT="p" ;;
+    v) macMenu "eth7";    NEXT="p" ;; 
     z) selectldrmode ;    NEXT="p" ;;
     k) remapsata ;        NEXT="p" ;;
     q) storagepanel;      NEXT="p" ;;    
