@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.3"
+rploaderver="1.0.6.4"
 build="master"
 redpillmake="prod"
 
@@ -134,6 +134,7 @@ function history() {
     1.0.6.1 Improved bootloader boot partition detection method
     1.0.6.2 Changed to use only the first one when multiple bootloaders exist
     1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
+    1.0.6.4 Expanded MAC address support from 4 to 8.
     --------------------------------------------------------------------------------------
 EOF
 
@@ -427,6 +428,8 @@ EOF
 # Changed to use only the first one when multiple bootloaders exist
 # 2024.11.27 v1.0.6.3
 # Added ability to force loading mmc and sd modules when loading Tinycore Linux
+# 2024.12.17 v1.0.6.4 
+# Expanded MAC address support from 4 to 8.
     
 function showlastupdate() {
     cat <<EOF
@@ -523,6 +526,9 @@ function showlastupdate() {
 
 # 2024.11.27 v1.0.6.3
 # Added ability to force loading mmc and sd modules when loading Tinycore Linux
+
+# 2024.12.17 v1.0.6.4 
+# Expanded MAC address support from 4 to 8.
 
 EOF
 }
