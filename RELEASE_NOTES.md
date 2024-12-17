@@ -1,1 +1,1 @@
-     1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
+     1.0.6.4 Expanded MAC address support from 4 to 8.
