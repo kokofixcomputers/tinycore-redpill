@@ -2661,7 +2661,7 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     for N in $(seq 0 7); do
       echo -e "DEVICE=eth${N}\nBOOTPROTO=dhcp\nONBOOT=yes\nIPV6INIT=dhcp\nIPV6_ACCEPT_RA=1" >"/home/tc/ifcfg-eth${N}"
     done
-    sudo cp -vf "/home/tc/ifcfg-eth*" "/home/tc/rd.temp/etc/sysconfig/network-scripts/"
+    sudo cp -vf /home/tc/ifcfg-eth* /home/tc/rd.temp/etc/sysconfig/network-scripts/
 
     # SA6400 patches for JOT Mode
     if [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then
