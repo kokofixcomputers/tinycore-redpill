@@ -2657,6 +2657,11 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         cat /mnt/${loaderdisk}3/initrd-dsm | sudo cpio -idm "*rp.ko*"  >/dev/null 2>&1
     fi
 
+    # Network card configuration file
+    for N in $(seq 0 7); do
+      echo -e "DEVICE=eth${N}\nBOOTPROTO=dhcp\nONBOOT=yes\nIPV6INIT=dhcp\nIPV6_ACCEPT_RA=1" >"/home/tc/rd.temp/etc/sysconfig/network-scripts/ifcfg-eth${N}"
+    done
+
     # SA6400 patches for JOT Mode
     if [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then
         echo -e "Apply Epyc7002 Fixes"
@@ -2688,7 +2693,8 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     #sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/losetup/master/sbin/libsmartcols.so.1 -o /home/tc/rd.temp/usr/lib/libsmartcols.so.1
     #sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/losetup/master/sbin/losetup -o /home/tc/rd.temp/usr/sbin/losetup
     #sudo chmod +x /home/tc/rd.temp/usr/sbin/losetup
-    
+
+    # Reassembly ramdisk
     if [ "$RD_COMPRESSED" = "false" ]; then
         echo "Ramdisk in not compressed "
         (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
