@@ -842,37 +842,37 @@ function checkUserConfig() {
     return 1     
   fi  
 
-  if [ "$netif_num" -ge 2 ] && [ "$netif_num" -le 8 ]; then
-    declare -A mac_array
-    duplicate_found=false
-  
-    # Loop through all MAC addresses
-    for i in $(seq 1 $netif_num); do
-      mac_var="MACADDR$i"
-      mac_value="${!mac_var}"
-      
-      # Check if the MAC address is not NULL
-      if [ -n "$mac_value" ]; then
-        # Check if this MAC address already exists in our array
-        if [ -n "${mac_array[$mac_value]+x}" ]; then
-          duplicate_found=true
-          break
-        else
-          # If not, add it to the array
-          mac_array[$mac_value]=$i
+  if [ "$netif_num" -ge 1 ] && [ "$netif_num" -le 8 ]; then
+      declare -A mac_array
+      duplicate_found=false
+    
+      # Loop through all MAC addresses
+      for i in $(seq 1 $netif_num); do
+        mac_var="MACADDR$i"
+        mac_value="${!mac_var}"
+        
+        # Check if the MAC address is not NULL
+        if [ -n "$mac_value" ]; then
+          # Check if this MAC address already exists in our array
+          if [ -n "${mac_array[$mac_value]+x}" ]; then
+            duplicate_found=true
+            break
+          else
+            # If not, add it to the array
+            mac_array[$mac_value]=$i
+          fi
         fi
+      done
+    
+      # If a duplicate was found, print an error message and return
+      if $duplicate_found; then
+        echo "Duplicate MAC addresses found among the interfaces."
+        read answer
+        return 1
       fi
-    done
-  
-    # If a duplicate was found, print an error message and return
-    if $duplicate_found; then
-      echo "Duplicate MAC addresses found among the interfaces."
-      read answer
-      return 1
-    fi
   else
     # If netif_num is out of valid range, print an error message and return
-    echo "netif_num must be between 2 and 8."
+    echo "netif_num must be between 1 and 8."
     read answer
     return 1
   fi
