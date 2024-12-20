@@ -99,3 +99,4 @@ firmware-broadcom_bnx2x.tcz
 gettext.tcz
 ethtool.tcz
 iproute2.tcz
+scsi-6.1.2-tinycore64.tcz
