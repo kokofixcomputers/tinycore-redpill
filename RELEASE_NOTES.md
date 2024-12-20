@@ -1,1 +1,1 @@
-     1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
+     1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.

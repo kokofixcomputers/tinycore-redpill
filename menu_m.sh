@@ -129,10 +129,14 @@ fi
 MODEL=$(jq -r -e '.general.model' "$USER_CONFIG_FILE")
 BUILD=$(jq -r -e '.general.version' "$USER_CONFIG_FILE")
 SN=$(jq -r -e '.extra_cmdline.sn' "$USER_CONFIG_FILE")
-MACADDR1=$(jq -r -e '.extra_cmdline.mac1' "$USER_CONFIG_FILE")
+MACADDR1="$(jq -r -e '.extra_cmdline.mac1' $USER_CONFIG_FILE)"
 MACADDR2="$(jq -r -e '.extra_cmdline.mac2' $USER_CONFIG_FILE)"
 MACADDR3="$(jq -r -e '.extra_cmdline.mac3' $USER_CONFIG_FILE)"
 MACADDR4="$(jq -r -e '.extra_cmdline.mac4' $USER_CONFIG_FILE)"
+MACADDR5="$(jq -r -e '.extra_cmdline.mac5' $USER_CONFIG_FILE)"
+MACADDR6="$(jq -r -e '.extra_cmdline.mac6' $USER_CONFIG_FILE)"
+MACADDR7="$(jq -r -e '.extra_cmdline.mac7' $USER_CONFIG_FILE)"
+MACADDR8="$(jq -r -e '.extra_cmdline.mac8' $USER_CONFIG_FILE)"
 NETNUM="1"
 
 LAYOUT=$(jq -r -e '.general.layout' "$USER_CONFIG_FILE")
@@ -169,6 +173,10 @@ function backtitle() {
   [ ! -n "${MACADDR2}" ] && BACKTITLE+=" (no MAC2)" || BACKTITLE+=" ${MACADDR2}"
   [ ! -n "${MACADDR3}" ] && BACKTITLE+=" (no MAC3)" || BACKTITLE+=" ${MACADDR3}"
   [ ! -n "${MACADDR4}" ] && BACKTITLE+=" (no MAC4)" || BACKTITLE+=" ${MACADDR4}"  
+  [ ! -n "${MACADDR5}" ] && BACKTITLE+=" (no MAC5)" || BACKTITLE+=" ${MACADDR5}"
+  [ ! -n "${MACADDR6}" ] && BACKTITLE+=" (no MAC6)" || BACKTITLE+=" ${MACADDR6}"
+  [ ! -n "${MACADDR7}" ] && BACKTITLE+=" (no MAC7)" || BACKTITLE+=" ${MACADDR7}"
+  [ ! -n "${MACADDR8}" ] && BACKTITLE+=" (no MAC8)" || BACKTITLE+=" ${MACADDR8}"  
   [ -n "${KEYMAP}" ] && BACKTITLE+=" (${LAYOUT}/${KEYMAP})" || BACKTITLE+=" (qwerty/us)"
   echo ${BACKTITLE}
 }
@@ -678,6 +686,30 @@ function macMenu() {
       writeConfigKey "extra_cmdline" "netif_num" "4"
   fi
 
+  if [ "$1" = "eth4" ]; then
+      MACADDR5="${MACADDR}"
+      writeConfigKey "extra_cmdline" "mac5" "${MACADDR5}"
+      writeConfigKey "extra_cmdline" "netif_num" "5"
+  fi
+  
+  if [ "$1" = "eth5" ]; then
+      MACADDR6="${MACADDR}"
+      writeConfigKey "extra_cmdline" "mac6" "${MACADDR6}"
+      writeConfigKey "extra_cmdline" "netif_num" "6"
+  fi
+  
+  if [ "$1" = "eth6" ]; then
+      MACADDR7="${MACADDR}"
+      writeConfigKey "extra_cmdline" "mac7" "${MACADDR7}"
+      writeConfigKey "extra_cmdline" "netif_num" "7"
+  fi
+
+  if [ "$1" = "eth7" ]; then
+      MACADDR8="${MACADDR}"
+      writeConfigKey "extra_cmdline" "mac8" "${MACADDR8}"
+      writeConfigKey "extra_cmdline" "netif_num" "8"
+  fi
+
 }
 
 function prevent() {
@@ -713,6 +745,10 @@ function editUserConfig() {
   MACADDR2="$(jq -r -e '.extra_cmdline.mac2' $USER_CONFIG_FILE)"
   MACADDR3="$(jq -r -e '.extra_cmdline.mac3' $USER_CONFIG_FILE)"
   MACADDR4="$(jq -r -e '.extra_cmdline.mac4' $USER_CONFIG_FILE)"
+  MACADDR5="$(jq -r -e '.extra_cmdline.mac5' $USER_CONFIG_FILE)"
+  MACADDR6="$(jq -r -e '.extra_cmdline.mac6' $USER_CONFIG_FILE)"
+  MACADDR7="$(jq -r -e '.extra_cmdline.mac7' $USER_CONFIG_FILE)"
+  MACADDR8="$(jq -r -e '.extra_cmdline.mac8' $USER_CONFIG_FILE)"
   NETNUM"=$(jq -r -e '.extra_cmdline.netif_num' $USER_CONFIG_FILE)"
 }
 
@@ -774,6 +810,26 @@ function checkUserConfig() {
     writeConfigKey "extra_cmdline" "mac4" "${MACADDR4}"
   fi
 
+  if [ $(ifconfig | grep eth4 | wc -l) -gt 0 ] && [ ! -n "${MACADDR5}" ]; then
+    MACADDR5=`./macgen.sh "realmac" "eth4" ${MODEL}`
+    writeConfigKey "extra_cmdline" "mac5" "${MACADDR5}"
+  fi
+
+  if [ $(ifconfig | grep eth5 | wc -l) -gt 0 ] && [ ! -n "${MACADDR6}" ]; then
+    MACADDR6=`./macgen.sh "realmac" "eth5" ${MODEL}`
+    writeConfigKey "extra_cmdline" "mac6" "${MACADDR6}"
+  fi
+
+  if [ $(ifconfig | grep eth6 | wc -l) -gt 0 ] && [ ! -n "${MACADDR7}" ]; then
+    MACADDR7=`./macgen.sh "realmac" "eth6" ${MODEL}`
+    writeConfigKey "extra_cmdline" "mac7" "${MACADDR7}"
+  fi
+
+  if [ $(ifconfig | grep eth7 | wc -l) -gt 0 ] && [ ! -n "${MACADDR8}" ]; then
+    MACADDR8=`./macgen.sh "realmac" "eth7" ${MODEL}`
+    writeConfigKey "extra_cmdline" "mac8" "${MACADDR8}"
+  fi
+
   netif_num=$(jq -r -e '.extra_cmdline.netif_num' $USER_CONFIG_FILE)
   netif_num_cnt=$(cat $USER_CONFIG_FILE | grep \"mac | wc -l)
                     
@@ -786,24 +842,39 @@ function checkUserConfig() {
     return 1     
   fi  
 
-  if [ "$netif_num" == "2" ]; then
-    if [ "$MACADDR1" == "$MACADDR2" ]; then
-      echo "mac1 and mac2 cannot be set identically"
-      read answer    
-      return 1
-    fi
-  elif [ "$netif_num" == "3" ]; then
-    if [ "$MACADDR1" == "$MACADDR2" ]||[ "$MACADDR1" == "$MACADDR3" ]||[ "$MACADDR2" == "$MACADDR3" ]; then
-      echo "mac1, mac2 and mac3 cannot have the same value"
-      read answer    
-      return 1
-    fi
-  elif [ "$netif_num" == "4" ]; then
-    if [ "$MACADDR1" == "$MACADDR2" ]||[ "$MACADDR1" == "$MACADDR3" ]||[ "$MACADDR1" == "$MACADDR4" ]||[ "$MACADDR2" == "$MACADDR3" ]||[ "$MACADDR2" == "$MACADDR4" ]||[ "$MACADDR3" == "$MACADDR4" ]; then
-      echo "mac1, mac2, mac3 and mac4 cannot have the same value"
-      read answer    
-      return 1
-    fi
+  if [ "$netif_num" -ge 1 ] && [ "$netif_num" -le 8 ]; then
+      declare -A mac_array
+      duplicate_found=false
+    
+      # Loop through all MAC addresses
+      for i in $(seq 1 $netif_num); do
+        mac_var="MACADDR$i"
+        mac_value="${!mac_var}"
+        
+        # Check if the MAC address is not NULL
+        if [ -n "$mac_value" ]; then
+          # Check if this MAC address already exists in our array
+          if [ -n "${mac_array[$mac_value]+x}" ]; then
+            duplicate_found=true
+            break
+          else
+            # If not, add it to the array
+            mac_array[$mac_value]=$i
+          fi
+        fi
+      done
+    
+      # If a duplicate was found, print an error message and return
+      if $duplicate_found; then
+        echo "Duplicate MAC addresses found among the interfaces."
+        read answer
+        return 1
+      fi
+  else
+    # If netif_num is out of valid range, print an error message and return
+    echo "netif_num must be between 1 and 8."
+    read answer
+    return 1
   fi
 
 }
@@ -2129,20 +2200,50 @@ if [ $(ifconfig | grep eth3 | wc -l) -gt 0 ]; then
   fi
 fi  
 
+if [ $(ifconfig | grep eth4 | wc -l) -gt 0 ]; then
+  MACADDR5="$(jq -r -e '.extra_cmdline.mac5' $USER_CONFIG_FILE)"
+  NETNUM="5"
+  if [ ! -n "${MACADDR5}" ]; then
+    MACADDR5=`./macgen.sh "realmac" "eth4" ${MODEL}`
+    writeConfigKey "extra_cmdline" "mac5" "${MACADDR5}"
+  fi
+fi  
+if [ $(ifconfig | grep eth5 | wc -l) -gt 0 ]; then
+  MACADDR6="$(jq -r -e '.extra_cmdline.mac6' $USER_CONFIG_FILE)"
+  NETNUM="6"
+  if [ ! -n "${MACADDR6}" ]; then
+    MACADDR6=`./macgen.sh "realmac" "eth5" ${MODEL}`
+    writeConfigKey "extra_cmdline" "mac6" "${MACADDR6}"
+  fi
+fi  
+if [ $(ifconfig | grep eth6 | wc -l) -gt 0 ]; then
+  MACADDR7="$(jq -r -e '.extra_cmdline.mac7' $USER_CONFIG_FILE)"
+  NETNUM="7"
+  if [ ! -n "${MACADDR7}" ]; then
+    MACADDR7=`./macgen.sh "realmac" "eth6" ${MODEL}`
+    writeConfigKey "extra_cmdline" "mac7" "${MACADDR7}"
+  fi
+fi  
+if [ $(ifconfig | grep eth7 | wc -l) -gt 0 ]; then
+  MACADDR8="$(jq -r -e '.extra_cmdline.mac8' $USER_CONFIG_FILE)"
+  NETNUM="8"
+  if [ ! -n "${MACADDR8}" ]; then
+    MACADDR8=`./macgen.sh "realmac" "eth7" ${MODEL}`
+    writeConfigKey "extra_cmdline" "mac8" "${MACADDR8}"
+  fi
+fi  
+
+
 CURNETNUM="$(jq -r -e '.extra_cmdline.netif_num' $USER_CONFIG_FILE)"
 if [ $CURNETNUM != $NETNUM ]; then
-  if [ $NETNUM == "3" ]; then 
-    DeleteConfigKey "extra_cmdline" "mac4"
-  fi  
-  if [ $NETNUM == "2" ]; then 
-    DeleteConfigKey "extra_cmdline" "mac4"  
-    DeleteConfigKey "extra_cmdline" "mac3"
-  fi  
-  if [ $NETNUM == "1" ]; then
-    DeleteConfigKey "extra_cmdline" "mac4"  
-    DeleteConfigKey "extra_cmdline" "mac3"
-    DeleteConfigKey "extra_cmdline" "mac2"    
-  fi  
+  if [ $NETNUM -ge 1 ] && [ $NETNUM -le 8 ]; then
+    for i in $(seq 8 -1 $((NETNUM + 1))); do
+      DeleteConfigKey "extra_cmdline" "mac$i"
+    done
+  else
+    echo "NETNUM must be between 1 and 8."
+    exit 1
+  fi
   writeConfigKey "extra_cmdline" "netif_num" "$NETNUM"
 fi
 
@@ -2239,6 +2340,10 @@ while true; do
     [ $(ifconfig | grep eth1 | wc -l) -gt 0 ] && eval "echo \"f \\\"\${MSG${tz}04} 2\\\"\""         >> "${TMP_PATH}/menu"
     [ $(ifconfig | grep eth2 | wc -l) -gt 0 ] && eval "echo \"g \\\"\${MSG${tz}04} 3\\\"\""         >> "${TMP_PATH}/menu"
     [ $(ifconfig | grep eth3 | wc -l) -gt 0 ] && eval "echo \"h \\\"\${MSG${tz}04} 4\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(ifconfig | grep eth4 | wc -l) -gt 0 ] && eval "echo \"i \\\"\${MSG${tz}04} 5\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(ifconfig | grep eth5 | wc -l) -gt 0 ] && eval "echo \"o \\\"\${MSG${tz}04} 6\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(ifconfig | grep eth6 | wc -l) -gt 0 ] && eval "echo \"t \\\"\${MSG${tz}04} 7\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(ifconfig | grep eth7 | wc -l) -gt 0 ] && eval "echo \"v \\\"\${MSG${tz}04} 8\\\"\""         >> "${TMP_PATH}/menu"
     [ "${CPU}" != "HP" ] && eval "echo \"z \\\"\${MSG${tz}06} (${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"
     eval "echo \"k \\\"\${MSG${tz}56}\\\"\""             >> "${TMP_PATH}/menu"
     eval "echo \"q \\\"\${MSG${tz}41} (${bay})\\\"\""      >> "${TMP_PATH}/menu"    
@@ -2265,7 +2370,15 @@ while true; do
     [ $(ifconfig | grep eth2 | wc -l) -gt 0 ] && NEXT="g" || NEXT="p" ;;
     g) macMenu "eth2"
     [ $(ifconfig | grep eth3 | wc -l) -gt 0 ] && NEXT="h" || NEXT="p" ;;
-    h) macMenu "eth3";    NEXT="p" ;; 
+    h) macMenu "eth3"
+    [ $(ifconfig | grep eth4 | wc -l) -gt 0 ] && NEXT="i" || NEXT="p" ;;
+    i) macMenu "eth4"
+    [ $(ifconfig | grep eth5 | wc -l) -gt 0 ] && NEXT="o" || NEXT="p" ;;
+    o) macMenu "eth5"
+    [ $(ifconfig | grep eth6 | wc -l) -gt 0 ] && NEXT="t" || NEXT="p" ;;
+    t) macMenu "eth6"
+    [ $(ifconfig | grep eth7 | wc -l) -gt 0 ] && NEXT="v" || NEXT="p" ;;
+    v) macMenu "eth7";    NEXT="p" ;; 
     z) selectldrmode ;    NEXT="p" ;;
     k) remapsata ;        NEXT="p" ;;
     q) storagepanel;      NEXT="p" ;;    

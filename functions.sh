@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.3"
+rploaderver="1.0.6.5"
 build="master"
 redpillmake="prod"
 
@@ -134,6 +134,8 @@ function history() {
     1.0.6.1 Improved bootloader boot partition detection method
     1.0.6.2 Changed to use only the first one when multiple bootloaders exist
     1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
+    1.0.6.4 Expanded MAC address support from 4 to 8.
+    1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.
     --------------------------------------------------------------------------------------
 EOF
 
@@ -427,6 +429,10 @@ EOF
 # Changed to use only the first one when multiple bootloaders exist
 # 2024.11.27 v1.0.6.3
 # Added ability to force loading mmc and sd modules when loading Tinycore Linux
+# 2024.12.17 v1.0.6.4 
+# Expanded MAC address support from 4 to 8.
+# 2024.12.20 v1.0.6.5 
+# Includes tinycore linux scsi module for scsi type bootloader support.
     
 function showlastupdate() {
     cat <<EOF
@@ -523,6 +529,12 @@ function showlastupdate() {
 
 # 2024.11.27 v1.0.6.3
 # Added ability to force loading mmc and sd modules when loading Tinycore Linux
+
+# 2024.12.17 v1.0.6.4 
+# Expanded MAC address support from 4 to 8.
+
+# 2024.12.20 v1.0.6.5 
+# Includes tinycore linux scsi module for scsi type bootloader support.
 
 EOF
 }
@@ -2651,6 +2663,12 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         cat /mnt/${loaderdisk}3/initrd-dsm | sudo cpio -idm "*rp.ko*"  >/dev/null 2>&1
     fi
 
+    # Network card configuration file
+    for N in $(seq 0 7); do
+      echo -e "DEVICE=eth${N}\nBOOTPROTO=dhcp\nONBOOT=yes\nIPV6INIT=dhcp\nIPV6_ACCEPT_RA=1" >"/home/tc/ifcfg-eth${N}"
+    done
+    sudo cp -vf /home/tc/ifcfg-eth* /home/tc/rd.temp/etc/sysconfig/network-scripts/
+
     # SA6400 patches for JOT Mode
     if [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then
         echo -e "Apply Epyc7002 Fixes"
@@ -2682,7 +2700,8 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     #sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/losetup/master/sbin/libsmartcols.so.1 -o /home/tc/rd.temp/usr/lib/libsmartcols.so.1
     #sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/losetup/master/sbin/losetup -o /home/tc/rd.temp/usr/sbin/losetup
     #sudo chmod +x /home/tc/rd.temp/usr/sbin/losetup
-    
+
+    # Reassembly ramdisk
     if [ "$RD_COMPRESSED" = "false" ]; then
         echo "Ramdisk in not compressed "
         (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
