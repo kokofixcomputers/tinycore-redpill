@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.4"
+rploaderver="1.0.6.5"
 build="master"
 redpillmake="prod"
 
@@ -135,6 +135,7 @@ function history() {
     1.0.6.2 Changed to use only the first one when multiple bootloaders exist
     1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
     1.0.6.4 Expanded MAC address support from 4 to 8.
+    1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.
     --------------------------------------------------------------------------------------
 EOF
 
@@ -430,6 +431,8 @@ EOF
 # Added ability to force loading mmc and sd modules when loading Tinycore Linux
 # 2024.12.17 v1.0.6.4 
 # Expanded MAC address support from 4 to 8.
+# 2024.12.20 v1.0.6.5 
+# Includes tinycore linux scsi module for scsi type bootloader support.
     
 function showlastupdate() {
     cat <<EOF
@@ -529,6 +532,9 @@ function showlastupdate() {
 
 # 2024.12.17 v1.0.6.4 
 # Expanded MAC address support from 4 to 8.
+
+# 2024.12.20 v1.0.6.5 
+# Includes tinycore linux scsi module for scsi type bootloader support.
 
 EOF
 }
