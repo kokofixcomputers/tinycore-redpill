@@ -650,19 +650,19 @@ function processpat() {
 st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
         testarchive "${patfile}"
         if [ ${isencrypted} = "no" ]; then
-            echo "File ${patfile} is already unencrypted"
+            echo "File ${patfile} is already decrypted"
             msgnormal "Copying file to /home/tc/redpill-load/cache folder"
             mv -f ${patfile} /home/tc/redpill-load/cache/
         elif [ ${isencrypted} = "yes" ]; then
             [ -f /home/tc/redpill-load/cache/${SYNOMODEL}.pat ] && testarchive /home/tc/redpill-load/cache/${SYNOMODEL}.pat
             if [ -f /home/tc/redpill-load/cache/${SYNOMODEL}.pat ] && [ ${isencrypted} = "no" ]; then
-                echo "Unecrypted file is already cached in :  /home/tc/redpill-load/cache/${SYNOMODEL}.pat"
+                echo "Decrypted file is already cached in :  /home/tc/redpill-load/cache/${SYNOMODEL}.pat"
             else
-                echo "Copy encrypted pat file : ${patfile} to ${temp_dsmpat_folder}"
+                echo "Copying encrypted pat file : ${patfile} to ${temp_dsmpat_folder}"
                 mv -f ${patfile} ${temp_dsmpat_folder}/${SYNOMODEL}.pat
                 echo "Extracting encrypted pat file : ${temp_dsmpat_folder}/${SYNOMODEL}.pat to ${temp_pat_folder}"
                 sudo /bin/syno_extract_system_patch ${temp_dsmpat_folder}/${SYNOMODEL}.pat ${temp_pat_folder} || echo "extract latest pat"
-                echo "Creating unecrypted pat file ${SYNOMODEL}.pat to /home/tc/redpill-load/cache folder (multithreaded comporession)"
+                echo "Decrypting pat file ${SYNOMODEL}.pat to /home/tc/redpill-load/cache folder (multithreaded comporession)"
                 mkdir -p /home/tc/redpill-load/cache/
                 thread=$(lscpu |grep CPU\(s\): | awk '{print $2}')
                 cd ${temp_pat_folder} && tar -cf - ./ | pigz -p $thread > ${temp_dsmpat_folder}/${SYNOMODEL}.pat && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat                
@@ -685,7 +685,7 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
             echo "OK"
             configfile="/home/tc/redpill-load/config/$MODEL/${major}.${minor}.${micro}-${buildnumber}/config.json"
         else
-            echo "No config file found, please use the proper repo, clean and download again"
+            echo "No config file found, The download may be corrupted or may not be run the original repo. Please re-download from original repo."
             exit 99
         fi
 
@@ -1211,7 +1211,7 @@ function postupdatev1() {
         echo "OK"
         configfile="/home/tc/redpill-load/config/$MODEL/${major}.${minor}.${micro}-${buildnumber}/config.json"
     else
-        echo "No config file found, please use the proper repo, clean and download again"
+        echo "No config file found, The download may be corrupted or may not be run the original repo. Please re-download from original repo."
         exit 99
     fi
 
