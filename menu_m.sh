@@ -307,7 +307,7 @@ function seleudev() {
 function selectldrmode() {
   eval "MSG28=\"\${MSG${tz}28}\""
   eval "MSG29=\"\${MSG${tz}29}\""  
-  if [ "${MODEL}" = "SA6400" ]||[ "${MODEL}" = "DS3615xs" ]; then  
+  if [ "${MODEL}" = "SA6400" ]; then  
     while true; do
       dialog --clear --backtitle "`backtitle`" \
         --menu "Choose a option" 0 0 0 \
@@ -370,11 +370,11 @@ function selectversion () {
 
 while true; do
   cmd=(dialog --clear --backtitle "`backtitle`" --menu "Choose an option" 0 0 0)
-  if [ "${MODEL}" != "DS3615xs" ]; then
+  #if [ "${MODEL}" != "DS3615xs" ]; then
     options=("a" "7.2.2-72806" "b" "7.2.1-69057" "c" "7.2.0-64570" "d" "7.1.1-42962")
-  else  
-    options=("d" "7.1.1-42962")
-  fi 
+  #else  
+  #  options=("d" "7.1.1-42962")
+  #fi 
   case $MODEL in
     DS923+ | DS723+ | DS1823+ | DVA1622 | DS1522+ | DS423+ | RS2423+ )
       ;;
@@ -411,7 +411,7 @@ done
 function modelMenu() {
 
   M_GRP1="SA6400 DS3622xs+ DS1621xs+ RS3621xs+ RS4021xs+ DS3617xs RS3618xs" #RS1619xs+
-  M_GRP2="DS3615xs"
+  #M_GRP2="DS3615xs"
   M_GRP3="DVA3221 DVA3219 DS1819+ DS2419+"
   M_GRP4="DS218+ DS918+ DS1019+ DS620slim DS718+"
   M_GRP5="DS923+ DS723+ DS1522+"
@@ -435,12 +435,12 @@ while true; do
 #  else
       if [ "${AFTERHASWELL}" == "OFF" ]; then
         echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
+        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
         echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
         echo "${M_GRP6}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
       else
         echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
+        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
         echo "${M_GRP4}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
         echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
         echo "${M_GRP7}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"        
@@ -455,7 +455,7 @@ while true; do
   else  
         echo "" > "${TMP_PATH}/mdl"
         echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
+        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
         echo "${M_GRP4}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
         echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
         echo "${M_GRP7}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"        
@@ -494,14 +494,14 @@ done
       writeConfigKey "general" "modulename" "${MDLNAME}"
   fi
 
-  if [ "${MODEL}" = "DS3615xs" ]; then
-      BUILD="7.1.1-42962"
-      MDLNAME="all-modules"
-      writeConfigKey "general" "modulename" "${MDLNAME}"
-  else    
+  #if [ "${MODEL}" = "DS3615xs" ]; then
+  #    BUILD="7.1.1-42962"
+  #    MDLNAME="all-modules"
+  #    writeConfigKey "general" "modulename" "${MDLNAME}"
+  #else    
   #elif [ "${MODEL}" = "DS923+" ] || [ "${MODEL}" = "DS723+" ] || [ "${MODEL}" = "DS1823+" ] || [ "${MODEL}" = "DVA1622" ]; then
       BUILD="7.2.2-72806"
-  fi
+  #fi
   writeConfigKey "general" "version" "${BUILD}"  
 
   if [ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
@@ -532,7 +532,7 @@ function setSuggest() {
     DS218+)      platform="apollolake";bay="TOWER_2_Bay";mcpu="Intel Celeron J3355";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;      
     DS220+)      platform="geminilake(DT)";bay="TOWER_2_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
     DS2422+)     platform="v1000(DT)";bay="TOWER_12_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
-    DS3615xs)    platform="bromolow";bay="TOWER_12_Bay";mcpu="Intel Core i3-4130";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
+    #DS3615xs)    platform="bromolow";bay="TOWER_12_Bay";mcpu="Intel Core i3-4130";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
     DS3617xs)    platform="broadwell";bay="TOWER_12_Bay";mcpu="Intel Xeon D-1527";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;    
     DS3622xs+)   platform="broadwellnk";bay="TOWER_12_Bay";mcpu="Intel Xeon D-1531";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
     DS423+)      platform="geminilake(DT)";bay="TOWER_4_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
