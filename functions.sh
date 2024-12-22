@@ -21,7 +21,6 @@ mshtarfile="https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/maste
 smallfixnumber="0"
 
 function history() {
-
     cat <<EOF
     --------------------------------------------------------------------------------------
     0.7.0.0 Added build for version greater than 42218
@@ -139,7 +138,6 @@ function history() {
     1.0.6.6 Discontinuing support for DS3615xs.
     --------------------------------------------------------------------------------------
 EOF
-
 }
 
             
