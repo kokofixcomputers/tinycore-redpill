@@ -2537,6 +2537,10 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     fi
 
     [ $? -ne 0 ] && echo "FAILED : Loader creation failed check the output for any errors" && exit 99
+    msgnormal "Chkeck Result of build-loader"
+    ls -l /mnt/${loaderdisk}1/
+    ls -l /mnt/${loaderdisk}2/
+    ls -l /mnt/${loaderdisk}3/
 
     msgnormal "Modify Jot Menu entry"
     tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
