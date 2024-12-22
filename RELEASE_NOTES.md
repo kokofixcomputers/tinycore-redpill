@@ -1,1 +1,1 @@
-     1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.
+     1.0.6.6 Discontinuing support for DS3615xs.
