@@ -136,7 +136,7 @@ function history() {
     1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
     1.0.6.4 Expanded MAC address support from 4 to 8.
     1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.
-    1.0.6.6 Fixed to stable lkm version for DS3615xs
+    1.0.6.6 Discontinuing support for DS3615xs.
     --------------------------------------------------------------------------------------
 EOF
 
@@ -435,7 +435,7 @@ EOF
 # 2024.12.20 v1.0.6.5 
 # Includes tinycore linux scsi module for scsi type bootloader support.
 # 2024.12.22 v1.0.6.6 
-# Fixed to stable lkm version for DS3615xs
+# Discontinuing support for DS3615xs.
     
 function showlastupdate() {
     cat <<EOF
@@ -540,7 +540,7 @@ function showlastupdate() {
 # Includes tinycore linux scsi module for scsi type bootloader support.
 
 # 2024.12.22 v1.0.6.6 
-# Fixed to stable lkm version for DS3615xs
+# Discontinuing support for DS3615xs.
 
 EOF
 }
@@ -576,7 +576,6 @@ Please type Synology Model Name after ./$(basename ${0})
 
 ./$(basename ${0}) DS918+-7.2.1-69057
 ./$(basename ${0}) DS3617xs-7.2.1-69057
-./$(basename ${0}) DS3615xs-7.2.1-69057
 ./$(basename ${0}) DS3622xs+-7.2.1-69057
 ./$(basename ${0}) DVA3221-7.2.1-69057
 ./$(basename ${0}) DS920+-7.2.1-69057
