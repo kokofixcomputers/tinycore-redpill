@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.5"
+rploaderver="1.0.6.6"
 build="master"
 redpillmake="prod"
 
@@ -136,6 +136,7 @@ function history() {
     1.0.6.3 Added ability to force loading mmc and sd modules when loading Tinycore Linux
     1.0.6.4 Expanded MAC address support from 4 to 8.
     1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.
+    1.0.6.6 Fixed to stable lkm version for DS3615xs
     --------------------------------------------------------------------------------------
 EOF
 
@@ -433,6 +434,8 @@ EOF
 # Expanded MAC address support from 4 to 8.
 # 2024.12.20 v1.0.6.5 
 # Includes tinycore linux scsi module for scsi type bootloader support.
+# 2024.12.22 v1.0.6.6 
+# Fixed to stable lkm version for DS3615xs
     
 function showlastupdate() {
     cat <<EOF
@@ -535,6 +538,9 @@ function showlastupdate() {
 
 # 2024.12.20 v1.0.6.5 
 # Includes tinycore linux scsi module for scsi type bootloader support.
+
+# 2024.12.22 v1.0.6.6 
+# Fixed to stable lkm version for DS3615xs
 
 EOF
 }
@@ -2946,12 +2952,13 @@ function getredpillko() {
         #else
         #    if [ "${ORIGIN_PLATFORM}" = "apollolake" ]; then
                 TAG="${LATESTURL##*/}"
+                [ "${ORIGIN_PLATFORM}" = "bromolow" ] && TAG="23.6.0"
         #    elif [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then
         #        TAG="${LATESTURL##*/}"
         #    else
         #        TAG="24.4.11"
         #    fi
-            echo "TAG is ${TAG}"        
+            echo "TAG is ${TAG}"
             STATUS=`curl --connect-timeout 5 -skL -w "%{http_code}" "https://github.com/PeterSuh-Q3/redpill-lkm${v}/releases/download/${TAG}/rp-lkms.zip" -o "/mnt/${tcrppart}/rp-lkms${v}.zip"`
         #fi
     else
