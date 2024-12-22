@@ -1334,10 +1334,14 @@ function _pat_process() {
   fi
 
   # Discover remote file size
+  echo "BUS type = ${BUS} (Discover remote file size)"
   if [ "${BUS}" != "block"  ]; then
       SPACELEFT=$(df --block-size=1 | awk '/'${loaderdisk}'3/{print $4}') # Check disk space left
       FILESIZE=$(curl -k -sLI "${PATURL}" | grep -i Content-Length | awk '{print$2}')
-    
+
+      FILESIZE=$(echo "${FILESIZE}" | tr -d '\r')
+      SPACELEFT=$(echo "${SPACELEFT}" | tr -d '\r')
+
       FILESIZE_FORMATTED=$(printf "%'d" "${FILESIZE}")
       SPACELEFT_FORMATTED=$(printf "%'d" "${SPACELEFT}")
       FILESIZE_MB=$((FILESIZE / 1024 / 1024))
