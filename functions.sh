@@ -2959,7 +2959,7 @@ function getredpillko() {
         #else
         #    if [ "${ORIGIN_PLATFORM}" = "apollolake" ]; then
                 TAG="${LATESTURL##*/}"
-                [ "${ORIGIN_PLATFORM}" = "bromolow" ] && TAG="23.12.0"
+                #[ "${ORIGIN_PLATFORM}" = "bromolow" ] && TAG="23.12.0"
         #    elif [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then
         #        TAG="${LATESTURL##*/}"
         #    else
