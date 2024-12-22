@@ -1285,6 +1285,8 @@ function getBus() {
   [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,TRAN 2>/dev/null | grep "${1} " | awk '{print $2}') #Spaces are intentional
   # usb/scsi(sata/ide)/virtio(scsi/virtio)/mmc/nvme/loop block
   [ -z "${BUS}" ] && BUS=$(lsblk -dpno KNAME,SUBSYSTEMS 2>/dev/null | grep "${1} " | awk '{print $2}' | awk -F':' '{print (NF>1) ? $2 : $0}') #Spaces are intentional
+  # empty is block
+  [ -z "${BUS}" ] && BUS="block"
   echo "${BUS}"
 
   [ "${BUS}" = "nvme" ] && loaderdisk="${loaderdisk}p"
