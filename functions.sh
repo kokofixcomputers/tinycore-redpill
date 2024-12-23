@@ -2561,10 +2561,18 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     msgnormal "Modify Jot Menu entry"
     # backup Jot menuentry to tempentry
     tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
-    sudo sed -i '43,80d' /tmp/grub.cfg
+    if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
+        sudo sed -i '61,80d' /tmp/grub.cfg
+    else
+        sudo sed -i '43,80d' /tmp/grub.cfg
+    fi
     echo "$tempentry" > /tmp/tempentry.txt
     # Append background to grub.cfg
-    sudo tee -a /tmp/grub.cfg < /home/tc/grubbkg.cfg
+    if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
+        echo
+    else
+        sudo tee -a /tmp/grub.cfg < /home/tc/grubbkg.cfg
+    fi
     
     if [ "$WITHFRIEND" = "YES" ]; then
         echo
