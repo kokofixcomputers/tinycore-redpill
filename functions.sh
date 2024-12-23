@@ -1993,7 +1993,7 @@ function postupdate() {
 
 function getgrubbkg() {
 
-    [ ! -f /home/tc/grubbkg.cfg ] && curl -kLO# "https://github.com/PeterSuh-Q3/tinycore-redpill/raw/main/grub/grubbkg.cfg"
+    curl -kLO# "https://github.com/PeterSuh-Q3/tinycore-redpill/raw/main/grub/grubbkg.cfg"
     if [ ! -f /home/tc/grubbkg.png ]; then
         curl -kLO# "https://github.com/PeterSuh-Q3/tinycore-redpill/raw/main/grub/grubbkg.png"
         sudo cp -vf /home/tc/grubbkg.png /mnt/${loaderdisk}3/grubbkg.png
