@@ -101,7 +101,8 @@ jobs:
           echo "Copy and check EFI files"
           ls -ltr /mnt/tarp1/EFI/BOOT/
 
-          sudo cp -vf ${GITHUB_WORKSPACE}/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
+          ## On hold because proxmox VGA is broken
+          #sudo cp -vf ${GITHUB_WORKSPACE}/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
           #sudo grub-mkconfig -o /mnt/tarp1/boot/grub/grub.cfg
           
           sudo cat /mnt/tarp1/EFI/BOOT/grub.cfg
