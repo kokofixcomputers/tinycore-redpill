@@ -19,7 +19,7 @@ mshtarfile="https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/maste
 
 #Defaults
 smallfixnumber="0"
-
+ 
 function history() {
     cat <<EOF
     --------------------------------------------------------------------------------------
