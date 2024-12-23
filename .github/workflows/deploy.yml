@@ -100,6 +100,8 @@ jobs:
           ls -ltr /mnt/tarp1/boot/grub/x86_64-efi/
           echo "Copy and check EFI files"
           ls -ltr /mnt/tarp1/EFI/BOOT/
+
+          sudo tee -a /mnt/tarp1/EFI/BOOT/grub.cfg < ${GITHUB_WORKSPACE}/grub/grubbkg.cfg
           
           sudo cat /mnt/tarp1/EFI/BOOT/grub.cfg
           sudo blkid "${LOOPX}p1"
@@ -118,10 +120,11 @@ jobs:
           sudo cp -vf ${GITHUB_WORKSPACE}/mydata.tgz /mnt/tarp3
           ls -ltr /mnt/tarp3
           
-          # from version 1.0.3.0 add gettext.tcz
+          ## add tinycore packages
           sudo cp -vf ${GITHUB_WORKSPACE}/tce/optional/*.* /mnt/tarp3/cde/optional
           ls -ltr /mnt/tarp3/cde/optional
-          sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst    
+          sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst
+          sudo cp -vf ${GITHUB_WORKSPACE}/grub/grubbkg.png /mnt/tarp3/grubbkg.png
           
           ##  Finalize ##
           sudo umount /mnt/p3
