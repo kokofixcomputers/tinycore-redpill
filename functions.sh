@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.6"
+rploaderver="1.0.6.7"
 build="master"
 redpillmake="prod"
 
@@ -136,6 +136,7 @@ function history() {
     1.0.6.4 Expanded MAC address support from 4 to 8.
     1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.
     1.0.6.6 Discontinuing support for DS3615xs.
+    1.0.6.7 Applying REDPILL background image to grub boot
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -434,6 +435,8 @@ EOF
 # Includes tinycore linux scsi module for scsi type bootloader support.
 # 2024.12.22 v1.0.6.6 
 # Discontinuing support for DS3615xs.
+# 2024.12.23 v1.0.6.7
+# Applying REDPILL background image to grub boot
     
 function showlastupdate() {
     cat <<EOF
@@ -539,6 +542,9 @@ function showlastupdate() {
 
 # 2024.12.22 v1.0.6.6 
 # Discontinuing support for DS3615xs.
+
+# 2024.12.23 v1.0.6.7
+# Applying REDPILL background image to grub boot
 
 EOF
 }
@@ -1985,6 +1991,13 @@ function postupdate() {
 
 }
 
+function getgrubbkg() {
+
+    [ ! -f /home/tc/grubbkg.cfg ] && curl -kLO# "https://github.com/PeterSuh-Q3/tinycore-redpill/raw/main/grub/grubbkg.cfg"
+    [ ! -f /mnt/${loaderdisk}3/grubbkg.png ] && sudo curl -kLO# "https://github.com/PeterSuh-Q3/tinycore-redpill/raw/main/grub/grubbkg.png" /mnt/${loaderdisk}3/grubbkg.png
+
+}
+
 function getbspatch() {
     if [ ! -f /usr/local/bspatch ]; then
 
@@ -2080,6 +2093,7 @@ function getvars() {
 
     sudo chown -R tc:staff /home/tc
 
+    getgrubbkg
     getbspatch
 
     if [ "${offline}" = "NO" ]; then
@@ -2543,9 +2557,12 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     ls -l /mnt/${loaderdisk}3/
 
     msgnormal "Modify Jot Menu entry"
+    # backup Jot menuentry to tempentry
     tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
-    sudo sed -i '61,80d' /tmp/grub.cfg
+    sudo sed -i '53,80d' /tmp/grub.cfg
     echo "$tempentry" > /tmp/tempentry.txt
+    # Append background to grub.cfg
+    cat /home/tc/grubbkg.cfg > /tmp/grub.cfg
     
     if [ "$WITHFRIEND" = "YES" ]; then
         echo
