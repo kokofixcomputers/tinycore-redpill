@@ -1,1 +1,1 @@
-     1.0.6.6 Discontinuing support for DS3615xs.
+     1.0.6.7 Applying REDPILL background image to grub boot
