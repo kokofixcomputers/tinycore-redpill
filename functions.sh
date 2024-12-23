@@ -1994,8 +1994,10 @@ function postupdate() {
 function getgrubbkg() {
 
     [ ! -f /home/tc/grubbkg.cfg ] && curl -kLO# "https://github.com/PeterSuh-Q3/tinycore-redpill/raw/main/grub/grubbkg.cfg"
-    [ ! -f /mnt/${loaderdisk}3/grubbkg.png ] && sudo curl -kLO# "https://github.com/PeterSuh-Q3/tinycore-redpill/raw/main/grub/grubbkg.png" /mnt/${loaderdisk}3/grubbkg.png
-
+    if [ ! -f /home/tc/grubbkg.png ]; then
+        curl -kLO# "https://github.com/PeterSuh-Q3/tinycore-redpill/raw/main/grub/grubbkg.png"
+        sudo cp -vf /home/tc/grubbkg.png /mnt/${loaderdisk}3/grubbkg.png
+    fi
 }
 
 function getbspatch() {
@@ -2559,7 +2561,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     msgnormal "Modify Jot Menu entry"
     # backup Jot menuentry to tempentry
     tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
-    sudo sed -i '53,80d' /tmp/grub.cfg
+    sudo sed -i '51,80d' /tmp/grub.cfg
     echo "$tempentry" > /tmp/tempentry.txt
     # Append background to grub.cfg
     cat /home/tc/grubbkg.cfg > /tmp/grub.cfg
