@@ -2561,7 +2561,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     msgnormal "Modify Jot Menu entry"
     # backup Jot menuentry to tempentry
     tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
-    sudo sed -i '51,80d' /tmp/grub.cfg
+    sudo sed -i '43,80d' /tmp/grub.cfg
     echo "$tempentry" > /tmp/tempentry.txt
     # Append background to grub.cfg
     sudo tee -a /tmp/grub.cfg < /home/tc/grubbkg.cfg
