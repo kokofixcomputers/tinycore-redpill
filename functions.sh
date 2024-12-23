@@ -2564,7 +2564,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     sudo sed -i '51,80d' /tmp/grub.cfg
     echo "$tempentry" > /tmp/tempentry.txt
     # Append background to grub.cfg
-    cat /home/tc/grubbkg.cfg > /tmp/grub.cfg
+    sudo cat /home/tc/grubbkg.cfg > /tmp/grub.cfg
     
     if [ "$WITHFRIEND" = "YES" ]; then
         echo
