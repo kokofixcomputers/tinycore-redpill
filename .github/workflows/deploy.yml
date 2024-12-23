@@ -101,8 +101,8 @@ jobs:
           echo "Copy and check EFI files"
           ls -ltr /mnt/tarp1/EFI/BOOT/
 
-          sudo cp -vf ${GITHUB_WORKSPACE}/grub/grub.cfg /etc/default/grub
-          sudo update-grub
+          sudo cp -vf ${GITHUB_WORKSPACE}/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
+          sudo grub-mkconfig -o /mnt/tarp1/boot/grub/grub.cfg
           
           sudo cat /mnt/tarp1/EFI/BOOT/grub.cfg
           sudo blkid "${LOOPX}p1"
