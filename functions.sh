@@ -2234,6 +2234,7 @@ menuentry 'Tiny Core Image Build' {
         echo Loading initramfs...
         initrd /corepure64.gz
         echo Booting TinyCore for loader creation
+        set gfxpayload=1024x768x16,1024x768
 }
 EOF
 
@@ -2250,6 +2251,7 @@ menuentry 'Tiny Core Friend $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update $
         echo Loading initramfs...
         initrd /initrd-friend
         echo Booting TinyCore Friend
+        set gfxpayload=1024x768x16,1024x768
 }
 EOF
 
@@ -2266,6 +2268,7 @@ menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 
         echo Loading initramfs...
         initrd /initrd-dsm
         echo Entering Force Junior (For Re-install DSM, USB)
+        set gfxpayload=1024x768x16,1024x768
 }
 EOF
 
@@ -2282,6 +2285,7 @@ menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 
         echo Loading initramfs...
         initrd /initrd-dsm
         echo Entering Force Junior (For Re-install DSM, SATA)
+        set gfxpayload=1024x768x16,1024x768
 }
 EOF
 
@@ -2298,6 +2302,7 @@ menuentry 'Tiny Core PostUpdate (RamDisk Update) $MODEL ${TARGET_VERSION}-${TARG
         echo Loading initramfs...
         initrd /initrd-friend
         echo Booting TinyCore Friend
+        set gfxpayload=1024x768x16,1024x768
 }
 EOF
 
@@ -2311,7 +2316,7 @@ function savedefault {
     echo -e "----------={ M Shell for TinyCore RedPill JOT }=----------"
     echo "TCRP JOT Version : ${rploaderver}"
     echo -e "Running on $(cat /proc/cpuinfo | grep "model name" | awk -F: '{print $2}' | wc -l) Processor $(cat /proc/cpuinfo | grep "model name" | awk -F: '{print $2}' | uniq)"
-    echo -e "$(cat /tmp/tempentry.txt | grep earlyprintk | head -1 | sed 's/linux \/zImage/cmdline :/' )"    
+    echo -e "$(cat /tmp/tempentry.txt | grep earlyprintk | head -1 | sed 's/linux \/zImage/cmdline :/' )"
 }    
 EOF
 }
@@ -2561,18 +2566,18 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     msgnormal "Modify Jot Menu entry"
     # backup Jot menuentry to tempentry
     tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
-    if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
-        sudo sed -i '61,80d' /tmp/grub.cfg
-    else
+    #if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
+    #    sudo sed -i '61,80d' /tmp/grub.cfg
+    #else
         sudo sed -i '43,80d' /tmp/grub.cfg
-    fi
+    #fi
     echo "$tempentry" > /tmp/tempentry.txt
     # Append background to grub.cfg
-    if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
-        echo
-    else
+    #if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
+    #    echo
+    #else
         sudo tee -a /tmp/grub.cfg < /home/tc/grubbkg.cfg
-    fi
+    #fi
     
     if [ "$WITHFRIEND" = "YES" ]; then
         echo
