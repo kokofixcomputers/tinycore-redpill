@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.7"
+rploaderver="1.0.6.8"
 build="master"
 redpillmake="prod"
 
@@ -137,6 +137,7 @@ function history() {
     1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.
     1.0.6.6 Discontinuing support for DS3615xs.
     1.0.6.7 Applying REDPILL background image to grub boot
+    1.0.6.8 i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -437,6 +438,8 @@ EOF
 # Discontinuing support for DS3615xs.
 # 2024.12.23 v1.0.6.7
 # Applying REDPILL background image to grub boot
+# 2025.01.01 v1.0.6.8
+# i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
     
 function showlastupdate() {
     cat <<EOF
@@ -545,6 +548,9 @@ function showlastupdate() {
 
 # 2024.12.23 v1.0.6.7
 # Applying REDPILL background image to grub boot
+
+# 2025.01.01 v1.0.6.8
+# i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
 
 EOF
 }
