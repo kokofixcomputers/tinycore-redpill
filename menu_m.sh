@@ -142,6 +142,8 @@ NETNUM="1"
 LAYOUT=$(jq -r -e '.general.layout' "$USER_CONFIG_FILE")
 KEYMAP=$(jq -r -e '.general.keymap' "$USER_CONFIG_FILE")
 
+I915MODE=$(jq -r -e '.general.i915mode' "$USER_CONFIG_FILE")
+BFBAY=$(jq -r -e '.general.bay' "$USER_CONFIG_FILE")
 DMPM=$(jq -r -e '.general.devmod' "$USER_CONFIG_FILE")
 LDRMODE=$(jq -r -e '.general.loadermode' "$USER_CONFIG_FILE")
 MDLNAME=$(jq -r -e '.general.modulename' "$USER_CONFIG_FILE")
@@ -1753,12 +1755,19 @@ function satadom_edit() {
 
 function i915_edit() {
 
-  if [ "${1}" == "Enable" ]; then
-    sed -i "s/i915.modeset=0//g" /home/tc/user_config.json
-  else
+  if [ "${I915MODE}" == "1" ]; then
     jsonfile=$(jq '.general.usb_line += " i915.modeset=0 "' /home/tc/user_config.json) && echo $jsonfile | jq . > /home/tc/user_config.json
-    jsonfile=$(jq '.general.sata_line += " i915.modeset=0 "' /home/tc/user_config.json) && echo $jsonfile | jq . > /home/tc/user_config.json    
+    jsonfile=$(jq '.general.sata_line += " i915.modeset=0 "' /home/tc/user_config.json) && echo $jsonfile | jq . > /home/tc/user_config.json
+    I915MODE="0"
+    DISPLAYI915="Enable" 
+  else
+    jsonfile=$(jq '.general.usb_line += " i915.modeset=1 "' /home/tc/user_config.json) && echo $jsonfile | jq . > /home/tc/user_config.json
+    jsonfile=$(jq '.general.sata_line += " i915.modeset=1 "' /home/tc/user_config.json) && echo $jsonfile | jq . > /home/tc/user_config.json    
+    I915MODE="1"
+    DISPLAYI915="Disable" 
   fi
+  
+  writeConfigKey "general" "i915mode" "${I915MODE}"
   sudo cp /home/tc/user_config.json /mnt/${tcrppart}/user_config.json  
   echo "y"|rploader backup
 }
@@ -1770,7 +1779,7 @@ function additional() {
   [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("dbgutils")') = true ] && dbgutils="Remove" || dbgutils="Add"
 
   [ $(cat /home/tc/user_config.json | grep "synoboot_satadom=2" | wc -l) -eq 1 ] && DOMKIND="Native" || DOMKIND="Fake"
-  [ $(cat /home/tc/user_config.json | grep "i915.modeset=0" | wc -l) -eq 2 ] && DISPLAYI915="Enable" || DISPLAYI915="Disable"
+  [ "${I915MODE}" == "1" ] && DISPLAYI915="Disable" || DISPLAYI915="Enable"
 
   eval "MSG50=\"\${MSG${tz}50}\""
   eval "MSG51=\"\${MSG${tz}51}\""
@@ -1824,13 +1833,7 @@ function additional() {
       ;;
     z)
       #[ "$MACHINE" = "VIRTUAL" ] && echo "VIRTUAL Machine is not supported..." && read answer && continue
-      if [ "${DISPLAYI915}" == "Disable" ]; then
-        i915_edit ${DISPLAYI915}
-        DISPLAYI915="Enable" 
-      else
-        i915_edit ${DISPLAYI915}      
-        DISPLAYI915="Disable"
-      fi
+      i915_edit
       ;;
     b) prevent;;
     c) showsata;;
@@ -2146,6 +2149,11 @@ if [ "${KEYMAP}" = "null" ]; then
     KEYMAP="us"
     writeConfigKey "general" "layout" "${LAYOUT}"
     writeConfigKey "general" "keymap" "${KEYMAP}"
+fi
+
+if [ "${I915MODE}" = "null" ]; then
+    I915MODE="1"
+    writeConfigKey "general" "i915mode" "${I915MODE}"
 fi
 
 if [ "${DMPM}" = "null" ]; then
