@@ -1756,17 +1756,13 @@ function satadom_edit() {
 function i915_edit() {
 
   if [ "${I915MODE}" == "1" ]; then
-      jsonfile=$(jq '.general.usb_line |= if contains("i915.modeset=") then sub("i915.modeset=[01]"; "i915.modeset=0") else . + " i915.modeset=0 " end' /home/tc/user_config.json)
-      echo "$jsonfile" > /home/tc/user_config.json
-      jsonfile=$(jq '.general.sata_line |= if contains("i915.modeset=") then sub("i915.modeset=[01]"; "i915.modeset=0") else . + " i915.modeset=0 " end' /home/tc/user_config.json)
-      echo "$jsonfile" > /home/tc/user_config.json
+      cat <(jq '.general.usb_line |= if contains("i915.modeset=") then sub("i915.modeset=[01]"; "i915.modeset=0") else . + " i915.modeset=0 " end' /home/tc/user_config.json) > /home/tc/user_config.json
+      cat <(jq '.general.sata_line |= if contains("i915.modeset=") then sub("i915.modeset=[01]"; "i915.modeset=0") else . + " i915.modeset=0 " end' /home/tc/user_config.json) > /home/tc/user_config.json
       I915MODE="0"
       DISPLAYI915="Enable" 
   else
-      jsonfile=$(jq '.general.usb_line |= if contains("i915.modeset=") then sub("i915.modeset=[01]"; "i915.modeset=1") else . + " i915.modeset=1 " end' /home/tc/user_config.json)
-      echo "$jsonfile" > /home/tc/user_config.json
-      jsonfile=$(jq '.general.sata_line |= if contains("i915.modeset=") then sub("i915.modeset=[01]"; "i915.modeset=1") else . + " i915.modeset=1 " end' /home/tc/user_config.json)
-      echo "$jsonfile" > /home/tc/user_config.json
+      cat <(jq '.general.usb_line |= if contains("i915.modeset=") then sub("i915.modeset=[01]"; "i915.modeset=1") else . + " i915.modeset=1 " end' /home/tc/user_config.json) > /home/tc/user_config.json
+      cat <(jq '.general.sata_line |= if contains("i915.modeset=") then sub("i915.modeset=[01]"; "i915.modeset=1") else . + " i915.modeset=1 " end' /home/tc/user_config.json) > /home/tc/user_config.json
       I915MODE="1"
       DISPLAYI915="Disable" 
   fi
