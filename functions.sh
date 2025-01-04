@@ -1370,7 +1370,7 @@ function _pat_process() {
   fi
   
   echo "PATURL = " "${PATURL}"
-  STATUS=$(curl -k -w "%{http_code}" -L "${PATURL}" -o "${PAT_PATH}" --progress-bar)
+  STATUS=$(sudo curl -k -w "%{http_code}" -L "${PATURL}" -o "${PAT_PATH}" --progress-bar)
   if [ $? -ne 0 -o ${STATUS} -ne 200 ]; then
       rm -f "${PAT_PATH}"
       echo "Check internet or cache disk space.\nError: ${STATUS}"
@@ -3110,7 +3110,8 @@ function upgrademan() {
 
 function rploader() {
 
-    getloaderdisk
+    echo "LOADER DISK = ${loaderdisk}"
+    [ -z "${loaderdisk}" ] && getloaderdisk
     if [ -z "${loaderdisk}" ]; then
         echo "Not Supported Loader BUS Type, program Exit!!!"
         exit 99
