@@ -1242,8 +1242,6 @@ function checkcpu() {
             CPU="AMD"
         fi        
     fi
-
-    threads="$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)"
     
     if [ $(lscpu |grep movbe |wc -l) -gt 0 ]; then    
         AFTERHASWELL="ON"
@@ -2137,6 +2135,8 @@ function getvars() {
 
     setplatform
 
+    threads="$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)"
+
     #echo "Platform : $platform_selected"
     echo "Rploader Version  : ${rploaderver}"
     echo "Extensions        : $EXTENSIONS "
@@ -2150,6 +2150,7 @@ function getvars() {
     echo "MODEL             : $MODEL"
     echo "KERNEL VERSION    : $KVER"
     echo "Local Cache Folder : $local_cache"
+    echo "CPU THREADS       : $threads"
     echo "DATE Internet     : $INTERNETDATE Local : $LOCALDATE"
 
   if [ "${offline}" = "NO" ]; then
