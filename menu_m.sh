@@ -2301,6 +2301,12 @@ if [ "$(which pigz)_" == "_" ]; then
     sudo mv -vf pigz /usr/local/bin/
 fi
 
+if [ "$FRKRNL" = "YES" ]; then
+    #overwrite GNU tar for friend
+    sudo curl -kL "https://github.com/PeterSuh-Q3/tcrp-modules/raw/refs/heads/main/all-modules/releases/usr/sbin/tar" -o /usr/bin/tar
+    sudo chmod +x /usr/bin/tar
+fi    
+
 # Download dtc, Don't used anymore 24.9.13
 #if [ "$(which dtc)_" == "_" ]; then
 #    echo "dtc dos not exist, Downloading dtc binary"
