@@ -2124,7 +2124,7 @@ fi
 #gettext
 [ ! -f /home/tc/lang.tgz ] && curl -kLO# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/lang.tgz
 [ ! -d "/usr/local/share/locale" ] && sudo mkdir -p "/usr/local/share/locale"
-sudo tar -xzvf lang.tgz -C /usr/local/share/locale
+gunzip -c lang.tgz | sudo tar -xvf - -C /usr/local/share/locale
 locale
 #End Locale Setting process
 export TEXTDOMAINDIR="/usr/local/share/locale"
