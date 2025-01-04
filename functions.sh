@@ -3244,6 +3244,8 @@ function my() {
       echo "Not Supported Loader BUS Type, program Exit!!!"
       exit 99
   fi
+
+  echo "${loaderdisk}" > /tmp/loaderdisk
   
   getBus "${loaderdisk}" 
     
