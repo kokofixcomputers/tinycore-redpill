@@ -1027,7 +1027,7 @@ function getlatestmshell() {
             echo "OK, updating, please re-run after updating"
             cp -f /home/tc/latest.mshell.gz /home/tc/$mshellgz
             rm -f /home/tc/latest.mshell.gz
-            tar -zxvf $mshellgz
+            gunzip -c $mshellgz | tar -xvf -
             echo "Updating m shell with latest updates"
             . /home/tc/functions.sh
             showlastupdate
@@ -1556,7 +1556,7 @@ function copyextractor() {
     echo "making directory ${local_cache}/extractor"
     [ ! -d ${local_cache}/extractor ] && mkdir ${local_cache}/extractor
     [ ! -f /home/tc/extractor.gz ] && sudo curl -kL -# "https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/extractor.gz" -o /home/tc/extractor.gz
-    sudo tar -zxvf /home/tc/extractor.gz -C ${local_cache}/extractor
+    gunzip -c /home/tc/extractor.gz | sudo tar -xvf - -C ${local_cache}/extractor
 
     if [ "${BUS}" = "block"  ]; then
       git clone https://github.com/technorabilia/syno-extract-system-patch.git
