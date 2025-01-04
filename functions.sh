@@ -2565,10 +2565,18 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     if [ "$JUNLOADER" == "YES" ]; then
         echo "jun build option has been specified, so JUN MOD loader will be created"
         # jun's mod must patch using custom.gz from the first partition, so you need to fix the partition.
-        sed -i "s/BRP_OUT_P2}\/\${BRP_CUSTOM_RD_NAME/BRP_OUT_P1}\/\${BRP_CUSTOM_RD_NAME/g" /home/tc/redpill-load/build-loader.sh        
-        sudo BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+        sed -i "s/BRP_OUT_P2}\/\${BRP_CUSTOM_RD_NAME/BRP_OUT_P1}\/\${BRP_CUSTOM_RD_NAME/g" /home/tc/redpill-load/build-loader.sh
+        if [ "$FRKRNL" = "NO" ]; then
+            sudo BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+        else
+            BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+        fi
     else
-        sudo ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+        if [ "$FRKRNL" = "NO" ]; then
+            sudo ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+        else
+            ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+        fi    
     fi
 
     [ $? -ne 0 ] && echo "FAILED : Loader creation failed check the output for any errors" && exit 99
