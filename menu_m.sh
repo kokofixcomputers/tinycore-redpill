@@ -110,8 +110,14 @@ getBus "${loaderdisk}"
 
 tcrppart="${loaderdisk}3"
 
+if [[ "$(uname -a | grep -c tcrpfriend)" -gt 0 ]]; then
+    FRKRNL="YES"
+else
+    FRKRNL="NO"
+fi
+
 # update tinycore 14.0 2023.12.18
-update_tinycore
+[ FRKRNL="NO" ] && update_tinycore
 
 # restore user_config.json file from /mnt/sd#/lastsession directory 2023.10.21
 #restoresession
@@ -1001,7 +1007,7 @@ function langMenu() {
   sudo localedef -f UTF-8 -i ${ucode} ${ucode}.UTF-8
   
   writeConfigKey "general" "ucode" "${ucode}"  
-  writexsession
+  [ FRKRNL="NO" ] && writexsession
 
   tz="US"
   load_us
@@ -2021,11 +2027,15 @@ TR) ucode="tr_TR";;
 esac
 writeConfigKey "general" "ucode" "${ucode}"
 
-sed -i "s/screen_color = (CYAN,GREEN,ON)/screen_color = (CYAN,BLUE,ON)/g" ~/.dialogrc
+if [ -f ~/.dialogrc ]; then
+  sed -i "s/screen_color = (CYAN,GREEN,ON)/screen_color = (CYAN,BLUE,ON)/g" ~/.dialogrc
+else
+  echo "screen_color = (CYAN,BLUE,ON)" > ~/.dialogrc
+fi
 
-writexsession
+[ FRKRNL="NO" ] && writexsession
 
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep gettext | wc -w) -eq 0 ]; then
+if [ FRKRNL="NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep gettext | wc -w) -eq 0 ]; then
     tce-load -wi gettext
     if [ $? -eq 0 ]; then
         echo "Download gettext.tcz OK, Permanent installation progress !!!"
@@ -2054,7 +2064,7 @@ fi
 #     fi
 #fi
 
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -eq 0 ]; then
+if [ FRKRNL="NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -eq 0 ]; then
     tce-load -wi glibc_apps glibc_i18n_locale unifont rxvt
     if [ $? -eq 0 ]; then
         echo "Download glibc_apps.tcz and glibc_i18n_locale.tcz OK, Permanent installation progress !!!"
@@ -2074,7 +2084,7 @@ if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -eq 0 ]; then
     fi
 fi
 
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -gt 0 ]; then
+if [ FRKRNL="NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -gt 0 ]; then
 # for 2Byte Language
   [ ! -d /usr/lib/locale ] && sudo mkdir /usr/lib/locale
   export LANG=${ucode}.UTF-8
@@ -2122,7 +2132,7 @@ tz="US"
 load_us
 
 # Download ethtool
-if [ "$(which ethtool)_" == "_" ]; then
+if [ FRKRNL="NO" ] && [ "$(which ethtool)_" == "_" ]; then
    echo "ethtool does not exist, install from tinycore"
    tce-load -iw ethtool iproute2 2>&1 >/dev/null
    sudo cp -f /tmp/tce/optional/* /mnt/${tcrppart}/cde/optional   
@@ -2130,9 +2140,9 @@ if [ "$(which ethtool)_" == "_" ]; then
    sudo echo "iproute2.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
 fi
 
-sortnetif
+[ FRKRNL="NO" ] && sortnetif
 
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep "kmaps.tczglibc_apps.tcz" | wc -w) -gt 0 ]; then
+if [ FRKRNL="NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep "kmaps.tczglibc_apps.tcz" | wc -w) -gt 0 ]; then
     sudo sed -i "/kmaps.tczglibc_apps.tcz/d" /mnt/${tcrppart}/cde/onboot.lst    
     sudo echo "glibc_apps.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
     sudo echo "kmaps.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
