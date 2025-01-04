@@ -1502,7 +1502,7 @@ function monitor() {
             vserver=$(lscpu | grep Hypervisor | wc -l)
             if [ $vserver -gt 0 ]; then echo "VM (${HYPERVISOR})"; else echo "Physical"; fi
         ) 
-        msgnormal "CPU Threads:\t\t"$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)
+        msgnormal "CPU Threads:\t\t"$(nproc)
         echo -e "Current Date Time:\t"$(date)
         #msgnormal "System Main IP:\t\t"$(ifconfig | grep inet | grep -v 127.0.0.1 | awk '{print $2}' | awk -F \: '{print $2}' | tr '\n' ',' | sed 's#,$##')
         getip
@@ -2135,7 +2135,7 @@ function getvars() {
 
     setplatform
 
-    threads="$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)"
+    threads="$(nproc)"
     [ -z "$threads" ] && threads="1"
 
     #echo "Platform : $platform_selected"
@@ -2191,7 +2191,7 @@ function backuploader() {
         sudo mv pigz /usr/bin/
     fi
 
-    thread=$(lscpu |grep CPU\(s\): | awk '{print $2}')
+    thread=$(nproc)
     if [ $(cat /usr/bin/filetool.sh | grep pigz | wc -l ) -eq 0 ]; then
         sudo sed -i "s/\-czvf/\-cvf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
         sudo sed -i "s/\-czf/\-cf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
