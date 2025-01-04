@@ -2136,6 +2136,7 @@ function getvars() {
     setplatform
 
     threads="$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)"
+    [ -z "$threads" ] && threads="1"
 
     #echo "Platform : $platform_selected"
     echo "Rploader Version  : ${rploaderver}"
