@@ -2084,12 +2084,13 @@ if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | w
     fi
 fi
 
-if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -gt 0 ]; then
 # for 2Byte Language
-  [ ! -d /usr/lib/locale ] && sudo mkdir /usr/lib/locale
-  export LANG=${ucode}.UTF-8
-  export LC_ALL=${ucode}.UTF-8
-  set -o allexport
+[ ! -d /usr/lib/locale ] && sudo mkdir /usr/lib/locale
+export LANG=${ucode}.UTF-8
+export LC_ALL=${ucode}.UTF-8
+set -o allexport
+
+if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -gt 0 ]; then
   
   sudo localedef -c -i ${ucode} -f UTF-8 ${ucode}.UTF-8
   sudo localedef -f UTF-8 -i ${ucode} ${ucode}.UTF-8
