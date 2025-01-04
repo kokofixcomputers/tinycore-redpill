@@ -3572,6 +3572,10 @@ function my() {
   
   if [ $? -ne 0 ]; then
       cecho r "An error occurred while building the loader!!! Clean the redpill-load directory!!! "
+      readanswer
+      if [ -n "$answer" ] && [ "$answer" = "Y" ] || [ "$answer" = "y" ]; then
+          echo "OK, keeping going..."
+      fi      
       rploader clean
   else
       [ "${BUS}" = "block" ] && exit 0
