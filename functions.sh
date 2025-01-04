@@ -1748,7 +1748,7 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
                 if [ "${BUS}" = "block"  ]; then
                   cd ${temp_pat_folder} && tar -cf ${temp_dsmpat_folder}/${SYNOMODEL}.pat ./ && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
                 else
-                  cd ${temp_pat_folder} && sudo tar -cf - ./ | sudo pigz -p $thread > ${temp_dsmpat_folder}/${SYNOMODEL}.pat && sudo cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
+                  cd ${temp_pat_folder} && sudo sh -c "tar -cf - ./ | pigz -p $thread > ${temp_dsmpat_folder}/${SYNOMODEL}.pat" && sudo cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
                 fi
             fi
             patfile="/home/tc/redpill-load/cache/${SYNOMODEL}.pat"            
