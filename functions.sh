@@ -2012,7 +2012,11 @@ function getbspatch() {
          
         echo "bspatch does not exist, copy from tools"
         chmod 777 /home/tc/tools/bspatch
-        sudo cp -vf /home/tc/tools/bspatch /usr/local/bin/
+        if [ "$FRKRNL" = "NO" ]; then
+            sudo cp -vf /home/tc/tools/bspatch /usr/local/bin/
+        else
+            sudo cp -vf /home/tc/tools/bspatch /usr/sbin/
+        fi    
     fi
 }
 
