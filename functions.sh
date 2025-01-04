@@ -3217,8 +3217,9 @@ function my() {
   echo "$1"
   echo "$2"
   echo "$3"
-  
-  getloaderdisk
+
+  echo "LOADER DISK = ${loaderdisk}"
+  [ -z "${loaderdisk}" ] && getloaderdisk
   if [ -z "${loaderdisk}" ]; then
       echo "Not Supported Loader BUS Type, program Exit!!!"
       exit 99
