@@ -1744,7 +1744,7 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
                 fi
                 echo "Decrypted pat file tar compression in progress ${SYNOMODEL}.pat to /home/tc/redpill-load/cache folder (multithreaded comporession)"
                 mkdir -p /home/tc/redpill-load/cache/
-                thread=$(lscpu |grep CPU\(s\): | awk '{print $2}')
+                thread=$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)
                 if [ "${BUS}" = "block"  ]; then
                   cd ${temp_pat_folder} && tar -cf ${temp_dsmpat_folder}/${SYNOMODEL}.pat ./ && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
                 else
