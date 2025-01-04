@@ -2302,9 +2302,11 @@ if [ "$(which pigz)_" == "_" ]; then
 fi
 
 if [ "$FRKRNL" = "YES" ]; then
-    #overwrite GNU tar for friend
-    sudo curl -kL "https://github.com/PeterSuh-Q3/tcrp-modules/raw/refs/heads/main/all-modules/releases/usr/sbin/tar" -o /usr/bin/tar
+    #overwrite GNU tar and patch for friend
+    sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/tar -o /usr/bin/tar
     sudo chmod +x /usr/bin/tar
+    sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/patch -o /usr/bin/patch
+    sudo chmod +x /usr/bin/patch
 fi    
 
 # Download dtc, Don't used anymore 24.9.13
