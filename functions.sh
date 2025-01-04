@@ -636,10 +636,10 @@ function getloaderdisk() {
             loaderdisk=$(sudo blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}' | head -n 1)
             [ -n "$loaderdisk" ] && break
         fi
-    done < <(sudo fdisk -l | grep "Disk /dev/" | grep -v "/dev/loop" | awk '{print $2}' | sed 's/://')
+    done < <(lsblk -ndo NAME | grep -v '^loop' | grep -v '^zram' | sed 's/^/\/dev\//')
     
     if [ -z "${loaderdisk}" ]; then
-        for edisk in $(sudo fdisk -l | grep "Disk /dev/loop" | awk '{print $2}' | sed 's/://' ); do
+        for edisk in $(lsblk -ndo NAME | grep -v '^loop' | grep -v '^zram' | sed 's/^/\/dev\//'); do
         if [ $(sudo fdisk -l | grep "83 Linux" | grep ${edisk} | wc -l ) -eq 3 ]; then
             loaderdisk="$(echo ${edisk} | cut -c 1-12 | awk -F\/ '{print $3}')"
         fi    
