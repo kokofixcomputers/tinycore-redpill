@@ -1724,7 +1724,7 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
         if [ ${isencrypted} = "no" ]; then
             echo "File ${patfile} is already decrypted"
             msgnormal "Copying file to /home/tc/redpill-load/cache folder"
-            mv -f ${patfile} /home/tc/redpill-load/cache/
+            sudo mv -f ${patfile} /home/tc/redpill-load/cache/
         elif [ ${isencrypted} = "yes" ]; then
             [ -f /home/tc/redpill-load/cache/${SYNOMODEL}.pat ] && testarchive /home/tc/redpill-load/cache/${SYNOMODEL}.pat
             if [ -f /home/tc/redpill-load/cache/${SYNOMODEL}.pat ] && [ ${isencrypted} = "no" ]; then
@@ -1732,13 +1732,13 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
             else
                 if [ "${BUS}" = "block"  ]; then            
                   echo "Copying encrypted pat file : ${patfile} to ~/data/in"
-                  mv -f ${patfile} ~/data/in/${SYNOMODEL}.pat
+                  sudo mv -f ${patfile} ~/data/in/${SYNOMODEL}.pat
                   echo "Extracting encrypted pat file : ~/data/in/${SYNOMODEL}.pat to ~/data/out"
                   sudo docker run --rm -v ~/data:/data syno-extract-system-patch /data/in/${SYNOMODEL}.pat /data/out/. || echo "extract latest pat"
                   rsync -a --remove-source-files ~/data/out/ ${temp_pat_folder}/
                 else
                   echo "Copying encrypted pat file : ${patfile} to ${temp_dsmpat_folder}"
-                  mv -f ${patfile} ${temp_dsmpat_folder}/${SYNOMODEL}.pat
+                  sudo mv -f ${patfile} ${temp_dsmpat_folder}/${SYNOMODEL}.pat
                   echo "Extracting encrypted pat file : ${temp_dsmpat_folder}/${SYNOMODEL}.pat to ${temp_pat_folder}"
                   sudo /bin/syno_extract_system_patch ${temp_dsmpat_folder}/${SYNOMODEL}.pat ${temp_pat_folder} || echo "extract latest pat"
                 fi
