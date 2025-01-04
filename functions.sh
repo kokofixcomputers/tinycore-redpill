@@ -1243,7 +1243,7 @@ function checkcpu() {
         fi        
     fi
 
-    threads="$(lscpu |grep CPU\(s\): | awk '{print $2}')"
+    threads="$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)"
     
     if [ $(lscpu |grep movbe |wc -l) -gt 0 ]; then    
         AFTERHASWELL="ON"
@@ -1504,7 +1504,7 @@ function monitor() {
             vserver=$(lscpu | grep Hypervisor | wc -l)
             if [ $vserver -gt 0 ]; then echo "VM (${HYPERVISOR})"; else echo "Physical"; fi
         ) 
-        msgnormal "CPU Threads:\t\t"$(lscpu |grep CPU\(s\): | awk '{print $2}')
+        msgnormal "CPU Threads:\t\t"$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)
         echo -e "Current Date Time:\t"$(date)
         #msgnormal "System Main IP:\t\t"$(ifconfig | grep inet | grep -v 127.0.0.1 | awk '{print $2}' | awk -F \: '{print $2}' | tr '\n' ',' | sed 's#,$##')
         getip
@@ -1744,11 +1744,11 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
                 fi
                 echo "Decrypted pat file tar compression in progress ${SYNOMODEL}.pat to /home/tc/redpill-load/cache folder (multithreaded comporession)"
                 mkdir -p /home/tc/redpill-load/cache/
-                thread=$(lscpu |grep CPU\(s\): | awk '{print $2}' | head -n1)
+                echo "threads = ${threads}"
                 if [ "${BUS}" = "block"  ]; then
                   cd ${temp_pat_folder} && tar -cf ${temp_dsmpat_folder}/${SYNOMODEL}.pat ./ && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
                 else
-                  cd ${temp_pat_folder} && sudo sh -c "tar -cf - ./ | pigz -p $thread > ${temp_dsmpat_folder}/${SYNOMODEL}.pat" && sudo cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
+                  cd ${temp_pat_folder} && sudo sh -c "tar -cf - ./ | pigz -p ${threads} > ${temp_dsmpat_folder}/${SYNOMODEL}.pat" && sudo cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
                 fi
             fi
             patfile="/home/tc/redpill-load/cache/${SYNOMODEL}.pat"            
