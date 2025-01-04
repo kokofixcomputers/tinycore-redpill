@@ -3017,11 +3017,11 @@ function getredpillko() {
     if [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then    
         unzip /mnt/${tcrppart}/rp-lkms${v}.zip        rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko.gz -d /tmp >/dev/null 2>&1
         gunzip -f /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko.gz >/dev/null 2>&1
-        cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
+        sudo cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
     else    
         unzip /mnt/${tcrppart}/rp-lkms${v}.zip        rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko.gz -d /tmp >/dev/null 2>&1
         gunzip -f /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko.gz >/dev/null 2>&1
-        cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
+        sudo cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
     fi
 
     if [ -z "${TAG}" ]; then
@@ -3031,8 +3031,8 @@ function getredpillko() {
     fi
 
     REDPILL_MOD_NAME="redpill-linux-v$(modinfo /home/tc/custom-module/redpill.ko | grep vermagic | awk '{print $2}').ko"
-    cp -vf /home/tc/custom-module/redpill.ko /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
-    strip --strip-debug /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
+    sudo cp -vf /home/tc/custom-module/redpill.ko /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
+    sudo strip --strip-debug /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
 
 }
 
