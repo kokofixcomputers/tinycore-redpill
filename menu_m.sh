@@ -2305,6 +2305,7 @@ if [ "$FRKRNL" = "YES" ]; then
     #overwrite GNU tar and patch for friend
     sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/tar -o /usr/bin/tar
     sudo chmod +x /usr/bin/tar
+    sudo rm /usr/bin/patch
     sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/patch -o /usr/bin/patch
     sudo chmod +x /usr/bin/patch
 fi    
