@@ -2626,8 +2626,8 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     fi
 
     if [ -f /home/tc/friend/initrd-friend ] && [ -f /home/tc/friend/bzImage-friend ]; then
-        cp /home/tc/friend/initrd-friend /mnt/${loaderdisk}3/
-        cp /home/tc/friend/bzImage-friend /mnt/${loaderdisk}3/
+        sudo cp /home/tc/friend/initrd-friend /mnt/${loaderdisk}3/
+        sudo cp /home/tc/friend/bzImage-friend /mnt/${loaderdisk}3/
     fi
 
     USB_LINE="$(grep -A 5 "USB," /tmp/tempentry.txt | grep linux | cut -c 16-999)"
