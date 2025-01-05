@@ -1532,13 +1532,17 @@ function savesession() {
 
     echo -n "Saving current extensions "
 
-    cat /home/tc/redpill-load/custom/extensions/*/*json | jq '.url' >${lastsessiondir}/extensions.list
+    if [ "$FRKRNL" = "NO" ]; then
+        cat /home/tc/redpill-load/custom/extensions/*/*json | jq '.url' >${lastsessiondir}/extensions.list
+    else
+        cat /home/tc/redpill-load/custom/extensions/*/*json | sudo jq '.url' >${lastsessiondir}/extensions.list
+    fi
 
     [ -f ${lastsessiondir}/extensions.list ] && echo " -> OK !"
 
     echo -n "Saving current user_config.json "
 
-    cp /home/tc/user_config.json ${lastsessiondir}/user_config.json
+    sudo cp /home/tc/user_config.json ${lastsessiondir}/user_config.json
 
     [ -f ${lastsessiondir}/user_config.json ] && echo " -> OK !"
 
@@ -2576,7 +2580,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
         if [ "$FRKRNL" = "NO" ]; then
             sudo ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
         else
-            ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+            sudo ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
         fi    
     fi
 
