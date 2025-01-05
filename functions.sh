@@ -2824,7 +2824,7 @@ st "gen grub     " "Gen GRUB entries" "Finished Gen GRUB entries : ${MODEL}"
     
         if [ -f ${patfile} ]; then
             echo "Found ${patfile}, moving to cache directory : ${local_cache} "
-            sudo cp -vf ${patfile} ${local_cache} && sudo rm -vf /home/tc/redpill-load/cache/*.pat
+            cp -vf ${patfile} ${local_cache} && rm -vf /home/tc/redpill-load/cache/*.pat
         fi
 st "cachingpat" "Caching pat file" "Cached file to: ${local_cache}"
     fi    
