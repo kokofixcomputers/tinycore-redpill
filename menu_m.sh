@@ -2301,16 +2301,16 @@ if [ "$FRKRNL" = "NO" ] && [ "$(which pigz)_" == "_" ]; then
     sudo mv -vf pigz /usr/local/bin/
 fi
 
-if [ "$FRKRNL" = "YES" ]; then
+#if [ "$FRKRNL" = "YES" ]; then
     #overwrite GNU tar and patch for friend
-    sudo rm /usr/bin/tar
-    sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/tar -o /usr/bin/tar
-    sudo chmod +x /usr/bin/tar
+#    sudo rm /usr/bin/tar
+#    sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/tar -o /usr/bin/tar
+#    sudo chmod +x /usr/bin/tar
     
-    sudo rm /usr/bin/patch
-    sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/patch -o /usr/bin/patch
-    sudo chmod +x /usr/bin/patch
-fi    
+#    sudo rm /usr/bin/patch
+#    sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/patch -o /usr/bin/patch
+#    sudo chmod +x /usr/bin/patch
+#fi    
 
 # Download dtc, Don't used anymore 24.9.13
 #if [ "$(which dtc)_" == "_" ]; then
