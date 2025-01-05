@@ -2700,10 +2700,10 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     msgwarning "Updated user_config with SATA Command Line : $SATA_LINE"
     json=$(jq --arg var "${SATA_LINE}" '.general.sata_line = $var' $userconfigfile) && echo -E "${json}" | jq . >$userconfigfile
 
-    cp $userconfigfile /mnt/${loaderdisk}3/
+    sudo cp $userconfigfile /mnt/${loaderdisk}3/
 
     # Share RD of friend kernel with JOT 2023.05.01
-    cp /mnt/${loaderdisk}1/zImage /mnt/${loaderdisk}3/zImage-dsm
+    sudo cp /mnt/${loaderdisk}1/zImage /mnt/${loaderdisk}3/zImage-dsm
 
     # Repack custom.gz including /usr/lib/modules and /usr/lib/firmware in all_modules 2024.02.18
     # Compining rd.gz and custom.gz
@@ -2824,7 +2824,7 @@ st "gen grub     " "Gen GRUB entries" "Finished Gen GRUB entries : ${MODEL}"
     
         if [ -f ${patfile} ]; then
             echo "Found ${patfile}, moving to cache directory : ${local_cache} "
-            cp -vf ${patfile} ${local_cache} && rm -vf /home/tc/redpill-load/cache/*.pat
+            sudo cp -vf ${patfile} ${local_cache} && sudo rm -vf /home/tc/redpill-load/cache/*.pat
         fi
 st "cachingpat" "Caching pat file" "Cached file to: ${local_cache}"
     fi    
