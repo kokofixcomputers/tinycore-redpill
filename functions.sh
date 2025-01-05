@@ -2780,7 +2780,7 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
             (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
         else
             (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root > /tmp/initrd-dsm)
-            sudo rsync -av /tmp/initrd-dsm /mnt/${loaderdisk}3/initrd-dsm
+            sudo mv -vf /tmp/initrd-dsm /mnt/${loaderdisk}3/initrd-dsm
         fi
     else
         echo "Ramdisk in compressed "
