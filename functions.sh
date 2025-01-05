@@ -2008,7 +2008,7 @@ function getgrubbkg() {
 
 function getbspatch() {
 
-    chmod 700 /home/tc/tools/bspatch
+    chmod 777 /home/tc/tools/bspatch
     if [ "$FRKRNL" = "YES" ]; then
         if [ ! -f /usr/bin/bspatch ]; then
             echo "bspatch does not exist, copy from tools"
