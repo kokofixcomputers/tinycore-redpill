@@ -2772,10 +2772,18 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     # Reassembly ramdisk
     if [ "$RD_COMPRESSED" = "false" ]; then
         echo "Ramdisk in not compressed "
-        (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
+        if [ "$FRKRNL" = "NO" ]; then
+            (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
+        else
+            (cd /home/tc/rd.temp && find . | sudo cpio -o -H newc -R root:root >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
+        fi
     else
-        echo "Ramdisk in compressed "            
-        (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root | xz -9 --format=lzma >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
+        echo "Ramdisk in compressed "
+        if [ "$FRKRNL" = "NO" ]; then
+            (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root | xz -9 --format=lzma >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
+        else
+            (cd /home/tc/rd.temp && find . | sudo cpio -o -H newc -R root:root | xz -9 --format=lzma >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
+        fi
     fi
 
     if [ "$WITHFRIEND" = "YES" ]; then
@@ -2824,7 +2832,11 @@ st "gen grub     " "Gen GRUB entries" "Finished Gen GRUB entries : ${MODEL}"
     
         if [ -f ${patfile} ]; then
             echo "Found ${patfile}, moving to cache directory : ${local_cache} "
-            cp -vf ${patfile} ${local_cache} && rm -vf /home/tc/redpill-load/cache/*.pat
+            if [ "$FRKRNL" = "NO" ]; then
+                cp -vf ${patfile} ${local_cache} && rm -vf /home/tc/redpill-load/cache/*.pat
+            else
+                sudo cp -vf ${patfile} ${local_cache} && sudo rm -vf /home/tc/redpill-load/cache/*.pat 
+            fi
         fi
 st "cachingpat" "Caching pat file" "Cached file to: ${local_cache}"
     fi    
@@ -3591,7 +3603,7 @@ function my() {
   else
       echo "n"|rploader build ${TARGET_PLATFORM}-${TARGET_VERSION}-${TARGET_REVISION} static
   fi
-  
+[ "$FRKRNL" = "YES" ] && readanswer
   if [ $? -ne 0 ]; then
       cecho r "An error occurred while building the loader!!! Clean the redpill-load directory!!! "
       readanswer
