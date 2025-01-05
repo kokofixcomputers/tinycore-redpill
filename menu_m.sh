@@ -2303,8 +2303,10 @@ fi
 
 if [ "$FRKRNL" = "YES" ]; then
     #overwrite GNU tar and patch for friend
+    sudo rm /usr/bin/tar
     sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/tar -o /usr/bin/tar
     sudo chmod +x /usr/bin/tar
+    
     sudo rm /usr/bin/patch
     sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/patch -o /usr/bin/patch
     sudo chmod +x /usr/bin/patch
@@ -2319,14 +2321,17 @@ fi
 #fi   
 
 # Download bspatch
-if [ "$(which bspatch)_" == "_" ]; then
-    echo "bspatch does not exist, copy from tools"
-    chmod 700 ~/tools/bspatch
-    if [ "$FRKRNL" = "YES" ]; then
-        sudo cp -vf ~/tools/bspatch /usr/sbin/
-    else
+chmod 700 ~/tools/bspatch
+if [ "$FRKRNL" = "YES" ]; then
+    if [ ! -f /usr/bin/bspatch ]; then
+        echo "bspatch does not exist, copy from tools"
+        sudo cp -vf ~/tools/bspatch /usr/bin/
+    fi
+else
+    if [ ! -f /usr/local/bspatch ]; then
+        echo "bspatch does not exist, copy from tools"
         sudo cp -vf ~/tools/bspatch /usr/local/bin/
-    fi    
+    fi
 fi
 
 # Download kmaps
