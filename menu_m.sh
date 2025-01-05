@@ -2321,18 +2321,7 @@ fi
 #fi   
 
 # Download bspatch
-chmod 700 ~/tools/bspatch
-if [ "$FRKRNL" = "YES" ]; then
-    if [ ! -f /usr/bin/bspatch ]; then
-        echo "bspatch does not exist, copy from tools"
-        sudo cp -vf ~/tools/bspatch /usr/bin/
-    fi
-else
-    if [ ! -f /usr/local/bspatch ]; then
-        echo "bspatch does not exist, copy from tools"
-        sudo cp -vf ~/tools/bspatch /usr/local/bin/
-    fi
-fi
+getbspatch
 
 # Download kmaps
 if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep kmaps | wc -w) -eq 0 ]; then
