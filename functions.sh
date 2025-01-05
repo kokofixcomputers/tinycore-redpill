@@ -1556,7 +1556,7 @@ function copyextractor() {
     [ ! -d ${local_cache} ] && mkdir ${local_cache}
 
     echo "making directory ${local_cache}/extractor"
-    [ ! -d ${local_cache}/extractor ] && mkdir ${local_cache}/extractor
+    [ ! -d ${local_cache}/extractor ] && sudo mkdir ${local_cache}/extractor
     [ ! -f /home/tc/extractor.gz ] && sudo curl -kL -# "https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/extractor.gz" -o /home/tc/extractor.gz
     gunzip -c /home/tc/extractor.gz | sudo tar -xvf - -C ${local_cache}/extractor
 
