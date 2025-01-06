@@ -633,7 +633,7 @@ function getloaderdisk() {
     loaderdisk=""
     while read -r edisk; do
         if [ $(sudo /sbin/fdisk -l "$edisk" | grep -c "83 Linux") -eq 3 ]; then
-            loaderdisk=$(blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}' | head -n 1)
+            loaderdisk=$(/sbin/blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}' | head -n 1)
             if [ -n "$loaderdisk" ]; then
                 break
             else
@@ -2111,7 +2111,7 @@ function getvars() {
 
     tcrppart="${tcrpdisk}3"
     local_cache="/mnt/${tcrppart}/auxfiles"
-    usbpart1uuid=$(blkid /dev/${tcrpdisk}1 | awk '{print $3}' | sed -e "s/\"//g" -e "s/UUID=//g")
+    usbpart1uuid=$(/sbin/blkid /dev/${tcrpdisk}1 | awk '{print $3}' | sed -e "s/\"//g" -e "s/UUID=//g")
     usbpart3uuid="6234-C863"
 
     [ ! -h /lib64 ] && sudo ln -s /lib /lib64
@@ -2630,7 +2630,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
         sudo sed -i '31,34d' /tmp/grub.cfg
         # Check dom size and set max size accordingly for jot
         if [ "${BUS}" = "sata" ]; then
-            DOM_PARA="dom_szmax=$(sudo fdisk -l /dev/${loaderdisk} | head -1 | awk -F: '{print $2}' | awk '{ print $1*1024}')"
+            DOM_PARA="dom_szmax=$(sudo /sbin/fdisk -l /dev/${loaderdisk} | head -1 | awk -F: '{print $2}' | awk '{ print $1*1024}')"
             sed -i "s/synoboot_satadom/${DOM_PARA} synoboot_satadom/" /tmp/tempentry.txt
         fi
         tinyjotfunc | sudo tee --append /tmp/grub.cfg
