@@ -1677,6 +1677,10 @@ function testarchive() {
             echo "File ${archive}, is a compressed tar"
             isencrypted="no"
             ;;
+        053)
+            echo "File ${archive}, is a compressed tar (from GNU friend kernel)"
+            isencrypted="no"
+            ;;
         *)
             echo "Could not determine if file ${archive} is encrypted or not, maybe corrupted"
             ls -ltr ${archive}
