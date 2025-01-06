@@ -2294,6 +2294,23 @@ EOF
 
 }
 
+function xtcrpconfigureentry() {
+    
+    cat <<EOF
+menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
+        savedefault
+        search --set=root --fs-uuid $usbpart3uuid --hint hd0,msdos3
+        echo Loading Linux...
+        linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8 IWANTTOCONFIGURE
+        echo Loading initramfs to configure loader...
+        initrd /initrd-friend
+        echo Loding RAMDISK to configure loader...
+        set gfxpayload=1024x768x16,1024x768
+}
+EOF
+
+}
+
 function tcrpentry_juniorusb() {
     
     cat <<EOF
@@ -2663,8 +2680,13 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         postupdateentry | sudo tee --append /tmp/grub.cfg
     fi
 
-    echo "Creating tinycore entry"
-    tinyentry | sudo tee --append /tmp/grub.cfg
+    if [ "$FRKRNL" = "NO" ]; then
+        echo "Creating tinycore configure loader entry"
+        tinyentry | sudo tee --append /tmp/grub.cfg
+    else
+        echo "Creating xTCRP configure loader entry"
+        xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
+    fi    
 
     if [ "$WITHFRIEND" = "YES" ]; then
         tcrpentry_juniorusb | sudo tee --append /tmp/grub.cfg 
