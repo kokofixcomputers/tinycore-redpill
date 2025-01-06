@@ -3613,12 +3613,11 @@ function my() {
       echo "n"|rploader build ${TARGET_PLATFORM}-${TARGET_VERSION}-${TARGET_REVISION} static
   fi
 [ "$FRKRNL" = "YES" ] && readanswer
+echo "errorcode = $?"
   if [ $? -ne 0 ]; then
       cecho r "An error occurred while building the loader!!! Clean the redpill-load directory!!! "
       readanswer
-      if [ -n "$answer" ] && [ "$answer" = "Y" ] || [ "$answer" = "y" ]; then
-          echo "OK, keeping going..."
-      fi      
+      echo "OK, keep going..."
       rploader clean
   else
       [ "${BUS}" = "block" ] && exit 0
