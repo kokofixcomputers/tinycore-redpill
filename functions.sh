@@ -632,7 +632,7 @@ EOF
 function getloaderdisk() {
     loaderdisk=""
     while read -r edisk; do
-        if [ $(sudo fdisk -l "$edisk" | grep -c "83 Linux") -eq 3 ]; then
+        if [ $(sudo /sbin/fdisk -l "$edisk" | grep -c "83 Linux") -eq 3 ]; then
             loaderdisk=$(blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}' | head -n 1)
             if [ -n "$loaderdisk" ]; then
                 break
