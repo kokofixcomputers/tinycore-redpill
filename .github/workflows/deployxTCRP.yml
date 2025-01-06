@@ -98,7 +98,7 @@ jobs:
           sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
 
           sudo cp -vf ${GITHUB_WORKSPACE}/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
-          sudo grub-mkconfig -o /mnt/tarp1/boot/grub/grub.cfg
+          #sudo grub-mkconfig -o /mnt/tarp1/boot/grub/grub.cfg
 
           ls -ltr /mnt/tarp1/boot/grub/x86_64-efi/
           echo "Copy and check EFI files"
@@ -126,7 +126,9 @@ jobs:
           ls -ltr /mnt/tarp3/cde/optional
           sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst
           sudo cp -vf ${GITHUB_WORKSPACE}/grub/grubbkg.png /mnt/tarp3/grubbkg.png
-          #sudo tar -xzOf /mnt/tarp3/mydata.tgz | sudo tar -czf /mnt/tarp3/xtcrp.tgz -C /home/tc .
+          sudo cp -vf ${GITHUB_WORKSPACE}/xtcrp.tgz /mnt/tarp3/xtcrp.tgz
+
+          ## add friend gnu kernel
           LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest"`"
           FRTAG="${LATESTURL##*/}"
           echo "FRIEND TAG is ${FRTAG}"        
