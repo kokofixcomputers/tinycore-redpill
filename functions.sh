@@ -2201,7 +2201,7 @@ function backuploader() {
 
   thread=$(nproc)
   if [ "$FRKRNL" = "YES" ]; then
-    sudo sh -c "tar -cf - ./ | pigz -p "${thread}" > /mnt/${loaderdisk}3/xtrcp.tgz"
+    sudo sh -c "tar -cf - ./ | pigz -p ${thread} > /mnt/${loaderdisk}3/xtrcp.tgz"
     if [ $? -ne 0 ]; then
       cecho r "An error occurred while backing up the loader!!!"
     else
