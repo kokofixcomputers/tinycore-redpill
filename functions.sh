@@ -2200,16 +2200,6 @@ function cleanloader() {
 function backuploader() {
 
   thread=$(nproc)
-  if [ "$FRKRNL" = "YES" ]; then
-    sudo sh -c "tar -cf - ./ | pigz -p ${thread} > /mnt/${loaderdisk}3/xtcrp.tgz"
-    if [ $? -ne 0 ]; then
-      cecho r "An error occurred while backing up the loader!!!"
-    else
-      cecho y "Successfully backed up the loader!!!"
-    fi    
-    return
-  fi
-
   if [ "${BUS}" != "block"  ]; then
 #Apply pigz for fast backup  
     if [ ! -n "$(which pigz)" ]; then
@@ -2217,6 +2207,16 @@ function backuploader() {
         curl -s -k -L "https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/$build/tools/pigz" -O
         chmod 777 pigz
         sudo mv pigz /usr/bin/
+    fi
+
+    if [ "$FRKRNL" = "YES" ]; then
+      sudo sh -c "tar -cf - ./ | pigz -p ${thread} > /mnt/${loaderdisk}3/xtcrp.tgz"
+      if [ $? -ne 0 ]; then
+        cecho r "An error occurred while backing up the loader!!!"
+      else
+        cecho y "Successfully backed up the loader!!!"
+      fi    
+      return
     fi
     
     if [ $(cat /usr/bin/filetool.sh | grep pigz | wc -l ) -eq 0 ]; then
@@ -3637,7 +3637,7 @@ echo "errorcode = $?"
       [ "$MACHINE" != "VIRTUAL" ] && sleep 2
       echo "y"|rploader backup
   fi
-[ "$FRKRNL" = "YES" ] && readanswer  
+#[ "$FRKRNL" = "YES" ] && readanswer  
 }
 
 if [ $# -gt 1 ]; then
