@@ -915,7 +915,7 @@ function make() {
 
   if  [ -f /home/tc/custom-module/redpill.ko ]; then
     echo "Removing redpill.ko ..."
-    rm -rf /home/tc/custom-module/redpill.ko
+    sudo rm -rf /home/tc/custom-module/redpill.ko
   fi
 
   if [ $? -ne 0 ]; then
