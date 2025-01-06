@@ -71,13 +71,13 @@ function update_tinycore() {
       md5_corepure64=$(sudo md5sum corepure64.gz_copy | awk '{print $1}')
       md5_vmlinuz64=$(sudo md5sum vmlinuz64_copy | awk '{print $1}')
       if [ ${md5_corepure64} = "f33c4560e3909a7784c0e83ce424ff5c" ] && [ ${md5_vmlinuz64} = "04cb17bbf7fbca9aaaa2e1356a936d7c" ]; then
-      echo "tinycore 14.0 md5 check is OK! ( corepure64.gz / vmlinuz64 ) "
+        echo "tinycore 14.0 md5 check is OK! ( corepure64.gz / vmlinuz64 ) "
         sudo mv corepure64.gz_copy corepure64.gz
-    sudo mv vmlinuz64_copy vmlinuz64
-          sudo curl -kL#  https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/etc/shadow -o /etc/shadow
+        sudo mv vmlinuz64_copy vmlinuz64
+        sudo curl -kL#  https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/etc/shadow -o /etc/shadow
         echo "/etc/shadow" >> /opt/.filetool.lst
-    cd ~
-    echo 'Y'|rploader backup
+        cd ~
+        echo 'Y'|rploader backup
         restart
       fi
   fi
@@ -110,8 +110,14 @@ getBus "${loaderdisk}"
 
 tcrppart="${loaderdisk}3"
 
+if [[ "$(uname -a | grep -c tcrpfriend)" -gt 0 ]]; then
+    FRKRNL="YES"
+else
+    FRKRNL="NO"
+fi
+
 # update tinycore 14.0 2023.12.18
-update_tinycore
+[ "$FRKRNL" = "NO" ] && update_tinycore
 
 # restore user_config.json file from /mnt/sd#/lastsession directory 2023.10.21
 #restoresession
@@ -909,7 +915,7 @@ function make() {
 
   if  [ -f /home/tc/custom-module/redpill.ko ]; then
     echo "Removing redpill.ko ..."
-    rm -rf /home/tc/custom-module/redpill.ko
+    sudo rm -rf /home/tc/custom-module/redpill.ko
   fi
 
   if [ $? -ne 0 ]; then
@@ -1001,7 +1007,7 @@ function langMenu() {
   sudo localedef -f UTF-8 -i ${ucode} ${ucode}.UTF-8
   
   writeConfigKey "general" "ucode" "${ucode}"  
-  writexsession
+  [ "$FRKRNL" = "NO" ] && writexsession
 
   tz="US"
   load_us
@@ -1750,7 +1756,7 @@ function packing_loader() {
 function satadom_edit() {
     sed -i "s/synoboot_satadom=[^ ]*/synoboot_satadom=${1}/g" /home/tc/user_config.json
     sudo cp /home/tc/user_config.json /mnt/${tcrppart}/user_config.json
-    echo "y"|rploader backup
+    echo 'Y'|rploader backup
 }
 
 function i915_edit() {
@@ -1768,7 +1774,7 @@ function i915_edit() {
   
   writeConfigKey "general" "i915mode" "${I915MODE}"
   sudo cp /home/tc/user_config.json /mnt/${tcrppart}/user_config.json  
-  echo "y"|rploader backup
+  echo 'Y'|rploader backup
 }
 
 function additional() {
@@ -2021,11 +2027,15 @@ TR) ucode="tr_TR";;
 esac
 writeConfigKey "general" "ucode" "${ucode}"
 
-sed -i "s/screen_color = (CYAN,GREEN,ON)/screen_color = (CYAN,BLUE,ON)/g" ~/.dialogrc
+if [ -f ~/.dialogrc ]; then
+  sed -i "s/screen_color = (CYAN,GREEN,ON)/screen_color = (CYAN,BLUE,ON)/g" ~/.dialogrc
+else
+  echo "screen_color = (CYAN,BLUE,ON)" > ~/.dialogrc
+fi
 
-writexsession
+[ "$FRKRNL" = "NO" ] && writexsession
 
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep gettext | wc -w) -eq 0 ]; then
+if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep gettext | wc -w) -eq 0 ]; then
     tce-load -wi gettext
     if [ $? -eq 0 ]; then
         echo "Download gettext.tcz OK, Permanent installation progress !!!"
@@ -2054,7 +2064,7 @@ fi
 #     fi
 #fi
 
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -eq 0 ]; then
+if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -eq 0 ]; then
     tce-load -wi glibc_apps glibc_i18n_locale unifont rxvt
     if [ $? -eq 0 ]; then
         echo "Download glibc_apps.tcz and glibc_i18n_locale.tcz OK, Permanent installation progress !!!"
@@ -2074,12 +2084,13 @@ if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -eq 0 ]; then
     fi
 fi
 
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -gt 0 ]; then
 # for 2Byte Language
-  [ ! -d /usr/lib/locale ] && sudo mkdir /usr/lib/locale
-  export LANG=${ucode}.UTF-8
-  export LC_ALL=${ucode}.UTF-8
-  set -o allexport
+[ ! -d /usr/lib/locale ] && sudo mkdir /usr/lib/locale
+export LANG=${ucode}.UTF-8
+export LC_ALL=${ucode}.UTF-8
+set -o allexport
+
+if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep rxvt | wc -w) -gt 0 ]; then
   
   sudo localedef -c -i ${ucode} -f UTF-8 ${ucode}.UTF-8
   sudo localedef -f UTF-8 -i ${ucode} ${ucode}.UTF-8
@@ -2113,7 +2124,7 @@ fi
 #gettext
 [ ! -f /home/tc/lang.tgz ] && curl -kLO# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/lang.tgz
 [ ! -d "/usr/local/share/locale" ] && sudo mkdir -p "/usr/local/share/locale"
-sudo tar -xzvf lang.tgz -C /usr/local/share/locale
+gunzip -c lang.tgz | sudo tar -xvf - -C /usr/local/share/locale
 locale
 #End Locale Setting process
 export TEXTDOMAINDIR="/usr/local/share/locale"
@@ -2122,7 +2133,7 @@ tz="US"
 load_us
 
 # Download ethtool
-if [ "$(which ethtool)_" == "_" ]; then
+if [ "$FRKRNL" = "NO" ] && [ "$(which ethtool)_" == "_" ]; then
    echo "ethtool does not exist, install from tinycore"
    tce-load -iw ethtool iproute2 2>&1 >/dev/null
    sudo cp -f /tmp/tce/optional/* /mnt/${tcrppart}/cde/optional   
@@ -2130,9 +2141,9 @@ if [ "$(which ethtool)_" == "_" ]; then
    sudo echo "iproute2.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
 fi
 
-sortnetif
+[ "$FRKRNL" = "NO" ] && sortnetif
 
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep "kmaps.tczglibc_apps.tcz" | wc -w) -gt 0 ]; then
+if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep "kmaps.tczglibc_apps.tcz" | wc -w) -gt 0 ]; then
     sudo sed -i "/kmaps.tczglibc_apps.tcz/d" /mnt/${tcrppart}/cde/onboot.lst    
     sudo echo "glibc_apps.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
     sudo echo "kmaps.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
@@ -2262,7 +2273,7 @@ if [ $tcrppart == "mmc3" ]; then
 fi    
 
 # Download dialog
-if [ "$(which dialog)_" == "_" ]; then
+if [ "$FRKRNL" = "NO" ] && [ "$(which dialog)_" == "_" ]; then
     sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tce/optional/dialog.tcz -o /mnt/${tcrppart}/cde/optional/dialog.tcz
     sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tce/optional/dialog.tcz.dep -o /mnt/${tcrppart}/cde/optional/dialog.tcz.dep
     sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tce/optional/dialog.tcz.md5.txt -o /mnt/${tcrppart}/cde/optional/dialog.tcz.md5.txt
@@ -2276,19 +2287,30 @@ if [ "$(which dialog)_" == "_" ]; then
 fi
 
 # Download ntpclient
-if [ "$(which ntpclient)_" == "_" ]; then
+if [ "$FRKRNL" = "NO" ] && [ "$(which ntpclient)_" == "_" ]; then
     echo "ntpclient does not exist, install from tinycore"
    tce-load -iw ntpclient 2>&1 >/dev/null
    sudo echo "ntpclient.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
 fi
 
 # Download pigz
-if [ "$(which pigz)_" == "_" ]; then
+if [ "$FRKRNL" = "NO" ] && [ "$(which pigz)_" == "_" ]; then
     echo "pigz does not exist, bringing over from repo"
     curl -skLO# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/pigz
     chmod 700 pigz
     sudo mv -vf pigz /usr/local/bin/
 fi
+
+#if [ "$FRKRNL" = "YES" ]; then
+    #overwrite GNU tar and patch for friend
+#    sudo rm /usr/bin/tar
+#    sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/tar -o /usr/bin/tar
+#    sudo chmod +x /usr/bin/tar
+    
+#    sudo rm /usr/bin/patch
+#    sudo curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tools/patch -o /usr/bin/patch
+#    sudo chmod +x /usr/bin/patch
+#fi    
 
 # Download dtc, Don't used anymore 24.9.13
 #if [ "$(which dtc)_" == "_" ]; then
@@ -2299,14 +2321,10 @@ fi
 #fi   
 
 # Download bspatch
-if [ ! -f /usr/local/bspatch ]; then
-    echo "bspatch does not exist, copy from tools"
-    chmod 700 ~/tools/bspatch
-    sudo cp -vf ~/tools/bspatch /usr/local/bin/
-fi
+getbspatch
 
 # Download kmaps
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep kmaps | wc -w) -eq 0 ]; then
+if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep kmaps | wc -w) -eq 0 ]; then
     sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tce/optional/kmaps.tcz -o /mnt/${tcrppart}/cde/optional/kmaps.tcz
     sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tce/optional/kmaps.tcz.md5.txt -o /mnt/${tcrppart}/cde/optional/kmaps.tcz.md5.txt
     tce-load -i kmaps
@@ -2318,12 +2336,16 @@ if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep kmaps | wc -w) -eq 0 ]; then
     sudo echo "kmaps.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
 fi
 
+# Download scsi-6.1.2-tinycore64.tcz
+if [ "$FRKRNL" = "NO" ] && [ $(lspci -d ::107 | wc -l) -gt 0 ]; then
+    tce-load -iw scsi-6.1.2-tinycore64.tcz
+fi
+
 # Download firmware-broadcom_bnx2x
-if [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep firmware-broadcom_bnx2x | wc -w) -eq 0 ]; then
+if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep firmware-broadcom_bnx2x | wc -w) -eq 0 ]; then
     installtcz "firmware-broadcom_bnx2x.tcz"
     echo "Install firmware-broadcom_bnx2x OK !!!"
-    echo "y"|rploader backup
-    restart
+    echo 'Y'|rploader backup
 fi
 
 NEXT="m"
@@ -2333,8 +2355,6 @@ if [ -n "${bfbay}" ]; then
   bay=${bfbay}
 fi
 writeConfigKey "general" "bay" "${bay}"
-
-[ $(lspci -d ::107 | wc -l) -gt 0 ] && tce-load -iw scsi-6.1.2-tinycore64.tcz
 
 # Until urxtv is available, Korean menu is used only on remote terminals.
 while true; do
@@ -2389,7 +2409,11 @@ while true; do
     z) selectldrmode ;    NEXT="p" ;;
     k) remapsata ;        NEXT="p" ;;
     q) storagepanel;      NEXT="p" ;;    
-    p) [ "${LDRMODE}" == "FRIEND" ] && make "fri" "${prevent_init}" || make "jot" "${prevent_init}"
+    p) if [ "${LDRMODE}" == "FRIEND" ]; then
+         make "fri" "${prevent_init}" 
+       else  
+         make "jot" "${prevent_init}"
+       fi  
        NEXT="r" ;;
     n) additional;      NEXT="p" ;;
     u) editUserConfig;    NEXT="p" ;;
