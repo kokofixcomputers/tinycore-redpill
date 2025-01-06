@@ -28,9 +28,9 @@ jobs:
           tar -zxvf mydata.tgz -C ./mydata/
           cp -vf my.sh.gz lang.tgz i18n.h functions.sh monitor.sh menu.sh menu_m.sh ntp.sh sngen.sh macgen.sh edisk.sh custom_config.json modules.alias.4.json extractor.gz ./mydata/home/tc/
           tar -zcvf mydata.tgz -C ./mydata/ .
-          cd mydata
-          tar -zcvf xtcrp.tgz ./home/tc
-          mv -vf xtcrp.tgz ..
+          cd ./mydata/home/tc
+          tar -zcvf xtcrp.tgz .
+          mv -vf xtcrp.tgz ${GITHUB_WORKSPACE}/
           
       - name: Commit changes
         run: |
