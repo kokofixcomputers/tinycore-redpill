@@ -803,37 +803,37 @@ function checkUserConfig() {
     writeConfigKey "extra_cmdline" "mac1" "${MACADDR1}"
   fi
 
-  if [ $(ifconfig | grep eth1 | wc -l) -gt 0 ] && [ ! -n "${MACADDR2}" ]; then
+  if [ $(/sbin/ifconfig | grep eth1 | wc -l) -gt 0 ] && [ ! -n "${MACADDR2}" ]; then
     MACADDR2=`./macgen.sh "realmac" "eth1" ${MODEL}`
     writeConfigKey "extra_cmdline" "mac2" "${MACADDR2}"
   fi
 
-  if [ $(ifconfig | grep eth2 | wc -l) -gt 0 ] && [ ! -n "${MACADDR3}" ]; then
+  if [ $(/sbin/ifconfig | grep eth2 | wc -l) -gt 0 ] && [ ! -n "${MACADDR3}" ]; then
     MACADDR3=`./macgen.sh "realmac" "eth2" ${MODEL}`
     writeConfigKey "extra_cmdline" "mac3" "${MACADDR3}"
   fi
 
-  if [ $(ifconfig | grep eth3 | wc -l) -gt 0 ] && [ ! -n "${MACADDR4}" ]; then
+  if [ $(/sbin/ifconfig | grep eth3 | wc -l) -gt 0 ] && [ ! -n "${MACADDR4}" ]; then
     MACADDR4=`./macgen.sh "realmac" "eth3" ${MODEL}`
     writeConfigKey "extra_cmdline" "mac4" "${MACADDR4}"
   fi
 
-  if [ $(ifconfig | grep eth4 | wc -l) -gt 0 ] && [ ! -n "${MACADDR5}" ]; then
+  if [ $(/sbin/ifconfig | grep eth4 | wc -l) -gt 0 ] && [ ! -n "${MACADDR5}" ]; then
     MACADDR5=`./macgen.sh "realmac" "eth4" ${MODEL}`
     writeConfigKey "extra_cmdline" "mac5" "${MACADDR5}"
   fi
 
-  if [ $(ifconfig | grep eth5 | wc -l) -gt 0 ] && [ ! -n "${MACADDR6}" ]; then
+  if [ $(/sbin/ifconfig | grep eth5 | wc -l) -gt 0 ] && [ ! -n "${MACADDR6}" ]; then
     MACADDR6=`./macgen.sh "realmac" "eth5" ${MODEL}`
     writeConfigKey "extra_cmdline" "mac6" "${MACADDR6}"
   fi
 
-  if [ $(ifconfig | grep eth6 | wc -l) -gt 0 ] && [ ! -n "${MACADDR7}" ]; then
+  if [ $(/sbin/ifconfig | grep eth6 | wc -l) -gt 0 ] && [ ! -n "${MACADDR7}" ]; then
     MACADDR7=`./macgen.sh "realmac" "eth6" ${MODEL}`
     writeConfigKey "extra_cmdline" "mac7" "${MACADDR7}"
   fi
 
-  if [ $(ifconfig | grep eth7 | wc -l) -gt 0 ] && [ ! -n "${MACADDR8}" ]; then
+  if [ $(/sbin/ifconfig | grep eth7 | wc -l) -gt 0 ] && [ ! -n "${MACADDR8}" ]; then
     MACADDR8=`./macgen.sh "realmac" "eth7" ${MODEL}`
     writeConfigKey "extra_cmdline" "mac8" "${MACADDR8}"
   fi
@@ -1426,14 +1426,14 @@ function prepare_img() {
 
 function get_disk_type_cnt() {
 
-    RAID_CNT="$(sudo fdisk -l | grep "fd Linux raid autodetect" | grep ${1} | wc -l )"
-    DOS_CNT="$(sudo fdisk -l | grep "83 Linux" | grep ${1} | wc -l )"
-    W95_CNT="$(sudo fdisk -l | grep "W95 Ext" | grep ${1} | wc -l )" 
-    EXT_CNT="$(sudo fdisk -l | grep "Extended" | grep ${1} | wc -l )" 
+    RAID_CNT="$(sudo /sbin/fdisk -l | grep "fd Linux raid autodetect" | grep ${1} | wc -l )"
+    DOS_CNT="$(sudo /sbin/fdisk -l | grep "83 Linux" | grep ${1} | wc -l )"
+    W95_CNT="$(sudo /sbin/fdisk -l | grep "W95 Ext" | grep ${1} | wc -l )" 
+    EXT_CNT="$(sudo /sbin/fdisk -l | grep "Extended" | grep ${1} | wc -l )" 
     # for FIXED Linux RAID
-    RAID_FIX_CNT="$(sudo fdisk -l | grep "Linux RAID" | grep ${1} | wc -l )"
-    RAID_FIX_P5_SD_CNT="$(sudo fdisk -l | grep "Linux RAID" | grep ${1}5 | wc -l )"
-    RAID_FIX_P5_SATA_CNT="$(sudo fdisk -l | grep "Linux RAID" | grep ${1}p5 | wc -l )"
+    RAID_FIX_CNT="$(sudo /sbin/fdisk -l | grep "Linux RAID" | grep ${1} | wc -l )"
+    RAID_FIX_P5_SD_CNT="$(sudo /sbin/fdisk -l | grep "Linux RAID" | grep ${1}5 | wc -l )"
+    RAID_FIX_P5_SATA_CNT="$(sudo /sbin/fdisk -l | grep "Linux RAID" | grep ${1}p5 | wc -l )"
     RAID_FIX_P5_CNT=`expr ${RAID_FIX_P5_SD_CNT} + ${RAID_FIX_P5_SATA_CNT}`
     if [ ${RAID_FIX_CNT} -eq 3 ] && [ ${RAID_FIX_P5_CNT} -eq 1 ]; then
         RAID_CNT="3"
@@ -1460,7 +1460,7 @@ function inject_loader() {
   #[ "$MACHINE" = "VIRTUAL" ] &&    returnto "Virtual system environment is not supported. Two or more BASIC type hard disks are required on bare metal. (SSD not possible)... Stop processing!!! " && return
 
   IDX=0
-  for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
       get_disk_type_cnt "${edisk}" "N"
       if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 0 ] && [ "${W95_CNT}" -eq 0 ]; then
           echo "This is BASIC or JBOD Type Hard Disk. $edisk"
@@ -1469,7 +1469,7 @@ function inject_loader() {
   done
 
   SHR=0
-  for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
       get_disk_type_cnt "${edisk}" "N"
       if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 0 ] && [ "${W95_CNT}" -eq 1 ]; then
           echo "This is SHR Type Hard Disk. $edisk"
@@ -1478,17 +1478,17 @@ function inject_loader() {
   done
 
   IDX_EX=0
-  for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
       get_disk_type_cnt "${edisk}" "N"
       if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 2 ] && [ "${W95_CNT}" -eq 0 ]; then
           echo "This is BASIC Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition  $edisk"
           IDX_EX=$((${IDX_EX} + 1))
       fi
   done
-  for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
       get_disk_type_cnt "${edisk}" "N"
       if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 1 ] && [ "${W95_CNT}" -eq 0 ]; then
-            if [ $(blkid | grep ${edisk} | grep "6234-C863" | wc -l ) -eq 1 ]; then
+            if [ $(/sbin/blkid | grep ${edisk} | grep "6234-C863" | wc -l ) -eq 1 ]; then
               echo "This is BASIC Type Hard Disk and Has synoboot3 Boot Partition $edisk"
               IDX_EX=$((${IDX_EX} + 1))
             fi    
@@ -1496,17 +1496,17 @@ function inject_loader() {
   done
 
   SHR_EX=0
-  for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
       get_disk_type_cnt "${edisk}" "N"
       if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 2 ] && [ "${W95_CNT}" -eq 1 ]; then
           echo "This is SHR Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
           SHR_EX=$((${SHR_EX} + 1))
       fi
   done
-  for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
       get_disk_type_cnt "${edisk}" "N"
       if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 1 ] && [ "${W95_CNT}" -eq 1 ]; then
-            if [ $(blkid | grep ${edisk} | grep "6234-C863" | wc -l ) -eq 1 ]; then
+            if [ $(/sbin/blkid | grep ${edisk} | grep "6234-C863" | wc -l ) -eq 1 ]; then
               echo "This is SHR Type Hard Disk and Has synoboot3 Boot Partition $edisk"
               SHR_EX=$((${SHR_EX} + 1))
           fi
@@ -1553,11 +1553,11 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
 
     if [ "${do_ex_first}" = "N" ]; then
         if [ ${IDX} -eq 2 ] || [ `expr ${IDX} + ${SHR}` -gt 1 ]; then
-            echo "New bootloader injection (including fdisk partition creation)..."
+            echo "New bootloader injection (including /sbin/fdisk partition creation)..."
 
             BOOTMAKE=""
               SYNOP3MAKE=""
-            for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+            for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
          
                 model=$(lsblk -o PATH,MODEL | grep $edisk | head -1)
                 get_disk_type_cnt "${edisk}" "Y"
@@ -1577,20 +1577,20 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                     
                         # +127M
                         echo "Create partitions on 1st disks... $edisk"
-                        echo -e "n\n\n$last_sector\n+127M\nw\n" | sudo fdisk "${edisk}"
+                        echo -e "n\n\n$last_sector\n+127M\nw\n" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make primary partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
       
-                        echo -e "a\n4\nw" | sudo fdisk "${edisk}"
+                        echo -e "a\n4\nw" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "activate partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
                       
-                        last_sector="$(sudo fdisk -l "${edisk}" | grep "${edisk}5" | awk '{print $3}')"
+                        last_sector="$(sudo /sbin/fdisk -l "${edisk}" | grep "${edisk}5" | awk '{print $3}')"
                         last_sector=$((${last_sector} + 1))
                         echo "1st disk's part 6 last sector is $last_sector"
                         
                         # +26M
-                        echo -e "n\n$last_sector\n+26M\nw\n" | sudo fdisk "${edisk}"
+                        echo -e "n\n$last_sector\n+26M\nw\n" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
@@ -1605,23 +1605,23 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                             echo "Create extended and logical partitions on 1st disk. ${model}"
                             last_sector="20979712"
                             echo "1st disk's last sector is $last_sector"
-                            echo -e "n\ne\n$last_sector\n\n\nw" | sudo fdisk "${edisk}"
+                            echo -e "n\ne\n$last_sector\n\n\nw" | sudo /sbin/fdisk "${edisk}"
                             [ $? -ne 0 ] && returnto "make extend partition on ${edisk} failed. Stop processing!!! " && return
                             sleep 2
                         fi
      
                         # +98M
                         echo "Create partitions on 1st disks... $edisk"
-                        echo -e "n\n\n+98M\nw\n" | sudo fdisk "${edisk}"
+                        echo -e "n\n\n+98M\nw\n" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
       
-                        echo -e "a\n5\nw" | sudo fdisk "${edisk}"
+                        echo -e "a\n5\nw" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "activate partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
        
                         # +26M
-                        echo -e "n\n\n+26M\nw\n" | sudo fdisk "${edisk}"
+                        echo -e "n\n\n+26M\nw\n" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
@@ -1641,16 +1641,16 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
 
                 elif [ -z "${SYNOP3MAKE}" ] && [ "${RAID_CNT}" -gt 2 ] && [ "${DOS_CNT}" -eq 0 ]; then
 
-                     if [ $(blkid | grep "6234-C863" | wc -l) -eq 1 ]; then
+                     if [ $(/sbin/blkid | grep "6234-C863" | wc -l) -eq 1 ]; then
                           # + 128M
                         echo "Create partitions on 2nd disks... $edisk"
                         last_sector="20979712"
                          echo "2nd disk's last sector is $last_sector"
-                           echo -e "n\np\n$last_sector\n\n\nw" | sudo fdisk "${edisk}"
+                           echo -e "n\np\n$last_sector\n\n\nw" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make extend partition on ${edisk} failed. Stop processing!!! " && return
                         
                         # + 127M logical
-                        #echo -e "n\n\n\nw\n" | sudo fdisk "${edisk}"
+                        #echo -e "n\n\n\nw\n" | sudo /sbin/fdisk "${edisk}"
                         #[ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
     
                         sleep 1
@@ -1681,7 +1681,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
     elif [ "${do_ex_first}" = "Y" ]; then
         if [ ${IDX_EX} -eq 2 ] || [ `expr ${IDX_EX} + ${SHR_EX}` -eq 2 ]; then
             echo "Reinject bootloader (into existing partition)..."
-            for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+            for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
          
                 model=$(lsblk -o PATH,MODEL | grep $edisk | head -1)
                 get_disk_type_cnt "${edisk}" "Y"
@@ -1709,7 +1709,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
               
                 elif [ "${RAID_CNT}" -gt 2 ] && [ "${DOS_CNT}" -eq 1 ]; then
                 
-                      if [ $(blkid | grep ${edisk} | grep "6234-C863" | wc -l ) -eq 1 ]; then
+                      if [ $(/sbin/blkid | grep ${edisk} | grep "6234-C863" | wc -l ) -eq 1 ]; then
 
                         #prepare_img
                         #[ $? -ne 0 ] && return
@@ -1943,8 +1943,8 @@ function chk_diskcnt() {
 
   DISKCNT=0
 
-  for edisk in $(sudo fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://'); do
-    if [ $(sudo fdisk -l | grep "83 Linux" | grep ${edisk} | wc -l) -gt 0 ]; then
+  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://'); do
+    if [ $(sudo /sbin/fdisk -l | grep "83 Linux" | grep ${edisk} | wc -l) -gt 0 ]; then
         continue
     else
         DISKCNT=$((DISKCNT+1))
@@ -2187,13 +2187,13 @@ if [ "${MDLNAME}" = "null" ]; then
 fi
 
 # Get actual IP
-IP="$(ifconfig | grep -i "inet " | grep -v "127.0.0.1" | awk '{print $2}' | cut -c 6- )"
+IP="$(/sbin/ifconfig | grep -i "inet " | grep -v "127.0.0.1" | awk '{print $2}' | cut -c 6- )"
 
   if [ ! -n "${MACADDR1}" ]; then
     MACADDR1=`./macgen.sh "realmac" "eth0" ${MODEL}`
     writeConfigKey "extra_cmdline" "mac1" "${MACADDR1}"
   fi
-if [ $(ifconfig | grep eth1 | wc -l) -gt 0 ]; then
+if [ $(/sbin/ifconfig | grep eth1 | wc -l) -gt 0 ]; then
   MACADDR2="$(jq -r -e '.extra_cmdline.mac2' $USER_CONFIG_FILE)"
   NETNUM="2"
   if [ ! -n "${MACADDR2}" ]; then
@@ -2201,7 +2201,7 @@ if [ $(ifconfig | grep eth1 | wc -l) -gt 0 ]; then
     writeConfigKey "extra_cmdline" "mac2" "${MACADDR2}"
   fi
 fi  
-if [ $(ifconfig | grep eth2 | wc -l) -gt 0 ]; then
+if [ $(/sbin/ifconfig | grep eth2 | wc -l) -gt 0 ]; then
   MACADDR3="$(jq -r -e '.extra_cmdline.mac3' $USER_CONFIG_FILE)"
   NETNUM="3"
   if [ ! -n "${MACADDR3}" ]; then
@@ -2209,7 +2209,7 @@ if [ $(ifconfig | grep eth2 | wc -l) -gt 0 ]; then
     writeConfigKey "extra_cmdline" "mac3" "${MACADDR3}"
   fi
 fi  
-if [ $(ifconfig | grep eth3 | wc -l) -gt 0 ]; then
+if [ $(/sbin/ifconfig | grep eth3 | wc -l) -gt 0 ]; then
   MACADDR4="$(jq -r -e '.extra_cmdline.mac4' $USER_CONFIG_FILE)"
   NETNUM="4"
   if [ ! -n "${MACADDR4}" ]; then
@@ -2218,7 +2218,7 @@ if [ $(ifconfig | grep eth3 | wc -l) -gt 0 ]; then
   fi
 fi  
 
-if [ $(ifconfig | grep eth4 | wc -l) -gt 0 ]; then
+if [ $(/sbin/ifconfig | grep eth4 | wc -l) -gt 0 ]; then
   MACADDR5="$(jq -r -e '.extra_cmdline.mac5' $USER_CONFIG_FILE)"
   NETNUM="5"
   if [ ! -n "${MACADDR5}" ]; then
@@ -2226,7 +2226,7 @@ if [ $(ifconfig | grep eth4 | wc -l) -gt 0 ]; then
     writeConfigKey "extra_cmdline" "mac5" "${MACADDR5}"
   fi
 fi  
-if [ $(ifconfig | grep eth5 | wc -l) -gt 0 ]; then
+if [ $(/sbin/ifconfig | grep eth5 | wc -l) -gt 0 ]; then
   MACADDR6="$(jq -r -e '.extra_cmdline.mac6' $USER_CONFIG_FILE)"
   NETNUM="6"
   if [ ! -n "${MACADDR6}" ]; then
@@ -2234,7 +2234,7 @@ if [ $(ifconfig | grep eth5 | wc -l) -gt 0 ]; then
     writeConfigKey "extra_cmdline" "mac6" "${MACADDR6}"
   fi
 fi  
-if [ $(ifconfig | grep eth6 | wc -l) -gt 0 ]; then
+if [ $(/sbin/ifconfig | grep eth6 | wc -l) -gt 0 ]; then
   MACADDR7="$(jq -r -e '.extra_cmdline.mac7' $USER_CONFIG_FILE)"
   NETNUM="7"
   if [ ! -n "${MACADDR7}" ]; then
@@ -2242,7 +2242,7 @@ if [ $(ifconfig | grep eth6 | wc -l) -gt 0 ]; then
     writeConfigKey "extra_cmdline" "mac7" "${MACADDR7}"
   fi
 fi  
-if [ $(ifconfig | grep eth7 | wc -l) -gt 0 ]; then
+if [ $(/sbin/ifconfig | grep eth7 | wc -l) -gt 0 ]; then
   MACADDR8="$(jq -r -e '.extra_cmdline.mac8' $USER_CONFIG_FILE)"
   NETNUM="8"
   if [ ! -n "${MACADDR8}" ]; then
@@ -2364,13 +2364,13 @@ while true; do
     eval "echo \"j \\\"\${MSG${tz}05} (${BUILD})\\\"\""  >> "${TMP_PATH}/menu"  
     eval "echo \"s \\\"\${MSG${tz}03}\\\"\""             >> "${TMP_PATH}/menu"
     eval "echo \"a \\\"\${MSG${tz}04} 1\\\"\""           >> "${TMP_PATH}/menu"
-    [ $(ifconfig | grep eth1 | wc -l) -gt 0 ] && eval "echo \"f \\\"\${MSG${tz}04} 2\\\"\""         >> "${TMP_PATH}/menu"
-    [ $(ifconfig | grep eth2 | wc -l) -gt 0 ] && eval "echo \"g \\\"\${MSG${tz}04} 3\\\"\""         >> "${TMP_PATH}/menu"
-    [ $(ifconfig | grep eth3 | wc -l) -gt 0 ] && eval "echo \"h \\\"\${MSG${tz}04} 4\\\"\""         >> "${TMP_PATH}/menu"
-    [ $(ifconfig | grep eth4 | wc -l) -gt 0 ] && eval "echo \"i \\\"\${MSG${tz}04} 5\\\"\""         >> "${TMP_PATH}/menu"
-    [ $(ifconfig | grep eth5 | wc -l) -gt 0 ] && eval "echo \"o \\\"\${MSG${tz}04} 6\\\"\""         >> "${TMP_PATH}/menu"
-    [ $(ifconfig | grep eth6 | wc -l) -gt 0 ] && eval "echo \"t \\\"\${MSG${tz}04} 7\\\"\""         >> "${TMP_PATH}/menu"
-    [ $(ifconfig | grep eth7 | wc -l) -gt 0 ] && eval "echo \"v \\\"\${MSG${tz}04} 8\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(/sbin/ifconfig | grep eth1 | wc -l) -gt 0 ] && eval "echo \"f \\\"\${MSG${tz}04} 2\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(/sbin/ifconfig | grep eth2 | wc -l) -gt 0 ] && eval "echo \"g \\\"\${MSG${tz}04} 3\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(/sbin/ifconfig | grep eth3 | wc -l) -gt 0 ] && eval "echo \"h \\\"\${MSG${tz}04} 4\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(/sbin/ifconfig | grep eth4 | wc -l) -gt 0 ] && eval "echo \"i \\\"\${MSG${tz}04} 5\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(/sbin/ifconfig | grep eth5 | wc -l) -gt 0 ] && eval "echo \"o \\\"\${MSG${tz}04} 6\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(/sbin/ifconfig | grep eth6 | wc -l) -gt 0 ] && eval "echo \"t \\\"\${MSG${tz}04} 7\\\"\""         >> "${TMP_PATH}/menu"
+    [ $(/sbin/ifconfig | grep eth7 | wc -l) -gt 0 ] && eval "echo \"v \\\"\${MSG${tz}04} 8\\\"\""         >> "${TMP_PATH}/menu"
     [ "${CPU}" != "HP" ] && eval "echo \"z \\\"\${MSG${tz}06} (${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"
     eval "echo \"k \\\"\${MSG${tz}56}\\\"\""             >> "${TMP_PATH}/menu"
     eval "echo \"q \\\"\${MSG${tz}41} (${bay})\\\"\""      >> "${TMP_PATH}/menu"    
@@ -2392,19 +2392,19 @@ while true; do
     j) selectversion ;    NEXT="s" ;;     
     s) serialMenu;      NEXT="a" ;;
     a) macMenu "eth0"
-    [ $(ifconfig | grep eth1 | wc -l) -gt 0 ] && NEXT="f" || NEXT="p" ;;
+    [ $(/sbin/ifconfig | grep eth1 | wc -l) -gt 0 ] && NEXT="f" || NEXT="p" ;;
     f) macMenu "eth1"
-    [ $(ifconfig | grep eth2 | wc -l) -gt 0 ] && NEXT="g" || NEXT="p" ;;
+    [ $(/sbin/ifconfig | grep eth2 | wc -l) -gt 0 ] && NEXT="g" || NEXT="p" ;;
     g) macMenu "eth2"
-    [ $(ifconfig | grep eth3 | wc -l) -gt 0 ] && NEXT="h" || NEXT="p" ;;
+    [ $(/sbin/ifconfig | grep eth3 | wc -l) -gt 0 ] && NEXT="h" || NEXT="p" ;;
     h) macMenu "eth3"
-    [ $(ifconfig | grep eth4 | wc -l) -gt 0 ] && NEXT="i" || NEXT="p" ;;
+    [ $(/sbin/ifconfig | grep eth4 | wc -l) -gt 0 ] && NEXT="i" || NEXT="p" ;;
     i) macMenu "eth4"
-    [ $(ifconfig | grep eth5 | wc -l) -gt 0 ] && NEXT="o" || NEXT="p" ;;
+    [ $(/sbin/ifconfig | grep eth5 | wc -l) -gt 0 ] && NEXT="o" || NEXT="p" ;;
     o) macMenu "eth5"
-    [ $(ifconfig | grep eth6 | wc -l) -gt 0 ] && NEXT="t" || NEXT="p" ;;
+    [ $(/sbin/ifconfig | grep eth6 | wc -l) -gt 0 ] && NEXT="t" || NEXT="p" ;;
     t) macMenu "eth6"
-    [ $(ifconfig | grep eth7 | wc -l) -gt 0 ] && NEXT="v" || NEXT="p" ;;
+    [ $(/sbin/ifconfig | grep eth7 | wc -l) -gt 0 ] && NEXT="v" || NEXT="p" ;;
     v) macMenu "eth7";    NEXT="p" ;; 
     z) selectldrmode ;    NEXT="p" ;;
     k) remapsata ;        NEXT="p" ;;
