@@ -1048,7 +1048,7 @@ function macgen() {
 echo
 
     if [ "$realmac" == 'Y' ] ; then
-        mac2=$(ifconfig eth1 | head -1 | awk '{print $NF}')
+        mac2=$(/sbin/ifconfig eth1 | head -1 | awk '{print $NF}')
         echo "Real Mac2 Address : $mac2"
         echo "Notice : realmac option is requested, real mac2 will be used"
     else
@@ -1383,8 +1383,8 @@ function setnetwork() {
 
         ipset="static"
         ipgw="$(route | grep default | head -1 | awk '{print $2}')"
-        ipprefix="$(grep ifconfig /opt/eth*.sh | head -1 | awk '{print "ipcalc -p " $3 " " $5 }' | sh - | awk -F= '{print $2}')"
-        myip="$(grep ifconfig /opt/eth*.sh | head -1 | awk '{print $3 }')"
+        ipprefix="$(grep /sbin/ifconfig /opt/eth*.sh | head -1 | awk '{print "ipcalc -p " $3 " " $5 }' | sh - | awk -F= '{print $2}')"
+        myip="$(grep /sbin/ifconfig /opt/eth*.sh | head -1 | awk '{print $3 }')"
         ipaddr="${myip}/${ipprefix}"
         ipgw="$(grep route /opt/eth*.sh | head -1 | awk '{print  $5 }')"
         ipdns="$(grep nameserver /opt/eth*.sh | head -1 | awk '{print  $3 }')"
@@ -1408,8 +1408,8 @@ function getip() {
         else
             BUSID=""
         fi
-        IP="$(ifconfig ${eth} | grep inet | awk '{print $2}' | awk -F \: '{print $2}')"
-        HWADDR="$(ifconfig ${eth} | grep HWaddr | awk '{print $5}')"
+        IP="$(/sbin/ifconfig ${eth} | grep inet | awk '{print $2}' | awk -F \: '{print $2}')"
+        HWADDR="$(/sbin/ifconfig ${eth} | grep HWaddr | awk '{print $5}')"
         if [ -f /sys/class/net/${eth}/device/vendor ] && [ -f /sys/class/net/${eth}/device/device ]; then
             VENDOR=$(cat /sys/class/net/${eth}/device/vendor | sed 's/0x//')
             DEVICE=$(cat /sys/class/net/${eth}/device/device | sed 's/0x//')
@@ -1504,7 +1504,7 @@ function monitor() {
         ) 
         msgnormal "CPU Threads:\t\t"$(nproc)
         echo -e "Current Date Time:\t"$(date)
-        #msgnormal "System Main IP:\t\t"$(ifconfig | grep inet | grep -v 127.0.0.1 | awk '{print $2}' | awk -F \: '{print $2}' | tr '\n' ',' | sed 's#,$##')
+        #msgnormal "System Main IP:\t\t"$(/sbin/ifconfig | grep inet | grep -v 127.0.0.1 | awk '{print $2}' | awk -F \: '{print $2}' | tr '\n' ',' | sed 's#,$##')
         getip
         listpci
         echo -e "-------------------------------Loader boot entries---------------------------"
