@@ -2199,6 +2199,15 @@ function cleanloader() {
 
 function backuploader() {
 
+  thread=$(nproc)
+  if [ "$FRKRNL" = "YES" ]; then
+    sudo /bin/tar -C /home/tc -cf - | pigz -p "${thread}" > /mnt/"${loaderdisk}3"/xtrcp.tgz
+    if [ $? -ne 0 ]; then
+      cecho r "An error occurred while backing up the loader!!!"
+    fi    
+    return
+  fi
+
   if [ "${BUS}" != "block"  ]; then
 #Apply pigz for fast backup  
     if [ ! -n "$(which pigz)" ]; then
@@ -2207,8 +2216,7 @@ function backuploader() {
         chmod 777 pigz
         sudo mv pigz /usr/bin/
     fi
-
-    thread=$(nproc)
+    
     if [ $(cat /usr/bin/filetool.sh | grep pigz | wc -l ) -eq 0 ]; then
         sudo sed -i "s/\-czvf/\-cvf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
         sudo sed -i "s/\-czf/\-cf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
