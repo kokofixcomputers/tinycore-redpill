@@ -1542,7 +1542,11 @@ function savesession() {
 
     echo -n "Saving current user_config.json "
 
-    sudo cp /home/tc/user_config.json ${lastsessiondir}/user_config.json
+    if [ "$FRKRNL" = "NO" ]; then
+        cp /home/tc/user_config.json ${lastsessiondir}/user_config.json
+    else
+        sudo cp /home/tc/user_config.json ${lastsessiondir}/user_config.json
+    fi
 
     [ -f ${lastsessiondir}/user_config.json ] && echo " -> OK !"
 
