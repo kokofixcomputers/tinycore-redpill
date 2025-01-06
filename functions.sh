@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.0.6.8"
+rploaderver="1.1.0.0"
 build="master"
 redpillmake="prod"
 
@@ -138,6 +138,7 @@ function history() {
     1.0.6.6 Discontinuing support for DS3615xs.
     1.0.6.7 Applying REDPILL background image to grub boot
     1.0.6.8 i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
+    1.1.0.0 Added features for distribution of xTCRP (Tinycore Linux stripped down version)
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -440,6 +441,8 @@ EOF
 # Applying REDPILL background image to grub boot
 # 2025.01.01 v1.0.6.8
 # i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
+# 2025.01.06 v1.1.0.0 
+# Added features for distribution of xTCRP (Tinycore Linux stripped down version)
     
 function showlastupdate() {
     cat <<EOF
@@ -551,6 +554,9 @@ function showlastupdate() {
 
 # 2025.01.01 v1.0.6.8
 # i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
+
+# 2025.01.06 v1.1.0.0 
+# Added features for distribution of xTCRP (Tinycore Linux stripped down version)
 
 EOF
 }
