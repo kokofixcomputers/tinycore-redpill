@@ -35,6 +35,6 @@ jobs:
         run: |
           git config --global user.name "PeterSuh-Q3"
           git config --global user.email dante9000@gmail.com
-          git add my.sh.gz mydata.tgz RELEASE_NOTES.md
+          git add my.sh.gz mydata.tgz xtcrp.tgz RELEASE_NOTES.md
           git commit -m "${{ steps.remake-mydata-tgz.outputs.note }}"
           git push  
