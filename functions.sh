@@ -1677,7 +1677,7 @@ function testarchive() {
             echo "File ${archive}, is a compressed tar"
             isencrypted="no"
             ;;
-        053)
+        057)
             echo "File ${archive}, is a compressed tar (from GNU friend kernel)"
             isencrypted="no"
             ;;
