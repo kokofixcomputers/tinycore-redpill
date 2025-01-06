@@ -2409,7 +2409,11 @@ while true; do
     z) selectldrmode ;    NEXT="p" ;;
     k) remapsata ;        NEXT="p" ;;
     q) storagepanel;      NEXT="p" ;;    
-    p) [ "${LDRMODE}" == "FRIEND" ] && make "fri" "${prevent_init}" || make "jot" "${prevent_init}"
+    p) if [ "${LDRMODE}" == "FRIEND" ]; then
+         make "fri" "${prevent_init}" 
+       else  
+         make "jot" "${prevent_init}"
+       fi  
        NEXT="r" ;;
     n) additional;      NEXT="p" ;;
     u) editUserConfig;    NEXT="p" ;;
