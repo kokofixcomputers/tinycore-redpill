@@ -633,16 +633,18 @@ function getloaderdisk() {
     loaderdisk=""
     while read -r edisk; do
         if [ $(sudo fdisk -l "$edisk" | grep -c "83 Linux") -eq 3 ]; then
-            loaderdisk=$(blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}' | head -n 1)
-            if [ -n "$loaderdisk" ]; then
-                break
-            else
-                # check for the other type
-                loaderdisk="$(echo ${edisk} | cut -c 1-12 | awk -F\/ '{print $3}')"
-                [ -n "$loaderdisk" ] && break
-            fi
+            loaderdisk=$(sudo blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}' | head -n 1)
+            [ -n "$loaderdisk" ] && break
         fi
-    done < <(lsblk -ndo NAME | grep -v '^loop' | grep -v '^zram' | sed 's/^/\/dev\//')
+    done < <(sudo fdisk -l | grep "Disk /dev/" | grep -v "/dev/loop" | awk '{print $2}' | sed 's/://')
+    
+    if [ -z "${loaderdisk}" ]; then
+        for edisk in $(sudo fdisk -l | grep "Disk /dev/loop" | awk '{print $2}' | sed 's/://' ); do
+        if [ $(sudo fdisk -l | grep "83 Linux" | grep ${edisk} | wc -l ) -eq 3 ]; then
+            loaderdisk="$(echo ${edisk} | cut -c 1-12 | awk -F\/ '{print $3}')"
+        fi    
+        done
+    fi
 
     echo "LOADER DISK: $loaderdisk"
 }
@@ -1027,7 +1029,7 @@ function getlatestmshell() {
             echo "OK, updating, please re-run after updating"
             cp -f /home/tc/latest.mshell.gz /home/tc/$mshellgz
             rm -f /home/tc/latest.mshell.gz
-            gunzip -c $mshellgz | tar -xvf -
+            tar -zxvf $mshellgz
             echo "Updating m shell with latest updates"
             . /home/tc/functions.sh
             showlastupdate
@@ -1242,6 +1244,8 @@ function checkcpu() {
             CPU="AMD"
         fi        
     fi
+
+    threads="$(lscpu |grep CPU\(s\): | awk '{print $2}')"
     
     if [ $(lscpu |grep movbe |wc -l) -gt 0 ]; then    
         AFTERHASWELL="ON"
@@ -1363,14 +1367,14 @@ function _pat_process() {
       if [ 0${FILESIZE} -ge 0${SPACELEFT} ]; then
           # No disk space to download, change it to RAMDISK
           echo "No adequate space on ${local_cache} to download file into cache folder, clean up PAT file now ....."
-          sudo sh -c "sudo rm -vf $(ls -t ${local_cache}/*.pat | head -n 1)"
+          sudo sh -c "rm -vf $(ls -t ${local_cache}/*.pat | head -n 1)"
       fi
   fi
   
   echo "PATURL = " "${PATURL}"
-  STATUS=$(sudo curl -k -w "%{http_code}" -L "${PATURL}" -o "${PAT_PATH}" --progress-bar)
+  STATUS=$(curl -k -w "%{http_code}" -L "${PATURL}" -o "${PAT_PATH}" --progress-bar)
   if [ $? -ne 0 -o ${STATUS} -ne 200 ]; then
-      sudo rm -f "${PAT_PATH}"
+      rm -f "${PAT_PATH}"
       echo "Check internet or cache disk space.\nError: ${STATUS}"
       exit 99
   fi
@@ -1502,7 +1506,7 @@ function monitor() {
             vserver=$(lscpu | grep Hypervisor | wc -l)
             if [ $vserver -gt 0 ]; then echo "VM (${HYPERVISOR})"; else echo "Physical"; fi
         ) 
-        msgnormal "CPU Threads:\t\t"$(nproc)
+        msgnormal "CPU Threads:\t\t"$(lscpu |grep CPU\(s\): | awk '{print $2}')
         echo -e "Current Date Time:\t"$(date)
         #msgnormal "System Main IP:\t\t"$(ifconfig | grep inet | grep -v 127.0.0.1 | awk '{print $2}' | awk -F \: '{print $2}' | tr '\n' ',' | sed 's#,$##')
         getip
@@ -1532,21 +1536,13 @@ function savesession() {
 
     echo -n "Saving current extensions "
 
-    if [ "$FRKRNL" = "NO" ]; then
-        cat /home/tc/redpill-load/custom/extensions/*/*json | jq '.url' >${lastsessiondir}/extensions.list
-    else
-        echo
-    fi
+    cat /home/tc/redpill-load/custom/extensions/*/*json | jq '.url' >${lastsessiondir}/extensions.list
 
     [ -f ${lastsessiondir}/extensions.list ] && echo " -> OK !"
 
     echo -n "Saving current user_config.json "
 
-    if [ "$FRKRNL" = "NO" ]; then
-        cp /home/tc/user_config.json ${lastsessiondir}/user_config.json
-    else
-        sudo cp /home/tc/user_config.json ${lastsessiondir}/user_config.json
-    fi
+    cp /home/tc/user_config.json ${lastsessiondir}/user_config.json
 
     [ -f ${lastsessiondir}/user_config.json ] && echo " -> OK !"
 
@@ -1560,9 +1556,9 @@ function copyextractor() {
     [ ! -d ${local_cache} ] && mkdir ${local_cache}
 
     echo "making directory ${local_cache}/extractor"
-    [ ! -d ${local_cache}/extractor ] && sudo mkdir ${local_cache}/extractor
+    [ ! -d ${local_cache}/extractor ] && mkdir ${local_cache}/extractor
     [ ! -f /home/tc/extractor.gz ] && sudo curl -kL -# "https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/extractor.gz" -o /home/tc/extractor.gz
-    gunzip -c /home/tc/extractor.gz | sudo tar -xvf - -C ${local_cache}/extractor
+    sudo tar -zxvf /home/tc/extractor.gz -C ${local_cache}/extractor
 
     if [ "${BUS}" = "block"  ]; then
       git clone https://github.com/technorabilia/syno-extract-system-patch.git
@@ -1730,7 +1726,7 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
         if [ ${isencrypted} = "no" ]; then
             echo "File ${patfile} is already decrypted"
             msgnormal "Copying file to /home/tc/redpill-load/cache folder"
-            sudo mv -f ${patfile} /home/tc/redpill-load/cache/
+            mv -f ${patfile} /home/tc/redpill-load/cache/
         elif [ ${isencrypted} = "yes" ]; then
             [ -f /home/tc/redpill-load/cache/${SYNOMODEL}.pat ] && testarchive /home/tc/redpill-load/cache/${SYNOMODEL}.pat
             if [ -f /home/tc/redpill-load/cache/${SYNOMODEL}.pat ] && [ ${isencrypted} = "no" ]; then
@@ -1738,27 +1734,23 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
             else
                 if [ "${BUS}" = "block"  ]; then            
                   echo "Copying encrypted pat file : ${patfile} to ~/data/in"
-                  sudo mv -f ${patfile} ~/data/in/${SYNOMODEL}.pat
+                  mv -f ${patfile} ~/data/in/${SYNOMODEL}.pat
                   echo "Extracting encrypted pat file : ~/data/in/${SYNOMODEL}.pat to ~/data/out"
                   sudo docker run --rm -v ~/data:/data syno-extract-system-patch /data/in/${SYNOMODEL}.pat /data/out/. || echo "extract latest pat"
                   rsync -a --remove-source-files ~/data/out/ ${temp_pat_folder}/
                 else
                   echo "Copying encrypted pat file : ${patfile} to ${temp_dsmpat_folder}"
-                  sudo mv -f ${patfile} ${temp_dsmpat_folder}/${SYNOMODEL}.pat
+                  mv -f ${patfile} ${temp_dsmpat_folder}/${SYNOMODEL}.pat
                   echo "Extracting encrypted pat file : ${temp_dsmpat_folder}/${SYNOMODEL}.pat to ${temp_pat_folder}"
                   sudo /bin/syno_extract_system_patch ${temp_dsmpat_folder}/${SYNOMODEL}.pat ${temp_pat_folder} || echo "extract latest pat"
                 fi
                 echo "Decrypted pat file tar compression in progress ${SYNOMODEL}.pat to /home/tc/redpill-load/cache folder (multithreaded comporession)"
                 mkdir -p /home/tc/redpill-load/cache/
-                echo "threads = ${threads}"
+                thread=$(lscpu |grep CPU\(s\): | awk '{print $2}')
                 if [ "${BUS}" = "block"  ]; then
                   cd ${temp_pat_folder} && tar -cf ${temp_dsmpat_folder}/${SYNOMODEL}.pat ./ && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
                 else
-                  if [ "$FRKRNL" = "NO" ]; then
-                      cd ${temp_pat_folder} && sudo sh -c "tar -cf - ./ | pigz -p ${threads} > ${temp_dsmpat_folder}/${SYNOMODEL}.pat" && sudo cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
-                  else    
-                      cd ${temp_pat_folder} && sudo sh -c "tar -cf ${temp_dsmpat_folder}/${SYNOMODEL}.pat ./" && sudo cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
-                  fi    
+                  cd ${temp_pat_folder} && tar -cf - ./ | pigz -p $thread > ${temp_dsmpat_folder}/${SYNOMODEL}.pat && cp -f ${temp_dsmpat_folder}/${SYNOMODEL}.pat /home/tc/redpill-load/cache/${SYNOMODEL}.pat
                 fi
             fi
             patfile="/home/tc/redpill-load/cache/${SYNOMODEL}.pat"            
@@ -1770,7 +1762,7 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
 
         cd /home/tc/redpill-load/cache
 st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVISION}"        
-        sudo tar xvf /home/tc/redpill-load/cache/${SYNOMODEL}.pat ./VERSION && . ./VERSION && cat ./VERSION && rm ./VERSION
+        tar xvf /home/tc/redpill-load/cache/${SYNOMODEL}.pat ./VERSION && . ./VERSION && cat ./VERSION && rm ./VERSION
         os_sha256=$(sha256sum /home/tc/redpill-load/cache/${SYNOMODEL}.pat | awk '{print $1}')
         msgnormal "Pat file  sha256sum is : $os_sha256"
 
@@ -2015,20 +2007,15 @@ function getgrubbkg() {
 }
 
 function getbspatch() {
+    if [ ! -f /usr/local/bspatch ]; then
 
-    chmod 777 /home/tc/tools/bspatch
-    if [ "$FRKRNL" = "YES" ]; then
-        if [ ! -f /usr/bin/bspatch ]; then
-            echo "bspatch does not exist, copy from tools"
-            sudo cp -vf ~/tools/bspatch /usr/bin/
-        fi
-    else
-        if [ ! -f /usr/local/bspatch ]; then
-            echo "bspatch does not exist, copy from tools"
-            sudo cp -vf ~/tools/bspatch /usr/local/bin/
-        fi
+        #echo "bspatch does not exist, bringing over from repo"
+        #curl -kL "https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/$build/tools/bspatch" -O
+         
+        echo "bspatch does not exist, copy from tools"
+        chmod 777 /home/tc/tools/bspatch
+        sudo cp -vf /home/tc/tools/bspatch /usr/local/bin/
     fi
-
 }
 
 function removemodelexts() {                                                                             
@@ -2148,9 +2135,6 @@ function getvars() {
 
     setplatform
 
-    threads="$(nproc)"
-    [ -z "$threads" ] && threads="1"
-
     #echo "Platform : $platform_selected"
     echo "Rploader Version  : ${rploaderver}"
     echo "Extensions        : $EXTENSIONS "
@@ -2164,7 +2148,6 @@ function getvars() {
     echo "MODEL             : $MODEL"
     echo "KERNEL VERSION    : $KVER"
     echo "Local Cache Folder : $local_cache"
-    echo "CPU THREADS       : $threads"
     echo "DATE Internet     : $INTERNETDATE Local : $LOCALDATE"
 
   if [ "${offline}" = "NO" ]; then
@@ -2204,7 +2187,7 @@ function backuploader() {
         sudo mv pigz /usr/bin/
     fi
 
-    thread=$(nproc)
+    thread=$(lscpu |grep CPU\(s\): | awk '{print $2}')
     if [ $(cat /usr/bin/filetool.sh | grep pigz | wc -l ) -eq 0 ]; then
         sudo sed -i "s/\-czvf/\-cvf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
         sudo sed -i "s/\-czf/\-cf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
@@ -2574,18 +2557,10 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     if [ "$JUNLOADER" == "YES" ]; then
         echo "jun build option has been specified, so JUN MOD loader will be created"
         # jun's mod must patch using custom.gz from the first partition, so you need to fix the partition.
-        sed -i "s/BRP_OUT_P2}\/\${BRP_CUSTOM_RD_NAME/BRP_OUT_P1}\/\${BRP_CUSTOM_RD_NAME/g" /home/tc/redpill-load/build-loader.sh
-        if [ "$FRKRNL" = "NO" ]; then
-            sudo BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
-        else
-            BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
-        fi
+        sed -i "s/BRP_OUT_P2}\/\${BRP_CUSTOM_RD_NAME/BRP_OUT_P1}\/\${BRP_CUSTOM_RD_NAME/g" /home/tc/redpill-load/build-loader.sh        
+        sudo BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
     else
-        if [ "$FRKRNL" = "NO" ]; then
-            sudo ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
-        else
-            ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
-        fi    
+        sudo ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
     fi
 
     [ $? -ne 0 ] && echo "FAILED : Loader creation failed check the output for any errors" && exit 99
@@ -2634,8 +2609,8 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     fi
 
     if [ -f /home/tc/friend/initrd-friend ] && [ -f /home/tc/friend/bzImage-friend ]; then
-        sudo cp /home/tc/friend/initrd-friend /mnt/${loaderdisk}3/
-        sudo cp /home/tc/friend/bzImage-friend /mnt/${loaderdisk}3/
+        cp /home/tc/friend/initrd-friend /mnt/${loaderdisk}3/
+        cp /home/tc/friend/bzImage-friend /mnt/${loaderdisk}3/
     fi
 
     USB_LINE="$(grep -A 5 "USB," /tmp/tempentry.txt | grep linux | cut -c 16-999)"
@@ -2708,10 +2683,10 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     msgwarning "Updated user_config with SATA Command Line : $SATA_LINE"
     json=$(jq --arg var "${SATA_LINE}" '.general.sata_line = $var' $userconfigfile) && echo -E "${json}" | jq . >$userconfigfile
 
-    sudo cp $userconfigfile /mnt/${loaderdisk}3/
+    cp $userconfigfile /mnt/${loaderdisk}3/
 
     # Share RD of friend kernel with JOT 2023.05.01
-    sudo cp /mnt/${loaderdisk}1/zImage /mnt/${loaderdisk}3/zImage-dsm
+    cp /mnt/${loaderdisk}1/zImage /mnt/${loaderdisk}3/zImage-dsm
 
     # Repack custom.gz including /usr/lib/modules and /usr/lib/firmware in all_modules 2024.02.18
     # Compining rd.gz and custom.gz
@@ -2780,19 +2755,10 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     # Reassembly ramdisk
     if [ "$RD_COMPRESSED" = "false" ]; then
         echo "Ramdisk in not compressed "
-        if [ "$FRKRNL" = "NO" ]; then
-            (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
-        else
-            (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root > /tmp/initrd-dsm)
-            sudo cp -v /tmp/initrd-dsm /mnt/${loaderdisk}3/initrd-dsm
-        fi
+        (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
     else
-        echo "Ramdisk in compressed "
-        if [ "$FRKRNL" = "NO" ]; then
-            (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root | xz -9 --format=lzma >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
-        else
-            (cd /home/tc/rd.temp && find . | sudo cpio -o -H newc -R root:root | xz -9 --format=lzma >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
-        fi
+        echo "Ramdisk in compressed "            
+        (cd /home/tc/rd.temp && sudo find . | sudo cpio -o -H newc -R root:root | xz -9 --format=lzma >/mnt/${loaderdisk}3/initrd-dsm) >/dev/null
     fi
 
     if [ "$WITHFRIEND" = "YES" ]; then
@@ -2841,11 +2807,7 @@ st "gen grub     " "Gen GRUB entries" "Finished Gen GRUB entries : ${MODEL}"
     
         if [ -f ${patfile} ]; then
             echo "Found ${patfile}, moving to cache directory : ${local_cache} "
-            if [ "$FRKRNL" = "NO" ]; then
-                cp -vf ${patfile} ${local_cache} && rm -vf /home/tc/redpill-load/cache/*.pat
-            else
-                sudo cp -vf ${patfile} ${local_cache} && sudo rm -vf /home/tc/redpill-load/cache/*.pat 
-            fi
+            cp -vf ${patfile} ${local_cache} && rm -vf /home/tc/redpill-load/cache/*.pat
         fi
 st "cachingpat" "Caching pat file" "Cached file to: ${local_cache}"
     fi    
@@ -2910,25 +2872,20 @@ function bringoverfriend() {
 
 function synctime() {
 
-    if [ "$FRKRNL" = "NO" ]; then
-        #Get Timezone
-        tz=$(curl -s ipinfo.io | grep timezone | awk '{print $2}' | sed 's/,//')
-        if [ $(echo $tz | grep Seoul | wc -l ) -gt 0 ]; then
-            ntpserver="asia.pool.ntp.org"
-        else
-            ntpserver="pool.ntp.org"
-        fi
-    
-        if [ "$(which ntpclient)_" == "_" ]; then
-            tce-load -iw ntpclient 2>&1 >/dev/null
-        fi    
-        export TZ="${timezone}"
-        echo "Synchronizing dateTime with ntp server $ntpserver ......"
-        sudo ntpclient -s -h ${ntpserver} 2>&1 >/dev/null
+    #Get Timezone
+    tz=$(curl -s ipinfo.io | grep timezone | awk '{print $2}' | sed 's/,//')
+    if [ $(echo $tz | grep Seoul | wc -l ) -gt 0 ]; then
+        ntpserver="asia.pool.ntp.org"
     else
-        GOOGLETIME=$(curl -k -v -s https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
-        sudo date -u -s "$(date -d "$GOOGLETIME" "+%Y-%m-%d %H:%M:%S")"
+        ntpserver="pool.ntp.org"
     fi
+
+    if [ "$(which ntpclient)_" == "_" ]; then
+        tce-load -iw ntpclient 2>&1 >/dev/null
+    fi    
+    export TZ="${timezone}"
+    echo "Synchronizing dateTime with ntp server $ntpserver ......"
+    sudo ntpclient -s -h ${ntpserver} 2>&1 >/dev/null
     echo
     echo "DateTime synchronization complete!!!"
 
@@ -3058,11 +3015,11 @@ function getredpillko() {
     if [ "${ORIGIN_PLATFORM}" = "epyc7002" ]; then    
         unzip /mnt/${tcrppart}/rp-lkms${v}.zip        rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko.gz -d /tmp >/dev/null 2>&1
         gunzip -f /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko.gz >/dev/null 2>&1
-        sudo cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
+        cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${DSMVER}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
     else    
         unzip /mnt/${tcrppart}/rp-lkms${v}.zip        rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko.gz -d /tmp >/dev/null 2>&1
         gunzip -f /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko.gz >/dev/null 2>&1
-        sudo cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
+        cp -vf /tmp/rp-${ORIGIN_PLATFORM}-${KVER}-${redpillmake}.ko /home/tc/custom-module/redpill.ko
     fi
 
     if [ -z "${TAG}" ]; then
@@ -3071,10 +3028,9 @@ function getredpillko() {
         echo "TAG of VERSION is ${TAG}"
     fi
 
-    #REDPILL_MOD_NAME="redpill-linux-v$(modinfo /home/tc/custom-module/redpill.ko | grep vermagic | awk '{print $2}').ko"
-    REDPILL_MOD_NAME="redpill-linux-v${KVER}+.ko"
-    sudo cp -vf /home/tc/custom-module/redpill.ko /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
-    sudo strip --strip-debug /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
+    REDPILL_MOD_NAME="redpill-linux-v$(modinfo /home/tc/custom-module/redpill.ko | grep vermagic | awk '{print $2}').ko"
+    cp -vf /home/tc/custom-module/redpill.ko /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
+    strip --strip-debug /home/tc/redpill-load/ext/rp-lkm/${REDPILL_MOD_NAME}
 
 }
 
@@ -3156,8 +3112,7 @@ function upgrademan() {
 
 function rploader() {
 
-    echo "LOADER DISK = ${loaderdisk}"
-    [ -z "${loaderdisk}" ] && getloaderdisk
+    getloaderdisk
     if [ -z "${loaderdisk}" ]; then
         echo "Not Supported Loader BUS Type, program Exit!!!"
         exit 99
@@ -3264,15 +3219,12 @@ function my() {
   echo "$1"
   echo "$2"
   echo "$3"
-
-  echo "LOADER DISK = ${loaderdisk}"
-  [ -z "${loaderdisk}" ] && getloaderdisk
+  
+  getloaderdisk
   if [ -z "${loaderdisk}" ]; then
       echo "Not Supported Loader BUS Type, program Exit!!!"
       exit 99
   fi
-
-  echo "${loaderdisk}" > /tmp/loaderdisk
   
   getBus "${loaderdisk}" 
     
@@ -3612,12 +3564,9 @@ function my() {
   else
       echo "n"|rploader build ${TARGET_PLATFORM}-${TARGET_VERSION}-${TARGET_REVISION} static
   fi
-[ "$FRKRNL" = "YES" ] && readanswer
-echo "errorcode = $?"
+  
   if [ $? -ne 0 ]; then
       cecho r "An error occurred while building the loader!!! Clean the redpill-load directory!!! "
-      readanswer
-      echo "OK, keep going..."
       rploader clean
   else
       [ "${BUS}" = "block" ] && exit 0
