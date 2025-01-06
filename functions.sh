@@ -2204,6 +2204,8 @@ function backuploader() {
     sudo /bin/tar -C /home/tc -cf - | pigz -p "${thread}" > /mnt/"${loaderdisk}3"/xtrcp.tgz
     if [ $? -ne 0 ]; then
       cecho r "An error occurred while backing up the loader!!!"
+    else
+      cecho y "Successfully backed up the loader!!!"
     fi    
     return
   fi
@@ -3624,7 +3626,6 @@ function my() {
   else
       echo "n"|rploader build ${TARGET_PLATFORM}-${TARGET_VERSION}-${TARGET_REVISION} static
   fi
-[ "$FRKRNL" = "YES" ] && readanswer
 echo "errorcode = $?"
   if [ $? -ne 0 ]; then
       cecho r "An error occurred while building the loader!!! Clean the redpill-load directory!!! "
@@ -3636,6 +3637,7 @@ echo "errorcode = $?"
       [ "$MACHINE" != "VIRTUAL" ] && sleep 2
       echo "y"|rploader backup
   fi
+[ "$FRKRNL" = "YES" ] && readanswer  
 }
 
 if [ $# -gt 1 ]; then
