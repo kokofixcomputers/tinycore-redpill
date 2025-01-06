@@ -30,6 +30,7 @@ jobs:
           tar -zcvf mydata.tgz -C ./mydata/ .
           cd mydata
           tar -zcvf xtcrp.tgz ./home/tc
+          mv -vf xtcrp.tgz ..
           
       - name: Commit changes
         run: |
