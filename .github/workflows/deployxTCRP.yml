@@ -127,6 +127,9 @@ jobs:
           sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst
           sudo cp -vf ${GITHUB_WORKSPACE}/grub/grubbkg.png /mnt/tarp3/grubbkg.png
           sudo cp -vf ${GITHUB_WORKSPACE}/xtcrp.tgz /mnt/tarp3/xtcrp.tgz
+          sudo rm -f /mnt/tarp3/corepure64.gz
+          sudo rm -f /mnt/tarp3/vmlinuz64
+          sudo rm -f /mnt/tarp3/mydata.tgz
 
           ## add friend gnu kernel
           LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest"`"
