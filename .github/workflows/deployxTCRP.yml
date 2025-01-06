@@ -122,11 +122,9 @@ jobs:
           ls -ltr /mnt/tarp3
           
           ## add tinycore packages
-          sudo cp -vf ${GITHUB_WORKSPACE}/tce/optional/*.* /mnt/tarp3/cde/optional
-          ls -ltr /mnt/tarp3/cde/optional
-          sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst
           sudo cp -vf ${GITHUB_WORKSPACE}/grub/grubbkg.png /mnt/tarp3/grubbkg.png
           sudo cp -vf ${GITHUB_WORKSPACE}/xtcrp.tgz /mnt/tarp3/xtcrp.tgz
+          sudo rm -rf /mnt/tarp3/cde          
           sudo rm -f /mnt/tarp3/corepure64.gz
           sudo rm -f /mnt/tarp3/vmlinuz64
           sudo rm -f /mnt/tarp3/mydata.tgz
