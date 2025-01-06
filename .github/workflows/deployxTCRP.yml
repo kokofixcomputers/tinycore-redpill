@@ -126,7 +126,15 @@ jobs:
           ls -ltr /mnt/tarp3/cde/optional
           sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst
           sudo cp -vf ${GITHUB_WORKSPACE}/grub/grubbkg.png /mnt/tarp3/grubbkg.png
-          sudo tar -xzOf /mnt/tarp3/mydata.tgz | sudo tar -czf /mnt/tarp3/xtcrp.tgz -C /home/tc .
+          #sudo tar -xzOf /mnt/tarp3/mydata.tgz | sudo tar -czf /mnt/tarp3/xtcrp.tgz -C /home/tc .
+          LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest"`"
+          FRTAG="${LATESTURL##*/}"
+          echo "FRIEND TAG is ${FRTAG}"        
+          curl -kLO# "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/chksum" \
+          -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/bzImage-friend" \
+          -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/initrd-friend"
+          sudo mv -vf bzImage-friend /mnt/tarp3
+          sudo mv -vf initrd-friend /mnt/tarp3
           
           ##  Finalize ##
           sudo umount /mnt/p3
