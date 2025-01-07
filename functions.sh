@@ -1303,9 +1303,10 @@ function getBus() {
   [ -z "${BUS}" ] && BUS="block"
   echo "${BUS}"
 
-  [ "${BUS}" = "nvme" ] && loaderdisk="${loaderdisk}p"
-  [ "${BUS}" = "mmc"  ] && loaderdisk="${loaderdisk}p"
-  [ "${BUS}" = "block"  ] && loaderdisk="${loaderdisk}p"
+  [ "${BUS}" = "nvme" ] && [[ "${loaderdisk}" != *p ]] && loaderdisk="${loaderdisk}p"
+  [ "${BUS}" = "mmc"  ] && [[ "${loaderdisk}" != *p ]] && loaderdisk="${loaderdisk}p"
+  [ "${BUS}" = "block" ] && [[ "${loaderdisk}" != *p ]] && loaderdisk="${loaderdisk}p"
+
 }
 
 ###############################################################################
