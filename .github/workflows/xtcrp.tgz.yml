@@ -1,0 +1,40 @@
+name: Tar xtcrp.tgz
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tar_compress_and_commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Compress shell files
+        id: remake-mydata-tgz
+        run: |
+          VERSION=v`cat functions.sh | grep rploaderver= | cut -d\" -f2`
+          echo "Version: ${VERSION}"
+          echo "::set-output name=VERSION::${VERSION}"
+
+          vers=`cat functions.sh | grep rploaderver= | cut -d\" -f2`
+          note=`cat functions.sh | grep "${vers} " | head -n 1`
+          echo "    "${note} > RELEASE_NOTES.md
+          echo "note: ${note}"
+          echo "::set-output name=note::${note}"
+          
+          tar -zcvf my.sh.gz lang.tgz i18n.h functions.sh monitor.sh menu.sh menu_m.sh ntp.sh sngen.sh macgen.sh edisk.sh custom_config.json modules.alias.4.json extractor.gz
+          mkdir -p ./mydata/home/tc/
+          tar -zxvf mydata.tgz -C ./mydata/
+          cp -vf my.sh.gz lang.tgz i18n.h functions.sh monitor.sh menu.sh menu_m.sh ntp.sh sngen.sh macgen.sh edisk.sh custom_config.json modules.alias.4.json extractor.gz ./mydata/home/tc/
+          rm ./mydata/home/tc/custom-module
+          cd ./mydata/home/tc
+          tar -cf - ./ | pigz -p 2 > ${GITHUB_WORKSPACE}/xtcrp.tgz
+          
+      - name: Commit changes
+        run: |
+          git config --global user.name "PeterSuh-Q3"
+          git config --global user.email dante9000@gmail.com
+          git add xtcrp.tgz
+          git commit -m "${{ steps.remake-mydata-tgz.outputs.note }}"
+          git push  
