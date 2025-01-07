@@ -1482,7 +1482,7 @@ function monitor() {
 
     getloaderdisk
     if [ -z "${loaderdisk}" ]; then
-        echo "Not Supported Loader BUS Type, program Exit!!!"
+        echo "Unsupported loader BUS type. Exiting..."
         exit 99
     fi
 
