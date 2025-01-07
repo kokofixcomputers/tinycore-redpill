@@ -64,4 +64,6 @@ A typical build process starts with:
     1.0.2.4 Added NVMe bootloader support
     ...
     1.0.5.0 Improved internet check function in menu.sh
+    ...
+    1.0.6.6 Discontinuing support for DS3615xs.
 

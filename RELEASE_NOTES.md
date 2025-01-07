@@ -1,1 +1,1 @@
-     1.0.6.5 Includes tinycore linux scsi module for scsi type bootloader support.
+     1.1.0.0 Added features for distribution of xTCRP (Tinycore Linux stripped down version)

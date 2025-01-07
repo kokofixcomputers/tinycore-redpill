@@ -28,11 +28,14 @@ jobs:
           tar -zxvf mydata.tgz -C ./mydata/
           cp -vf my.sh.gz lang.tgz i18n.h functions.sh monitor.sh menu.sh menu_m.sh ntp.sh sngen.sh macgen.sh edisk.sh custom_config.json modules.alias.4.json extractor.gz ./mydata/home/tc/
           tar -zcvf mydata.tgz -C ./mydata/ .
+          rm ./mydata/home/tc/custom-module
+          cd ./mydata/home/tc
+          tar -cf - ./ | pigz -p 2 > ${GITHUB_WORKSPACE}/xtcrp.tgz
           
       - name: Commit changes
         run: |
           git config --global user.name "PeterSuh-Q3"
           git config --global user.email dante9000@gmail.com
-          git add my.sh.gz mydata.tgz RELEASE_NOTES.md
+          git add my.sh.gz mydata.tgz xtcrp.tgz RELEASE_NOTES.md
           git commit -m "${{ steps.remake-mydata-tgz.outputs.note }}"
           git push  

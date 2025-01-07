@@ -72,13 +72,13 @@ jobs:
           echo "LOOPX = ${LOOPX}"          
           sudo losetup -P ${LOOPX} tinycore-redpill.v1.0.2.4.m-shell.img
           
-          dd if=/dev/zero of=tinycore-redpill.${VERSION}.m-shell.img bs=1M seek=2048 count=0
-          echo -e "n\np\n1\n\n+72M\nn\np\n2\n\n+75M\nn\np\n3\n\n+1899M\nw\nq\n" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
-          echo -e "a\n1\nw" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
-          #echo -e "t\n1\nuefi\nw" | sudo fdisk tinycore-redpill.${VERSION}.m-shell.img
+          dd if=/dev/zero of=tinycore-redpill.${VERSION}.xtcrp.img bs=1M seek=2048 count=0
+          echo -e "n\np\n1\n\n+72M\nn\np\n2\n\n+75M\nn\np\n3\n\n+1899M\nw\nq\n" | sudo fdisk tinycore-redpill.${VERSION}.xtcrp.img
+          echo -e "a\n1\nw" | sudo fdisk tinycore-redpill.${VERSION}.xtcrp.img
+          #echo -e "t\n1\nuefi\nw" | sudo fdisk tinycore-redpill.${VERSION}.xtcrp.img
           
           LOOPZ=$(sudo losetup -f)
-          sudo losetup -P ${LOOPZ} tinycore-redpill.${VERSION}.m-shell.img
+          sudo losetup -P ${LOOPZ} tinycore-redpill.${VERSION}.xtcrp.img
           echo "LOOPZ = ${LOOPZ}"
           sudo fdisk -l ${LOOPZ}
           
@@ -97,7 +97,7 @@ jobs:
           sudo grub-install --target=x86_64-efi --removable --efi-directory="/mnt/tarp1" --boot-directory="/mnt/tarp1/boot" --bootloader-id=GRUB
           sudo grub-install --target=i386-pc --boot-directory="/mnt/tarp1/boot" "${LOOPZ}"
 
-          sudo cp -vf ${GITHUB_WORKSPACE}/grub/grubtiny.cfg /mnt/tarp1/boot/grub/grub.cfg
+          sudo cp -vf ${GITHUB_WORKSPACE}/grub/grub.cfg /mnt/tarp1/boot/grub/grub.cfg
 
           ls -ltr /mnt/tarp1/boot/grub/x86_64-efi/
           echo "Copy and check EFI files"
@@ -121,10 +121,22 @@ jobs:
           ls -ltr /mnt/tarp3
           
           ## add tinycore packages
-          sudo cp -vf ${GITHUB_WORKSPACE}/tce/optional/*.* /mnt/tarp3/cde/optional
-          ls -ltr /mnt/tarp3/cde/optional
-          sudo cp -vf ${GITHUB_WORKSPACE}/tce/onboot.lst /mnt/tarp3/cde/onboot.lst
           sudo cp -vf ${GITHUB_WORKSPACE}/grub/grubbkg.png /mnt/tarp3/grubbkg.png
+          sudo cp -vf ${GITHUB_WORKSPACE}/xtcrp.tgz /mnt/tarp3/xtcrp.tgz
+          sudo rm -rf /mnt/tarp3/cde          
+          sudo rm -f /mnt/tarp3/corepure64.gz
+          sudo rm -f /mnt/tarp3/vmlinuz64
+          sudo rm -f /mnt/tarp3/mydata.tgz
+
+          ## add friend gnu kernel
+          LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest"`"
+          FRTAG="${LATESTURL##*/}"
+          echo "FRIEND TAG is ${FRTAG}"        
+          curl -kLO# "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/chksum" \
+          -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/bzImage-friend" \
+          -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/initrd-friend"
+          sudo mv -vf bzImage-friend /mnt/tarp3
+          sudo mv -vf initrd-friend /mnt/tarp3
           
           ##  Finalize ##
           sudo umount /mnt/p3
@@ -132,9 +144,9 @@ jobs:
           sudo umount /mnt/tarp3
           sudo losetup -d ${LOOPZ}
           sudo losetup -d ${LOOPX}
-          gzip -c tinycore-redpill.${VERSION}.m-shell.img > /opt/output/tinycore-redpill.${VERSION}.m-shell.img.gz
-          qemu-img convert -f raw -O vmdk tinycore-redpill.${VERSION}.m-shell.img tinycore-redpill.${VERSION}.m-shell.vmdk
-          gzip -c tinycore-redpill.${VERSION}.m-shell.vmdk > /opt/output/tinycore-redpill.${VERSION}.m-shell.vmdk.gz
+          gzip -c tinycore-redpill.${VERSION}.xtcrp.img > /opt/output/tinycore-redpill.${VERSION}.xtcrp.img.gz
+          qemu-img convert -f raw -O vmdk tinycore-redpill.${VERSION}.xtcrp.img tinycore-redpill.${VERSION}.xtcrp.vmdk
+          gzip -c tinycore-redpill.${VERSION}.xtcrp.vmdk > /opt/output/tinycore-redpill.${VERSION}.xtcrp.vmdk.gz
           ls -ltr /opt/output
           
       - name: Upload MshellImage-${{ steps.get-version.outputs.VERSION }}
