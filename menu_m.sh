@@ -2424,10 +2424,10 @@ while true; do
     l) langMenu ;;
     b) backup ;;
     r) if [ "$FRKRNL" = "NO" ]; then
-         restart ;;
+         restart
        else
-         sudo /root/boot.sh normal ;;
-       fi
+         sudo /root/boot.sh normal
+       fi ;;
     e) sudo poweroff ;;
   esac
 done
