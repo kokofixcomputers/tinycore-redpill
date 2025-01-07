@@ -3205,7 +3205,7 @@ function rploader() {
         exit 99
     fi
     
-    getBus "${loaderdisk}" 
+    #getBus "${loaderdisk}" 
     echo -ne "Loader BUS: $(msgnormal "${BUS}")\n"
 
     tcrppart="${loaderdisk}3"
@@ -3316,7 +3316,7 @@ function my() {
 
   echo "${loaderdisk}" > /tmp/loaderdisk
   
-  getBus "${loaderdisk}" 
+  #getBus "${loaderdisk}" 
     
   tcrppart="${loaderdisk}3"
 
