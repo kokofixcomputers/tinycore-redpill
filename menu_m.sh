@@ -2380,11 +2380,11 @@ while true; do
   eval "echo \"u \\\"\${MSG${tz}10}\\\"\""               >> "${TMP_PATH}/menu"  
   eval "echo \"l \\\"\${MSG${tz}39}\\\"\""               >> "${TMP_PATH}/menu"
   eval "echo \"b \\\"\${MSG${tz}13}\\\"\""               >> "${TMP_PATH}/menu"
-  if [ "$FRKRNL" = "NO" ]; then
+  #if [ "$FRKRNL" = "NO" ]; then
     eval "echo \"r \\\"\${MSG${tz}14}\\\"\""               >> "${TMP_PATH}/menu"
-  else
-    echo "r \"DSM Booting (with FRIEND KERNEL)\""  >> "${TMP_PATH}/menu"      
-  fi
+  #else
+  #  echo "r \"DSM Booting (with FRIEND KERNEL)\""  >> "${TMP_PATH}/menu"      
+  #fi
   eval "echo \"e \\\"\${MSG${tz}15}\\\"\""               >> "${TMP_PATH}/menu"
   dialog --clear --default-item ${NEXT} --backtitle "`backtitle`" --colors \
     --menu "${result}" 0 0 0 --file "${TMP_PATH}/menu" \
@@ -2423,11 +2423,7 @@ while true; do
     u) editUserConfig;    NEXT="p" ;;
     l) langMenu ;;
     b) backup ;;
-    r) if [ "$FRKRNL" = "NO" ]; then
-         restart
-       else
-         sudo /root/boot.sh normal
-       fi ;;
+    r) restart ;;
     e) sudo poweroff ;;
   esac
 done
