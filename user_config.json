@@ -1,6 +1,6 @@
 {
   "general": {
-    "model": "DS920+",
+    "model": "SA6400",
     "version": "7.2.2-72806",
     "smallfixnumber": "0",
     "zimghash": "",
@@ -13,7 +13,7 @@
     "layout": "qwerty",
     "keymap": "us",
     "devmod": "DDSML",
-    "ucode": "ko_KR",
+    "ucode": "en_US",
     "loadermode": "FRIEND",
     "bay": "TOWER_4_Bay",
     "kver": "4.4.302"
