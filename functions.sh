@@ -19,6 +19,13 @@ mshtarfile="https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/maste
 
 #Defaults
 smallfixnumber="0"
+
+#Check if FRIEND kernel exists
+if [[ "$(uname -a | grep -c tcrpfriend)" -gt 0 ]]; then
+    FRKRNL="YES"
+else
+    FRKRNL="NO"
+fi
  
 function history() {
     cat <<EOF
