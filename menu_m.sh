@@ -2141,7 +2141,7 @@ if [ "$FRKRNL" = "NO" ] && [ "$(which ethtool)_" == "_" ]; then
    sudo echo "iproute2.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
 fi
 
-[ "$FRKRNL" = "NO" ] && sortnetif
+sortnetif
 
 if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep "kmaps.tczglibc_apps.tcz" | wc -w) -gt 0 ]; then
     sudo sed -i "/kmaps.tczglibc_apps.tcz/d" /mnt/${tcrppart}/cde/onboot.lst    
