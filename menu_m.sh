@@ -1025,8 +1025,8 @@ function langMenu() {
   writeConfigKey "general" "ucode" "${ucode}"  
   [ "$FRKRNL" = "NO" ] && writexsession
 
-  tz="US"
-  load_us
+  tz="ZZ"
+  load_zz
   
   setSuggest $MODEL
   
@@ -2138,8 +2138,8 @@ locale
 #End Locale Setting process
 export TEXTDOMAINDIR="/usr/local/share/locale"
 set -o allexport
-tz="US"
-load_us
+tz="ZZ"
+load_zz
 
 # Download ethtool
 if [ "$FRKRNL" = "NO" ] && [ "$(which ethtool)_" == "_" ]; then
