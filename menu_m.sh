@@ -246,17 +246,17 @@ function seleudev() {
   checkforsas
 
   if [ ${BLOCK_DDSML} = "Y" ] || [ "${MODEL}" = "SA6400" ] || [ "${BUS}" = "mmc" ]; then
-    menu_options=("e" \"${MSG26}\" "f" \"${MSG40}\")
+    menu_options=("e" "${MSG26}" "f" "${MSG40}")
   elif [ ${BLOCK_EUDEV} = "Y" ]; then  
-    menu_options=("d" \"${MSG27}\" "f" \"${MSG40}\")
+    menu_options=("d" "${MSG27}" "f" "${MSG40}")
   else
-    menu_options=("d" \"${MSG27}\" "e" \"${MSG26}\" "f" \"${MSG40}\")
+    menu_options=("d" "${MSG27}" "e" "${MSG26}" "f" "${MSG40}")
   fi
 
   while true; do
     dialog --clear --backtitle "`backtitle`" \
       --menu "Choose a option" 0 0 0 \
-      $menu_options \
+      "${menu_options[@]}" \
       2>${TMP_PATH}/resp
     [ $? -ne 0 ] && return
     resp=$(<${TMP_PATH}/resp)
