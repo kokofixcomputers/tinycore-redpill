@@ -156,6 +156,7 @@ MDLNAME=$(jq -r -e '.general.modulename' "$USER_CONFIG_FILE")
 ucode=$(jq -r -e '.general.ucode' "$USER_CONFIG_FILE")
 lcode=$(echo $ucode | cut -c 4-)
 BLOCK_EUDEV="N"
+BLOCK_DDSML="N"
 
 # for test gettext
 #path_i="/usr/local/share/locale/ko_KR/LC_MESSAGES"
@@ -240,7 +241,7 @@ function seleudev() {
   eval "MSG26=\"\${MSG${tz}26}\""
   eval "MSG40=\"\${MSG${tz}40}\""
 
-  if [ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
+  if [ ${BLOCK_DDSML} = "Y" ]||[ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
     while true; do
       dialog --clear --backtitle "`backtitle`" \
     --menu "Choose a option" 0 0 0 \
@@ -512,7 +513,7 @@ done
   #fi
   writeConfigKey "general" "version" "${BUILD}"  
 
-  if [ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
+  if [ "${BLOCK_DDSML}" = "Y" ]||[ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
     if [ "$HBADETECT" = "ON" ]; then
         DMPM="DDSML+EUDEV"
     else
@@ -2409,7 +2410,16 @@ while true; do
     k) remapsata ;        NEXT="p" ;;
     q) storagepanel;      NEXT="p" ;;    
     w) 
-      [ "${nvmes}" = "Add" ] && add-addon "nvmesystem" || del-addon "nvmesystem"
+      if [ "${nvmes}" = "Add" ]; then 
+        add-addon "nvmesystem" 
+        BLOCK_DDSML="Y"
+        DMPM="EUDEV"        
+      else  
+        del-addon "nvmesystem"
+        BLOCK_DDSML="N"
+        DMPM="DDSML"
+      fi  
+      writeConfigKey "general" "devmod" "${DMPM}"
       [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("nvmesystem")') = true ] && nvmes="Remove" || nvmes="Add"
       ;;
     p) if [ "${LDRMODE}" == "FRIEND" ]; then
