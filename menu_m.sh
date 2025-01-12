@@ -256,14 +256,14 @@ function seleudev() {
   local options=()
     
   if [ "${BLOCK_DDSML}" != "Y" ] && [ "${MODEL}" != "SA6400" ] && [ "${BUS}" != "mmc" ]; then
-      options+=("d" "${MSG27}")
+      options+=(d "${MSG27}")
   fi
   
   if [ "${BLOCK_EUDEV}" != "Y" ]; then
-      options+=("e" "${MSG26}")
+      options+=(e "${MSG26}")
   fi
   
-  options+=("f" "${MSG40}")
+  options+=(f "${MSG40}")
   
   while true; do
       show_menu "${options[@]}"
@@ -272,9 +272,9 @@ function seleudev() {
       [ -z "${resp}" ] && return
       
       case "${resp}" in
-          "d") DMPM="DDSML"; break ;;
-          "e") DMPM="EUDEV"; break ;;
-          "f") DMPM="DDSML+EUDEV"; break ;;
+          d) DMPM="DDSML"; break ;;
+          e) DMPM="EUDEV"; break ;;
+          f) DMPM="DDSML+EUDEV"; break ;;
       esac
   done
 
