@@ -246,66 +246,32 @@ function seleudev() {
   checkforsas
 
   if [ ${BLOCK_DDSML} = "Y" ] || [ "${MODEL}" = "SA6400" ] || [ "${BUS}" = "mmc" ]; then
-    while true; do
-      dialog --clear --backtitle "`backtitle`" \
-        --menu "Choose a option" 0 0 0 \
-        e "${MSG26}" \
-        f "${MSG40}" \
-        2>${TMP_PATH}/resp
-      [ $? -ne 0 ] && return
-      resp=$(<${TMP_PATH}/resp)
-      [ -z "${resp}" ] && return
-      if [ "${resp}" = "e" ]; then
-        DMPM="EUDEV"
-        break
-      elif [ "${resp}" = "f" ]; then
-        DMPM="DDSML+EUDEV"
-        break
-      fi
-    done
+    menu_options=("e" \"${MSG26}\" "f" \"${MSG40}\")
+  elif [ ${BLOCK_EUDEV} = "Y" ]; then  
+    menu_options=("d" \"${MSG27}\" "f" \"${MSG40}\")
   else
-    if [ ${BLOCK_EUDEV} = "Y" ]; then
-      while true; do
-        dialog --clear --backtitle "`backtitle`" \
-          --menu "Choose a option" 0 0 0 \
-          d "${MSG27}" \
-          f "${MSG40}" \
-          2>${TMP_PATH}/resp
-        [ $? -ne 0 ] && return
-        resp=$(<${TMP_PATH}/resp)
-        [ -z "${resp}" ] && return
-        if [ "${resp}" = "d" ]; then
-          DMPM="DDSML"
-          break
-        elif [ "${resp}" = "f" ]; then
-          DMPM="DDSML+EUDEV"
-          break
-        fi
-      done
-    else
-      while true; do
-        dialog --clear --backtitle "`backtitle`" \
-          --menu "Choose a option" 0 0 0 \
-          d "${MSG27}" \
-          e "${MSG26}" \
-          f "${MSG40}" \
-          2>${TMP_PATH}/resp
-        [ $? -ne 0 ] && return
-        resp=$(<${TMP_PATH}/resp)
-        [ -z "${resp}" ] && return
-        if [ "${resp}" = "d" ]; then
-          DMPM="DDSML"
-          break
-        elif [ "${resp}" = "e" ]; then
-          DMPM="EUDEV"
-          break
-        elif [ "${resp}" = "f" ]; then
-          DMPM="DDSML+EUDEV"
-          break
-        fi
-      done
-    fi
+    menu_options=("d" \"${MSG27}\" "e" \"${MSG26}\" "f" \"${MSG40}\")
   fi
+
+  while true; do
+    dialog --clear --backtitle "`backtitle`" \
+      --menu "Choose a option" 0 0 0 \
+      $menu_options \
+      2>${TMP_PATH}/resp
+    [ $? -ne 0 ] && return
+    resp=$(<${TMP_PATH}/resp)
+    [ -z "${resp}" ] && return
+    if [ "${resp}" = "d" ]; then
+      DMPM="DDSML"
+      break
+    elif [ "${resp}" = "e" ]; then
+      DMPM="EUDEV"
+      break
+    elif [ "${resp}" = "f" ]; then
+      DMPM="DDSML+EUDEV"
+      break
+    fi
+  done
 
   del-addon "eudev"
   del-addon "ddsml"
