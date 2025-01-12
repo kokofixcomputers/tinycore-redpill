@@ -151,9 +151,11 @@ KEYMAP=$(jq -r -e '.general.keymap' "$USER_CONFIG_FILE")
 I915MODE=$(jq -r -e '.general.i915mode' "$USER_CONFIG_FILE")
 BFBAY=$(jq -r -e '.general.bay' "$USER_CONFIG_FILE")
 DMPM=$(jq -r -e '.general.devmod' "$USER_CONFIG_FILE")
+NVMES=$(jq -r -e '.general.nvmesystem' "$USER_CONFIG_FILE")
 LDRMODE=$(jq -r -e '.general.loadermode' "$USER_CONFIG_FILE")
 MDLNAME=$(jq -r -e '.general.modulename' "$USER_CONFIG_FILE")
 ucode=$(jq -r -e '.general.ucode' "$USER_CONFIG_FILE")
+
 lcode=$(echo $ucode | cut -c 4-)
 BLOCK_EUDEV="N"
 BLOCK_DDSML="N"
@@ -2181,6 +2183,11 @@ if [ "${BUS}" = "mmc"  ]; then
     writeConfigKey "general" "devmod" "${DMPM}"          
 fi
 
+if [ "${NVMES}" = "null"  ]; then
+    NVMES="false"
+    writeConfigKey "general" "nvmesystem" "${NVMES}"
+fi
+
 if [ "${LDRMODE}" = "null" ]; then
     LDRMODE="FRIEND"
     writeConfigKey "general" "loadermode" "${LDRMODE}"          
@@ -2363,7 +2370,7 @@ writeConfigKey "general" "bay" "${bay}"
 
 # Until urxtv is available, Korean menu is used only on remote terminals.
 while true; do
-  [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("nvmesystem")') = true ] && nvmes="Remove" || nvmes="Add"        
+  [ "${NVMES}" = "false" ] && nvmeaction="Add" || nvmeaction="Remove"
   eval "echo \"c \\\"\${MSG${tz}01}, (${DMPM})\\\"\""     > "${TMP_PATH}/menu" 
   eval "echo \"m \\\"\${MSG${tz}02}, (${MODEL})\\\"\""   >> "${TMP_PATH}/menu"
   if [ -n "${MODEL}" ]; then
@@ -2380,7 +2387,7 @@ while true; do
     [ "${CPU}" != "HP" ] && eval "echo \"z \\\"\${MSG${tz}06} (${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"
     eval "echo \"k \\\"\${MSG${tz}56}\\\"\""             >> "${TMP_PATH}/menu"
     eval "echo \"q \\\"\${MSG${tz}41} (${bay})\\\"\""      >> "${TMP_PATH}/menu"
-    eval "echo \"w \\\"${nvmes} nvmesystem Addon(NVMe single volume use)\\\"\"" >> "${TMP_PATH}/menu"
+    eval "echo \"w \\\"${nvmeaction} nvmesystem Addon(NVMe single volume use)\\\"\"" >> "${TMP_PATH}/menu"
     eval "echo \"p \\\"\${MSG${tz}18} (${BUILD}, ${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"      
   fi
   echo "n \"Additional Functions\""  >> "${TMP_PATH}/menu"      
@@ -2421,17 +2428,19 @@ while true; do
     k) remapsata ;        NEXT="p" ;;
     q) storagepanel;      NEXT="p" ;;    
     w) 
-      if [ "${nvmes}" = "Add" ]; then 
+      if [ "${NVMES}" = "false" ]; then 
         add-addon "nvmesystem"
+        NVMES="true"
         BLOCK_DDSML="Y"
-        DMPM="EUDEV"        
+        DMPM="EUDEV"
       else  
         del-addon "nvmesystem"
+        NVMES="false"
         BLOCK_DDSML="N"
         DMPM="DDSML"
       fi  
+      writeConfigKey "general" "nvmesystem" "${NVMES}"
       writeConfigKey "general" "devmod" "${DMPM}"
-      [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("nvmesystem")') = true ] && nvmes="Remove" || nvmes="Add"
       ;;
     p) if [ "${LDRMODE}" == "FRIEND" ]; then
          make "fri" "${prevent_init}" 
