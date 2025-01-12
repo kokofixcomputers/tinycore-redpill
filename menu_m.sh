@@ -235,11 +235,20 @@ function usbidentify() {
     fi      
 }
 
-show_menu() {
+function replace_space() {
+    echo "$1" | sed 's/ /_/g'
+}
+
+function restore_space() {
+    echo "$1" | sed 's/_/ /g'
+}
+
+function show_menu() {
     local options=("$@")
     local menu_options=""
     for ((i=0; i<${#options[@]}; i+=2)); do
-        menu_options+="${options[i]} \"${options[i+1]}\" "
+        local option_text=$(replace_space "${options[i+1]}")
+        menu_options+="${options[i]} \"$option_text\" "
     done
     dialog --clear --backtitle "$(backtitle)" \
         --menu "Choose an option" 0 0 0 $menu_options 2>${TMP_PATH}/resp
@@ -254,7 +263,7 @@ function seleudev() {
   eval "MSG40=\"\${MSG${tz}40}\""
 
   local options=()
-    
+  
   if [ "${BLOCK_DDSML}" != "Y" ] && [ "${MODEL}" != "SA6400" ] && [ "${BUS}" != "mmc" ]; then
       options+=(d "${MSG27}")
   fi
@@ -277,7 +286,14 @@ function seleudev() {
           f) DMPM="DDSML+EUDEV"; break ;;
       esac
   done
-
+  
+  for ((i=0; i<${#options[@]}; i+=2)); do
+      if [ "${options[i]}" = "${resp}" ]; then
+          echo "Selected option: $(restore_space "${options[i+1]}")"
+          break
+      fi
+  done
+    
   del-addon "eudev"
   del-addon "ddsml"
   if [ "${DMPM}" = "DDSML" ]; then
