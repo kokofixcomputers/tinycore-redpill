@@ -291,63 +291,44 @@ function seleudev() {
 
 }
 
-
 ###############################################################################
 # Shows available between FRIEND and JOT
 function selectldrmode() {
   eval "MSG28=\"\${MSG${tz}28}\""
   eval "MSG29=\"\${MSG${tz}29}\""  
+
   if [ "${MODEL}" = "SA6400" ]; then  
-    while true; do
-      dialog --clear --backtitle "`backtitle`" \
-        --menu "Choose a option" 0 0 0 \
-        f "${MSG28}, all-modules(tcrp)" \
-        j "${MSG29}, all-modules(tcrp)" \
-      2>${TMP_PATH}/resp
-      [ $? -ne 0 ] && return
-      resp=$(<${TMP_PATH}/resp)
-      [ -z "${resp}" ] && return
-      if [ "${resp}" = "f" ]; then
-        LDRMODE="FRIEND"
-        MDLNAME="all-modules"
-        break
-      elif [ "${resp}" = "j" ]; then
-        LDRMODE="JOT"
-        MDLNAME="all-modules"      
-        break
-      fi
-    done
-  else
-    while true; do
-      dialog --clear --backtitle "`backtitle`" \
-        --menu "Choose a option" 0 0 0 \
-        f "${MSG28}, all-modules(tcrp)" \
-        j "${MSG29}, all-modules(tcrp)" \
-        k "${MSG28}, rr-modules"\
-        l "${MSG29}, rr-modules" \
-      2>${TMP_PATH}/resp
-      [ $? -ne 0 ] && return
-      resp=$(<${TMP_PATH}/resp)
-      [ -z "${resp}" ] && return
-      if [ "${resp}" = "f" ]; then
-        LDRMODE="FRIEND"
-        MDLNAME="all-modules"
-        break
-      elif [ "${resp}" = "j" ]; then
-        LDRMODE="JOT"
-        MDLNAME="all-modules"      
-        break
-      elif [ "${resp}" = "k" ]; then
-        LDRMODE="FRIEND"
-        MDLNAME="rr-modules"
-        break
-      elif [ "${resp}" = "l" ]; then
-        LDRMODE="JOT"
-        MDLNAME="rr-modules"
-        break
-      fi
-    done
+    menu_options=("f" "${MSG28}, all-modules(tcrp)" "j" "${MSG29}, all-modules(tcrp)")
+  else  
+    menu_options=("f" "${MSG28}, all-modules(tcrp)" "j" "${MSG29}, all-modules(tcrp)" "k" "${MSG28}, rr-modules" "l" "${MSG29}, rr-modules")
   fi
+  
+  while true; do
+    dialog --clear --backtitle "`backtitle`" \
+      --menu "Choose a option" 0 0 0 \
+      "${menu_options[@]}" \
+    2>${TMP_PATH}/resp
+    [ $? -ne 0 ] && return
+    resp=$(<${TMP_PATH}/resp)
+    [ -z "${resp}" ] && return
+    if [ "${resp}" = "f" ]; then
+      LDRMODE="FRIEND"
+      MDLNAME="all-modules"
+      break
+    elif [ "${resp}" = "j" ]; then
+      LDRMODE="JOT"
+      MDLNAME="all-modules"      
+      break
+    elif [ "${resp}" = "k" ]; then
+      LDRMODE="FRIEND"
+      MDLNAME="rr-modules"
+      break
+    elif [ "${resp}" = "l" ]; then
+      LDRMODE="JOT"
+      MDLNAME="rr-modules"
+      break
+    fi
+  done
 
   writeConfigKey "general" "loadermode" "${LDRMODE}"
   writeConfigKey "general" "modulename" "${MDLNAME}"
