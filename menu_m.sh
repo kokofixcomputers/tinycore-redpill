@@ -306,12 +306,12 @@ function seleudev() {
   del-addon "eudev"
   del-addon "ddsml"
   if [ "${DMPM}" = "DDSML" ]; then
-      add-addon "ddsml"
+      add-addons "ddsml"
   elif [ "${DMPM}" = "EUDEV" ]; then
-      add-addon "eudev"
+      add-addons "eudev"
   elif [ "${DMPM}" = "DDSML+EUDEV" ]; then
-      add-addon "ddsml"
-      add-addon "eudev"
+      add-addons "ddsml"
+      add-addons "eudev"
   fi
   
   #curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/redpill-load/master/bundled-exts.json -o /home/tc/redpill-load/bundled-exts.json
@@ -1252,7 +1252,7 @@ function add-addon() {
   
   readanswer    
   if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then    
-    jsonfile=$(jq ". |= .+ {\"${1}\": \"https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/${1}/rpext-index.json\"}" ~/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > ~/redpill-load/bundled-exts.json    
+    jsonfile=$(jq ". |= .+ {\"${1}\": \"https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/${1}/rpext-index.json\"}" /home/tc/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > /home/tc/redpill-load/bundled-exts.json    
   fi
 }
 
