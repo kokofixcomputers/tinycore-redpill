@@ -2190,6 +2190,8 @@ if [ "${NVMES}" = "null"  ]; then
     writeConfigKey "general" "nvmesystem" "${NVMES}"
 fi
 
+[ "${NVMES}" = "false" ] && BLOCK_DDSML="N" || BLOCK_DDSML="Y"
+
 if [ "${LDRMODE}" = "null" ]; then
     LDRMODE="FRIEND"
     writeConfigKey "general" "loadermode" "${LDRMODE}"          
