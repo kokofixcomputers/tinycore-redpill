@@ -303,7 +303,18 @@ function seleudev() {
     fi
   fi 
 
-  curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/redpill-load/master/bundled-exts.json -o /home/tc/redpill-load/bundled-exts.json
+  del-addon "eudev"
+  del-addon "ddsml"
+  if [ "${DMPM}" = "DDSML" ]; then
+      add-addon "ddsml"
+  elif [ "${DMPM}" = "EUDEV" ]; then
+      add-addon "eudev"
+  elif [ "${DMPM}" = "DDSML+EUDEV" ]; then
+      add-addon "ddsml"
+      add-addon "eudev"
+  fi
+  
+  #curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/redpill-load/master/bundled-exts.json -o /home/tc/redpill-load/bundled-exts.json
   sudo rm -rf /home/tc/redpill-load/custom/extensions/ddsml
   sudo rm -rf /home/tc/redpill-load/custom/extensions/eudev
   writeConfigKey "general" "devmod" "${DMPM}"
@@ -2411,7 +2422,7 @@ while true; do
     q) storagepanel;      NEXT="p" ;;    
     w) 
       if [ "${nvmes}" = "Add" ]; then 
-        add-addon "nvmesystem" 
+        add-addon "nvmesystem"
         BLOCK_DDSML="Y"
         DMPM="EUDEV"        
       else  
