@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.1.0.0"
+rploaderver="1.1.0.1"
 build="master"
 redpillmake="prod"
 
@@ -146,6 +146,7 @@ function history() {
     1.0.6.7 Applying REDPILL background image to grub boot
     1.0.6.8 i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
     1.1.0.0 Added features for distribution of xTCRP (Tinycore Linux stripped down version)
+    1.1.0.1 When using a single m.2 NVMe volume, the DDSML error issue has occurred, so menu usage has been excluded and related support has been strengthened.
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -450,6 +451,9 @@ EOF
 # i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
 # 2025.01.06 v1.1.0.0 
 # Added features for distribution of xTCRP (Tinycore Linux stripped down version)
+# 2025.01.12 v1.1.0.1 
+# When using a single m.2 NVMe volume, the DDSML error issue has occurred, 
+# so menu usage has been excluded and related support has been strengthened.
     
 function showlastupdate() {
     cat <<EOF
@@ -564,6 +568,10 @@ function showlastupdate() {
 
 # 2025.01.06 v1.1.0.0 
 # Added features for distribution of xTCRP (Tinycore Linux stripped down version)
+
+# 2025.01.12 v1.1.0.1 
+# When using a single m.2 NVMe volume, the DDSML error issue has occurred, 
+# so menu usage has been excluded and related support has been strengthened.
 
 EOF
 }
