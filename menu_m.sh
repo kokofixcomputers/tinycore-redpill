@@ -238,10 +238,12 @@ function usbidentify() {
 ###############################################################################
 # Shows available between DDSML and EUDEV
 function seleudev() {
-  checkforsas
+  
   eval "MSG27=\"\${MSG${tz}27}\""
   eval "MSG26=\"\${MSG${tz}26}\""
   eval "MSG40=\"\${MSG${tz}40}\""
+
+  checkforsas
 
   if [ ${BLOCK_DDSML} = "Y" ]||[ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
     while true; do
