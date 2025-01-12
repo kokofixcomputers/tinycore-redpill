@@ -235,6 +235,16 @@ function usbidentify() {
     fi      
 }
 
+show_menu() {
+    local options=("$@")
+    local menu_options=""
+    for ((i=0; i<${#options[@]}; i+=2)); do
+        menu_options+="${options[i]} \"${options[i+1]}\" "
+    done
+    dialog --clear --backtitle "$(backtitle)" \
+        --menu "Choose an option" 0 0 0 $menu_options 2>${TMP_PATH}/resp
+}
+
 ###############################################################################
 # Shows available between DDSML and EUDEV
 function seleudev() {
@@ -243,67 +253,30 @@ function seleudev() {
   eval "MSG26=\"\${MSG${tz}26}\""
   eval "MSG40=\"\${MSG${tz}40}\""
 
-  if [ ${BLOCK_DDSML} = "Y" ]||[ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
-    while true; do
-      dialog --clear --backtitle "`backtitle`" \
-    --menu "Choose a option" 0 0 0 \
-    e "${MSG26}" \
-    f "${MSG40}" \
-    2>${TMP_PATH}/resp
+  local options=()
+    
+  if [ "${BLOCK_DDSML}" != "Y" ] && [ "${MODEL}" != "SA6400" ] && [ "${BUS}" != "mmc" ]; then
+      options+=("d" "${MSG27}")
+  fi
+  
+  if [ "${BLOCK_EUDEV}" != "Y" ]; then
+      options+=("e" "${MSG26}")
+  fi
+  
+  options+=("f" "${MSG40}")
+  
+  while true; do
+      show_menu "${options[@]}"
       [ $? -ne 0 ] && return
       resp=$(<${TMP_PATH}/resp)
       [ -z "${resp}" ] && return
-      if [ "${resp}" = "e" ]; then
-        DMPM="EUDEV"
-        break
-      elif [ "${resp}" = "f" ]; then
-        DMPM="DDSML+EUDEV"
-        break
-      fi
-    done
-  else
-    if [ ${BLOCK_EUDEV} = "Y" ]; then
-      while true; do
-    dialog --clear --backtitle "`backtitle`" \
-      --menu "Choose a option" 0 0 0 \
-      d "${MSG27}" \
-      f "${MSG40}" \
-      2>${TMP_PATH}/resp
-    [ $? -ne 0 ] && return
-    resp=$(<${TMP_PATH}/resp)
-    [ -z "${resp}" ] && return
-    if [ "${resp}" = "d" ]; then
-      DMPM="DDSML"
-      break
-    elif [ "${resp}" = "f" ]; then
-      DMPM="DDSML+EUDEV"
-      break
-    fi
-      done
-    else
-      while true; do
-        dialog --clear --backtitle "`backtitle`" \
-          --menu "Choose a option" 0 0 0 \
-      d "${MSG27}" \
-      e "${MSG26}" \
-      f "${MSG40}" \
-      2>${TMP_PATH}/resp
-    [ $? -ne 0 ] && return
-    resp=$(<${TMP_PATH}/resp)
-    [ -z "${resp}" ] && return
-    if [ "${resp}" = "d" ]; then
-      DMPM="DDSML"
-      break
-    elif [ "${resp}" = "e" ]; then
-      DMPM="EUDEV"
-      break
-    elif [ "${resp}" = "f" ]; then
-      DMPM="DDSML+EUDEV"
-      break
-    fi
-      done
-    fi
-  fi 
+      
+      case "${resp}" in
+          "d") DMPM="DDSML"; break ;;
+          "e") DMPM="EUDEV"; break ;;
+          "f") DMPM="DDSML+EUDEV"; break ;;
+      esac
+  done
 
   del-addon "eudev"
   del-addon "ddsml"
@@ -322,7 +295,6 @@ function seleudev() {
   writeConfigKey "general" "devmod" "${DMPM}"
 
 }
-
 
 ###############################################################################
 # Shows available between FRIEND and JOT
