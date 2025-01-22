@@ -1,4 +1,3 @@
-#!bin/sh
 
 mkdir -p /volume1/docker/jellyfin/config
 mkdir -p /volume1/docker/jellyfin/cache
