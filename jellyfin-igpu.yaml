@@ -15,7 +15,7 @@ services:
       - ./config:/config
       - ./cache:/cache
       - /volume1/_DRAMA:/volume1/_DRAMA
-      - /usr/lib/jellyfin-ffmpeg:/ffmpeg
+      - /usr/local/bin:/ffmpeg6
     devices:
       - "/dev/dri/card0:/dev/dri/card0"
       - "/dev/dri/renderD128:/dev/dri/renderD128"
