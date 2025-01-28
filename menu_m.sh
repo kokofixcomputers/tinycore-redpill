@@ -381,13 +381,13 @@ done
 # Shows available models to user choose one
 function modelMenu() {
 
-  M_GRP1="SA6400 DS3622xs+ DS1621xs+ RS3621xs+ RS4021xs+ DS3617xs RS3618xs" #RS1619xs+
+  M_GRP1="epyc7002 broadwellnk broadwell broadwellnkv2 broadwellntbap purley"
   #M_GRP2="DS3615xs"
-  M_GRP3="DVA3221 DVA3219 DS1819+ DS2419+"
-  M_GRP4="DS218+ DS918+ DS1019+ DS620slim DS718+"
-  M_GRP5="DS923+ DS723+ DS1522+"
-  M_GRP6="DS1621+ DS1821+ DS1823xs+ DS2422+ FS2500 RS1221+ RS2423+"
-  M_GRP7="DS220+ DS423+ DS720+ DS920+ DS1520+ DVA1622"
+  M_GRP3="denverton"
+  M_GRP4="apollolake"
+  M_GRP5="r1000"
+  M_GRP6="v1000"
+  M_GRP7="geminilake"
   
 RESTRICT=1
 while true; do
