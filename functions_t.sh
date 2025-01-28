@@ -1869,7 +1869,7 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
 
 function addrequiredexts() {
 
-    echo "Processing add_extensions entries found on custom_config.json file : ${EXTENSIONS}"
+    echo "Processing add_extensions entries found on models.json file : ${EXTENSIONS}"
     for extension in ${EXTENSIONS_SOURCE_URL}; do
         echo "Adding extension ${extension} "
         cd /home/tc/redpill-load/ && ./ext-manager.sh add "$(echo $extension | sed -s 's/"//g' | sed -s 's/,//g')"
@@ -3518,7 +3518,7 @@ function my() {
   [ "$sortnetif" = true ] && add-addons "sortnetif" 
   
   if [ "${offline}" = "NO" ]; then
-      curl -skLO# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/custom_config.json
+      curl -skLO# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/models.json
       if [ -f /tmp/test_mode ]; then
         cecho g "###############################  This is Test Mode  ############################"
         curl -skL# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/functions_t.sh -o functions.sh
@@ -3528,9 +3528,9 @@ function my() {
   fi
 
   if [ "${MDLNAME}" = "all-modules" ]; then
-      sed -i "s/rr-modules/all-modules/g" custom_config.json
+      sed -i "s/rr-modules/all-modules/g" models.json
   elif [ "${MDLNAME}" = "rr-modules" ]; then
-      sed -i "s/all-modules/rr-modules/g" custom_config.json
+      sed -i "s/all-modules/rr-modules/g" models.json
   fi  
   
   echo
@@ -3541,7 +3541,7 @@ function my() {
   fi
   
   if [ -f /home/tc/custom-module/${TARGET_PLATFORM}.dts ]; then
-      sed -i "s/dtbpatch/redpill-dtb-static/g" custom_config.json
+      sed -i "s/dtbpatch/redpill-dtb-static/g" models.json
   fi
   
   if [ "$postupdate" = "Y" ]; then
