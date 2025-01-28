@@ -2086,7 +2086,7 @@ function getPlatforms() {
 
 function selectPlatform() {
 
-    platform_selected=$(jq -s '.[0].build_configs=(.[1].build_configs + .[0].build_configs | unique_by(.id)) | .[0]'  custom_config.json | jq ".build_configs[] | select(.id==\"${1}\")")
+    platform_selected=$(jq -r ".${1}" models.json)
     echo "platform_selected=${platform_selected}"
 
 }
@@ -2130,9 +2130,9 @@ function getvars() {
     EXTENSIONS="$(echo $platform_selected | jq -r -e '.add_extensions[]' | grep json | awk -F: '{print $1}' | sed -s 's/"//g')"
     #EXTENSIONS_SOURCE_URL="$(echo $platform_selected | jq '.add_extensions[] .url')"
     EXTENSIONS_SOURCE_URL="$(echo $platform_selected | jq '.add_extensions[]' | grep json | awk '{print $2}')"
-    TARGET_PLATFORM="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[0])"
-    TARGET_VERSION="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[1])"
-    TARGET_REVISION="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[2])"
+    #TARGET_PLATFORM="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[0])"
+    #TARGET_VERSION="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[1])"
+    #TARGET_REVISION="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[2])"
 
     tcrppart="${tcrpdisk}3"
     local_cache="/mnt/${tcrppart}/auxfiles"
@@ -3234,7 +3234,7 @@ function rploader() {
 
     build)
 
-        getvars $2
+        getvars $ORIGIN_PLATFORM
         if [ -d /mnt/${tcrppart}/redpill-load/ ]; then
             offline="YES"
         else
@@ -3294,7 +3294,7 @@ echo "$3"
         ;;
 
     postupdate)
-        getvars $2
+        getvars $ORIGIN_PLATFORM
         checkinternet
         gitdownload
         postupdate
