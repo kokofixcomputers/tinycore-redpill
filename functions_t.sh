@@ -737,7 +737,7 @@ function getvarsmshell()
     
     if [ "$TARGET_REVISION" == "42218" ]; then
         KVER="4.4.180"
-        SUVP="" 
+        SUVP=""
     elif [ "$TARGET_REVISION" == "42962" ]; then
         KVER="4.4.180"
         MODELS6="DS423+ DS723+ DS923+ DS1823xs+ RS3621xs+ RS4021xs+ RS3618xs SA6400"
@@ -751,10 +751,7 @@ function getvarsmshell()
         SUVP="-1" 
     elif [ "$TARGET_REVISION" == "69057" ]; then
         KVER="4.4.302"
-        SUVP=""
-        if [ "${MODEL}" = "DS218+" ]; then
-          SUVP="-1"
-        fi
+        SUVP="-1"
     elif [ "$TARGET_REVISION" == "72806" ]; then
         KVER="4.4.302"
         SUVP="" 
