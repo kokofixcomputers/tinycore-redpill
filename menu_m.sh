@@ -381,6 +381,9 @@ done
 # Shows available models to user choose one
 function modelMenu() {
 
+  # models.json file path
+  MODELS_JSON="/home/tc/models.json"
+
   M_GRP1="epyc7002 broadwellnk broadwell broadwellnkv2 broadwellntbap purley"
   #M_GRP2="DS3615xs"
   M_GRP3="denverton"
@@ -391,47 +394,27 @@ function modelMenu() {
   
 RESTRICT=1
 while true; do
-  echo "" > "${TMP_PATH}/mdl"
-  
-#  if [ "$HBADETECT" = "ON" ]; then
-#      if [ "${AFTERHASWELL}" == "OFF" ]; then
-#        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-#        echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-#      else
-#        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-#        echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-#        echo "${M_GRP4}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-#        echo "${M_GRP3}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-#      fi
-#  else
-      if [ "${AFTERHASWELL}" == "OFF" ]; then
-        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-        echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP6}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-      else
-        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP4}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP7}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"        
-        echo "${M_GRP6}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-        echo "${M_GRP3}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
+  > "${TMP_PATH}/mdl"
+
+  if [ "${AFTERHASWELL}" == "OFF" ]; then
+    platforms="${M_GRP1} ${M_GRP5} ${M_GRP6}"
+  else
+    platforms="${M_GRP1} ${M_GRP4} ${M_GRP5} ${M_GRP7} ${M_GRP6} ${M_GRP3}"
     RESTRICT=0
-      fi
-#  fi      
-  
+  fi
+
+  for platform in $platforms; do
+    models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
+    if [ -n "$models" ]; then
+      echo "$models" >> "${TMP_PATH}/mdl"
+    fi
+  done
+
   if [ ${RESTRICT} -eq 1 ]; then
-        echo "Release-model-restriction" >> "${TMP_PATH}/mdl"
+    echo "Release-model-restriction" >> "${TMP_PATH}/mdl"
   else  
-        echo "" > "${TMP_PATH}/mdl"
-        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP4}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP7}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"        
-        echo "${M_GRP6}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-        echo "${M_GRP3}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
+        > "${TMP_PATH}/mdl"
+        echo "$models" >> "${TMP_PATH}/mdl"
   fi
   
   echo "" > "${TMP_PATH}/mdl_final"
@@ -525,7 +508,8 @@ function setSuggest() {
     DVA3219)     platform="denverton";bay="TOWER_4_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;    
     DVA3221)     platform="denverton";bay="TOWER_4_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}24}, \${MSG${tz}21}\"";;    
     #RS1619xs+)   platform="broadwellnk";bay="RACK_16_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
-    DS3615xs)    platform="bromolow";bay="TOWER_12_Bay";mcpu="Intel Core i3-4130";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
+    DS3615xs)    platform="bromolow";bay="TOWER_12_Bay";mcpu="Intel Core i3-4130";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
+    *)    platform="${platform}";bay="Any_Bay";mcpu="Intel or AMD";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu} \"";;
   esac
 
   if [ $(echo ${platform} | grep "(DT)" | wc -l) -gt 0 ]; then
