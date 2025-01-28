@@ -778,13 +778,13 @@ function getvarsmshell()
 
     SFVAL=${SUVP:--0}
 
-    # Initialize MODELS array
-    MODELS=()
     # Extract models for each platform and add them to the mdl file
     for platform in $platforms; do
+      # Initialize MODELS array
+      MODELS=()
       models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
       if [ -n "$models" ]; then
-        MODELS+=($models)
+        MODELS=($models)
       fi
       if [ $(echo ${MODELS[@]} | grep ${MODEL} | wc -l ) -gt 0 ]; then
         ORIGIN_PLATFORM="${platform}"
