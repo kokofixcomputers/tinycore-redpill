@@ -12,6 +12,7 @@ modalias3="https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/$build
 timezone="UTC"
 ntpserver="pool.ntp.org"
 userconfigfile="/home/tc/user_config.json"
+configfile="/home/tc/redpill-load/config/pats.json" 
 
 gitdomain="raw.githubusercontent.com"
 mshellgz="my.sh.gz"
@@ -1807,7 +1808,6 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
         echo -n "Checking config file existence -> "
         if [ -f "/home/tc/redpill-load/config/pats.json" ]; then
             echo "OK"
-            configfile="/home/tc/redpill-load/config/pats.json"
         else
             echo "No config file(pats.json) found, The download may be corrupted or may not be run the original repo. Please re-download from original repo."
             exit 99
@@ -1836,7 +1836,7 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
     else
 
         echo "Could not find pat file locally cached"
-        configfile="/home/tc/redpill-load/config/pats.json"
+        
         pat_url=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.url) | .[0]" "${configfile}")
         echo -e "Configfile: $configfile \nPat URL : $pat_url"
         echo "Downloading pat file from URL : ${pat_url} "
@@ -3605,7 +3605,7 @@ function my() {
   echo "DN_MODEL is $DN_MODEL"
   
   cecho p "DSM PAT file pre-downloading in progress..."
-  URL="https://global.synologydownload.com/download/DSM/release/${TARGET_VERSION}/${TARGET_REVISION}${SUVP}/DSM_${DN_MODEL}_${TARGET_REVISION}.pat"
+  URL=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.url) | .[0]" "${configfile}")
   cecho y "$URL"
   patfile="/mnt/${tcrppart}/auxfiles/${SYNOMODEL}.pat"                                         
   
@@ -3641,8 +3641,7 @@ function my() {
   
       os_md5=$(md5sum ${patfile} | awk '{print $1}')                                
       cecho y "Pat file md5sum is : $os_md5"                                       
-
-      configfile="/home/tc/redpill-load/config/pats.json"  
+       
       verifyid=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.sum) | .[0]" "${configfile}")
       cecho p "verifyid md5sum is : $verifyid"                                        
   
