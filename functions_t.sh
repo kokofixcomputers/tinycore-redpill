@@ -711,6 +711,23 @@ function cecho () {
 
 function getvarsmshell()
 {
+
+    # Set the path for the models.json file
+    MODELS_JSON="/home/tc/models.json"
+
+    # Define platform groups
+    platforms="epyc7002 broadwellnk broadwell broadwellnkv2 broadwellntbap purley denverton apollolake r1000 v1000 geminilake"
+
+    # Initialize MODELS array
+    MODELS=()
+
+    # Extract models for each platform and add them to the mdl file
+    for platform in $platforms; do
+      models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
+      if [ -n "$models" ]; then
+        MODELS+=($models)
+      fi
+    done
     
     SUVP=""
     ORIGIN_PLATFORM=""
@@ -729,8 +746,7 @@ function getvarsmshell()
     TARGET_PLATFORM=$(echo "$MODEL" | sed 's/DS/ds/' | sed 's/RS/rs/' | sed 's/+/p/' | sed 's/DVA/dva/' | sed 's/FS/fs/' | sed 's/SA/sa/' )
     SYNOMODEL="${TARGET_PLATFORM}_${TARGET_REVISION}"
     
-    MODELS="DS3615xs DS218+ DS1019+ DS620slim DS1520+ DS1522+ DS220+ DS2419+ DS423+ DS718+ DS1621+ DS1821+ DS1823xs+ DS1621xs+ DS2422+ DS3617xs DS3622xs+ DS720+ DS723+ DS918+ DS920+ DS923+ DS1819+ DVA3219 DVA3221 DVA1622 FS2500 RS1221+ RS1619xs+ RS2423+ RS3413xs+ RS3618xs RS3621xs+ RS4021xs+ SA3410 SA3610 SA6400"
-    if [ $(echo ${MODELS} | grep ${MODEL} | wc -l ) -eq 0 ]; then
+    if [ $(echo ${MODELS[@]} | grep ${MODEL} | wc -l ) -eq 0 ]; then
         echo "This synology model not supported by TCRP."
         exit 99
     fi
@@ -762,41 +778,19 @@ function getvarsmshell()
 
     SFVAL=${SUVP:--0}
 
-    case ${MODEL} in
-    DS218+ | DS718+ | DS918+ | DS1019+ | DS620slim )
-        ORIGIN_PLATFORM="apollolake"
-        ;;
-    DS3615xs | RS3413xs+ )
-        ORIGIN_PLATFORM="bromolow"
-        KVER="3.10.108"
-        ;;
-    DS3617xs | RS3618xs )
-        ORIGIN_PLATFORM="broadwell"
-        ;;
-    DS3622xs+ | DS1621xs+ | SA3400 | SA3600 | RS1619xs+ | RS3621xs+ | RS4021xs+ )
-        ORIGIN_PLATFORM="broadwellnk"
-        ;;
-    SA3410 | SA3610 )
-        ORIGIN_PLATFORM="broadwellnkv2"
-        ;;
-    DVA3221 | DVA3219 | DS1819+ | DS2419+ )
-        ORIGIN_PLATFORM="denverton"
-        ;;
-    DVA1622 | DS220+ | DS423+ | DS920+ | DS1520+ | DS720+ )
-        ORIGIN_PLATFORM="geminilake"
-        ;;
-    DS923+ | DS723+ | DS1522+ )
-        ORIGIN_PLATFORM="r1000"
-        ;;
-    DS1621+ | DS1821+ | DS1823xs+ | DS2422+ | FS2500 | RS1221+ | RS2423+ )
-        ORIGIN_PLATFORM="v1000"
-        ;;
-    SA6400 )
-        ORIGIN_PLATFORM="epyc7002"
-        KVER="5.10.55"
-        ;;
-    esac
-
+    # Extract models for each platform and add them to the mdl file
+    for platform in $platforms; do
+      models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
+      if [ "${MODEL}" = "$models" ]; then
+        ORIGIN_PLATFORM="${platform}"
+        case ${platform} in
+        bromolow) KVER="3.10.108";;
+        epyc7002) KVER="5.10.55";; 
+        esac
+        break
+      fi
+    done    
+    
     case ${MODEL} in
     DS1019+)
         permanent="PDN"
