@@ -763,6 +763,8 @@ function getvarsmshell()
         exit 0
     fi
 
+    SFVAL=${SUVP:--0}
+
     case ${MODEL} in
     DS218+ | DS718+ | DS918+ | DS1019+ | DS620slim )
         ORIGIN_PLATFORM="apollolake"
@@ -1803,27 +1805,27 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
         cd /home/tc/redpill-load/cache
 st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVISION}"        
         sudo tar xvf /home/tc/redpill-load/cache/${SYNOMODEL}.pat ./VERSION && . ./VERSION && cat ./VERSION && rm ./VERSION
-        os_sha256=$(sha256sum /home/tc/redpill-load/cache/${SYNOMODEL}.pat | awk '{print $1}')
-        msgnormal "Pat file  sha256sum is : $os_sha256"
+        os_md5=$(md5sum /home/tc/redpill-load/cache/${SYNOMODEL}.pat | awk '{print $1}')
+        msgnormal "Pat file md5sum is : $os_md5"
 
         echo -n "Checking config file existence -> "
-        if [ -f "/home/tc/redpill-load/config/$MODEL/${major}.${minor}.${micro}-${buildnumber}/config.json" ]; then
+        if [ -f "/home/tc/redpill-load/config/pats.json" ]; then
             echo "OK"
-            configfile="/home/tc/redpill-load/config/$MODEL/${major}.${minor}.${micro}-${buildnumber}/config.json"
+            configfile="/home/tc/redpill-load/config/pats.json"
         else
-            echo "No config file found, The download may be corrupted or may not be run the original repo. Please re-download from original repo."
+            echo "No config file(pats.json) found, The download may be corrupted or may not be run the original repo. Please re-download from original repo."
             exit 99
         fi
 
         msgnormal "Editing config file !!!!!"
-        sed -i "/\"os\": {/!b;n;n;n;c\"sha256\": \"$os_sha256\"" ${configfile}
+        jq \'."${MODEL}"."${BUILD}${SFVAL}".sum = "$os_md5"\' ${configfile} > temp.json && mv -vf temp.json ${configfile}
         echo -n "Verifying config file -> "
-        verifyid="$(cat ${configfile} | jq -r -e '.os .sha256')"
+        verifyid="$(cat ${configfile} | jq -r -e \'."${MODEL}"."${BUILD}${SFVAL}".sum\')"
 
-        if [ "$os_sha256" == "$verifyid" ]; then
+        if [ "$os_md5" == "$verifyid" ]; then
             echo "OK ! "
         else
-            echo "config file, os sha256 verify FAILED, check ${configfile} "
+            echo "config file, os md5 verify FAILED, check ${configfile} "
             exit 99
         fi
 
@@ -1836,10 +1838,9 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
     else
 
         echo "Could not find pat file locally cached"
-        configdir="/home/tc/redpill-load/config/${MODEL}/${TARGET_VERSION}-${TARGET_REVISION}"
-        configfile="${configdir}/config.json"
-        pat_url=$(cat ${configfile} | jq '.os .pat_url' | sed -s 's/"//g')
-        echo -e "Configdir : $configdir \nConfigfile: $configfile \nPat URL : $pat_url"
+        configfile="/home/tc/redpill-load/config/pats.json"
+        pat_url="$(cat ${configfile} | jq -r -e \'."${MODEL}"."${BUILD}${SFVAL}".url\')"
+        echo -e "Configfile: $configfile \nPat URL : $pat_url"
         echo "Downloading pat file from URL : ${pat_url} "
 
         chkavail
@@ -3463,6 +3464,7 @@ function my() {
   cecho c "TARGET_VERSION is $TARGET_VERSION"
   cecho p "TARGET_REVISION is $TARGET_REVISION"
   cecho y "SUVP is $SUVP"
+  cecho c "SFVAL is $SFVAL"
   cecho g "SYNOMODEL is $SYNOMODEL"  
   cecho c "KERNEL VERSION is $KVER"  
   
@@ -3640,19 +3642,16 @@ function my() {
         [ "${offline}" = "NO" ] && _pat_process    
       #fi
   
-      os_sha256=$(sha256sum ${patfile} | awk '{print $1}')                                
-      cecho y "Pat file  sha256sum is : $os_sha256"                                       
+      os_md5=$(md5sum ${patfile} | awk '{print $1}')                                
+      cecho y "Pat file md5sum is : $os_md5"                                       
   
-      #verifyid="${sha256}"
-      id="${TARGET_PLATFORM}-${TARGET_VERSION}-${TARGET_REVISION}"
-      platform_selected=$(jq -s '.[0].build_configs=(.[1].build_configs + .[0].build_configs | unique_by(.id)) | .[0]' custom_config.json | jq ".build_configs[] | select(.id==\"${id}\")")
-      verifyid="$(echo $platform_selected | jq -r -e '.downloads .os .sha256')"
-      cecho p "verifyid  sha256sum is : $verifyid"                                        
+      verifyid="$(cat ${configfile} | jq -r -e \'."${MODEL}"."${BUILD}${SFVAL}".sum\')"      
+      cecho p "verifyid md5sum is : $verifyid"                                        
   
-      if [ "$os_sha256" = "$verifyid" ]; then                                            
-          cecho y "pat file sha256sum is OK ! "                                           
+      if [ "$os_md5" = "$verifyid" ]; then                                            
+          cecho y "pat file md5sum is OK ! "                                           
       else                                                                                
-          cecho y "os sha256 verify FAILED, check ${patfile}  "                           
+          cecho y "os md5sum verify FAILED, check ${patfile} "
           exit 99                                                                         
       fi
   fi
