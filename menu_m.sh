@@ -420,7 +420,7 @@ function modelMenu() {
   
   # Create the final model list with suggestions
   > "${TMP_PATH}/mdl_final"
-  line_number=2
+  line_number=1
   model_list=$(tail -n +$line_number "${TMP_PATH}/mdl")
   while read -r model; do
     suggestion=$(setSuggest $model)
