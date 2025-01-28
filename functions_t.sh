@@ -3644,7 +3644,8 @@ function my() {
   
       os_md5=$(md5sum ${patfile} | awk '{print $1}')                                
       cecho y "Pat file md5sum is : $os_md5"                                       
-  
+
+      configfile="/home/tc/redpill-load/config/pats.json"  
       verifyid="$(cat ${configfile} | jq -r -e \'."${MODEL}"."${BUILD}${SFVAL}".sum\')"      
       cecho p "verifyid md5sum is : $verifyid"                                        
   
