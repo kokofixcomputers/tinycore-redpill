@@ -1817,7 +1817,7 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
        
         echo -n "Verifying config file -> "
         verifyid=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.sum) | .[0]" "${configfile}")
-        sed -i "s/${verifyid}/$os_md5" ${configfile}
+        sed -i "s/${verifyid}/$os_md5/" ${configfile}
         verifyid="$os_md5"
 
         if [ "$os_md5" == "$verifyid" ]; then
