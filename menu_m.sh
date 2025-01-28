@@ -381,43 +381,45 @@ done
 # Shows available models to user choose one
 function modelMenu() {
 
-  # models.json file path
+  # Set the path for the models.json file
   MODELS_JSON="/home/tc/models.json"
-
+  
+  # Define platform groups
   M_GRP1="epyc7002 broadwellnk broadwell broadwellnkv2 broadwellntbap purley"
-  #M_GRP2="DS3615xs"
   M_GRP3="denverton"
   M_GRP4="apollolake"
   M_GRP5="r1000"
   M_GRP6="v1000"
   M_GRP7="geminilake"
   
-RESTRICT=1
-while true; do
+  RESTRICT=1
+  
+  # Initialize the mdl file
   > "${TMP_PATH}/mdl"
-
+  
+  # Determine which platforms to use based on AFTERHASWELL
   if [ "${AFTERHASWELL}" == "OFF" ]; then
     platforms="${M_GRP1} ${M_GRP5} ${M_GRP6}"
   else
     platforms="${M_GRP1} ${M_GRP4} ${M_GRP5} ${M_GRP7} ${M_GRP6} ${M_GRP3}"
     RESTRICT=0
   fi
-
+  
+  # Extract models for each platform and add them to the mdl file
   for platform in $platforms; do
     models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
     if [ -n "$models" ]; then
       echo "$models" >> "${TMP_PATH}/mdl"
     fi
   done
-
+  
+  # Add restriction release option if RESTRICT is 1
   if [ ${RESTRICT} -eq 1 ]; then
     echo "Release-model-restriction" >> "${TMP_PATH}/mdl"
-  else  
-        > "${TMP_PATH}/mdl"
-        echo "$models" >> "${TMP_PATH}/mdl"
   fi
   
-  echo "" > "${TMP_PATH}/mdl_final"
+  # Create the final model list with suggestions
+  > "${TMP_PATH}/mdl_final"
   line_number=2
   model_list=$(tail -n +$line_number "${TMP_PATH}/mdl")
   while read -r model; do
@@ -425,19 +427,21 @@ while true; do
     echo "$model \"\Zb$suggestion\Zn\"" >> "${TMP_PATH}/mdl_final"
   done <<< "$model_list"
   
+  # Display dialog for model selection
   dialog --backtitle "`backtitle`" --default-item "${MODEL}" --colors \
     --menu "Choose a model\n" 0 0 0 \
     --file "${TMP_PATH}/mdl_final" 2>${TMP_PATH}/resp
+  
+  # Check for dialog exit status
   [ $? -ne 0 ] && return
   resp=$(<${TMP_PATH}/resp)
-  [ -z "${resp}" ] && return  
+  [ -z "${resp}" ] && return
   
+  # Handle the case when "Release-model-restriction" is selected
   if [ "${resp}" = "Release-model-restriction" ]; then
     RESTRICT=0
-    continue
+    # Additional actions can be performed here if needed
   fi
-  break
-done
     
   MODEL="`<${TMP_PATH}/resp`"
   writeConfigKey "general" "model" "${MODEL}"
