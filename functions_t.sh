@@ -1818,9 +1818,9 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
         fi
 
         msgnormal "Editing config file !!!!!"
-        jq \'."${MODEL}"."${BUILD}${SFVAL}".sum = "$os_md5"\' ${configfile} > temp.json && mv -vf temp.json ${configfile}
+        jq ".\"${MODEL}\".\"${BUILD}${SFVAL}\".sum = \"$os_md5\"" ${configfile} > temp.json && mv -vf temp.json ${configfile}
         echo -n "Verifying config file -> "
-        verifyid="$(cat ${configfile} | jq -r -e \'."${MODEL}"."${BUILD}${SFVAL}".sum\')"
+        verifyid=$(jq -r ".\"${MODEL}\".\"${BUILD}${SFVAL}\".sum" "${configfile}")
 
         if [ "$os_md5" == "$verifyid" ]; then
             echo "OK ! "
@@ -3646,7 +3646,7 @@ function my() {
       cecho y "Pat file md5sum is : $os_md5"                                       
 
       configfile="/home/tc/redpill-load/config/pats.json"  
-      verifyid="$(cat ${configfile} | jq -r -e \'."${MODEL}"."${BUILD}${SFVAL}".sum\')"      
+      verifyid=$(jq -r ".\"${MODEL}\".\"${BUILD}${SFVAL}\".sum" "${configfile}")
       cecho p "verifyid md5sum is : $verifyid"                                        
   
       if [ "$os_md5" = "$verifyid" ]; then                                            
