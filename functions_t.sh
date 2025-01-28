@@ -778,10 +778,15 @@ function getvarsmshell()
 
     SFVAL=${SUVP:--0}
 
+    # Initialize MODELS array
+    MODELS=()
     # Extract models for each platform and add them to the mdl file
     for platform in $platforms; do
       models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
-      if [ "${MODEL}" = "$models" ]; then
+      if [ -n "$models" ]; then
+        MODELS+=($models)
+      fi
+      if [ $(echo ${MODELS[@]} | grep ${MODEL} | wc -l ) -gt 0 ]; then
         ORIGIN_PLATFORM="${platform}"
         case ${platform} in
         bromolow) KVER="3.10.108";;
