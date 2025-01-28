@@ -776,7 +776,7 @@ function getvarsmshell()
         exit 0
     fi
 
-    SFVAL=${SUVP:--0}
+    #SFVAL=${SUVP:--0}
 
     # Extract models for each platform and add them to the mdl file
     for platform in $platforms; do
@@ -1814,9 +1814,11 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
         fi
 
         msgnormal "Editing config file !!!!!"
-        jq ".\"${MODEL}\".\"${BUILD}${SFVAL}\".sum = \"$os_md5\"" ${configfile} > temp.json && mv -vf temp.json ${configfile}
+       
         echo -n "Verifying config file -> "
-        verifyid=$(jq -r ".\"${MODEL}\".\"${BUILD}${SFVAL}\".sum" "${configfile}")
+        verifyid=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.sum) | .[0]" "${configfile}")
+        sed -i "s/${verifyid}/$os_md5" ${configfile}
+        verifyid="$os_md5"
 
         if [ "$os_md5" == "$verifyid" ]; then
             echo "OK ! "
@@ -1835,7 +1837,7 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
 
         echo "Could not find pat file locally cached"
         configfile="/home/tc/redpill-load/config/pats.json"
-        pat_url="$(cat ${configfile} | jq -r -e \'."${MODEL}"."${BUILD}${SFVAL}".url\')"
+        pat_url=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.url) | .[0]" "${configfile}")
         echo -e "Configfile: $configfile \nPat URL : $pat_url"
         echo "Downloading pat file from URL : ${pat_url} "
 
@@ -3460,7 +3462,6 @@ function my() {
   cecho c "TARGET_VERSION is $TARGET_VERSION"
   cecho p "TARGET_REVISION is $TARGET_REVISION"
   cecho y "SUVP is $SUVP"
-  cecho c "SFVAL is $SFVAL"
   cecho g "SYNOMODEL is $SYNOMODEL"  
   cecho c "KERNEL VERSION is $KVER"  
   
@@ -3642,7 +3643,7 @@ function my() {
       cecho y "Pat file md5sum is : $os_md5"                                       
 
       configfile="/home/tc/redpill-load/config/pats.json"  
-      verifyid=$(jq -r ".\"${MODEL}\".\"${BUILD}${SFVAL}\".sum" "${configfile}")
+      verifyid=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.sum) | .[0]" "${configfile}")
       cecho p "verifyid md5sum is : $verifyid"                                        
   
       if [ "$os_md5" = "$verifyid" ]; then                                            
