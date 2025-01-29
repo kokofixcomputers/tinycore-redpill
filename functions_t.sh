@@ -3527,18 +3527,8 @@ function my() {
   [ "$nvmes" = true ] && add-addons "nvmesystem" 
   [ "$dbgutils" = true ] && add-addons "dbgutils" 
   [ "$sortnetif" = true ] && add-addons "sortnetif" 
-  
-  if [ "${offline}" = "NO" ]; then
-      curl -skLO# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/models.json
-      if [ -f /tmp/test_mode ]; then
-        cecho g "###############################  This is Test Mode  ############################"
-        curl -skL# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/functions_t.sh -o functions.sh
-        chmod +x /home/tc/redpill-load/*.sh
-        /bin/cp -vf /home/tc/redpill-load/build-loader_t.sh /home/tc/redpill-load/build-loader.sh
-      else
-        curl -skLO# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/functions.sh
-      fi
-  fi
+
+  [ "${offline}" = "NO" ] && curl -skLO# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/models.json
 
   if [ "${MDLNAME}" = "all-modules" ]; then
       sed -i "s/rr-modules/all-modules/g" models.json
