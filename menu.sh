@@ -91,6 +91,12 @@ else
   touch /tmp/test_mode
 fi
 
+if [ -d /mnt/${tcrppart}/redpill-load/ ]; then
+    offline="YES"
+else
+    offline="NO"
+fi  
+
 if [ "${offline}" = "NO" ]; then
     curl -skLO# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/models.json
     if [ -f /tmp/test_mode ]; then
