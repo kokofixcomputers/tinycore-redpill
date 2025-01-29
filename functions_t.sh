@@ -2837,7 +2837,7 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         #sudo curl -kL https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/main/rr/linuxrc.syno.impl -o /home/tc/rd.temp/linuxrc.syno.impl        
     fi
     if [ "${ORIGIN_PLATFORM}" = "broadwellntbap" ]; then
-        sed -i 's/IsUCOrXA="yes"/XIsUCOrXA="yes"/g; s/IsUCOrXA=yes/XIsUCOrXA=yes/g' "/home/tc/rd.temp/usr/syno/share/environments.sh"
+        sudo sed -i 's/IsUCOrXA="yes"/XIsUCOrXA="yes"/g; s/IsUCOrXA=yes/XIsUCOrXA=yes/g' "/home/tc/rd.temp/usr/syno/share/environments.sh"
     fi
     sudo chmod +x /home/tc/rd.temp/usr/sbin/modprobe    
 
