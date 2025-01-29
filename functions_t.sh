@@ -2739,7 +2739,12 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     rdhash=$(sha256sum /mnt/${loaderdisk}2/rd.gz | awk '{print $1}')
     updateuserconfigfield "general" "rdhash" "$rdhash"
 
-    if [ ${ORIGIN_PLATFORM} = "geminilake" ] || [ ${ORIGIN_PLATFORM} = "v1000" ] || [ ${ORIGIN_PLATFORM} = "r1000" ]; then
+    if echo "apollolake geminilake purley" | grep -wq "${ORIGIN_PLATFORM}"; then
+        USB_LINE="${USB_LINE} nox2apic "
+        SATA_LINE="${SATA_LINE} nox2apic "    
+    fi
+
+    if echo "geminilake v1000 r1000" | grep -wq "${ORIGIN_PLATFORM}"; then
         echo "add modprobe.blacklist=mpt3sas for Device-tree based platforms"
         USB_LINE="${USB_LINE} modprobe.blacklist=mpt3sas "
         SATA_LINE="${SATA_LINE} modprobe.blacklist=mpt3sas "
