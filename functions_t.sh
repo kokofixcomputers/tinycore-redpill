@@ -456,7 +456,7 @@ EOF
 # 2025.01.12 v1.1.0.1 
 # When using a single m.2 NVMe volume, the DDSML error issue has occurred, 
 # so menu usage has been excluded and related support has been strengthened.
-# 2025.01.28 v1.2.0.0 
+# 2025.01.29 v1.2.0.0 
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
     
 function showlastupdate() {
@@ -577,7 +577,7 @@ function showlastupdate() {
 # When using a single m.2 NVMe volume, the DDSML error issue has occurred, 
 # so menu usage has been excluded and related support has been strengthened.
 
-# 2025.01.28 v1.2.0.0 
+# 2025.01.29 v1.2.0.0 
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
 
 EOF
@@ -798,16 +798,51 @@ function getvarsmshell()
     done    
     
     case ${MODEL} in
-    DS1019+)
+    DS224+)
+        permanent="WBR"
+        serialstart="2350"
+        suffix="alpha"
+        ;;
+    DS423+)
+        permanent="VKR"
+        serialstart="22A0"
+        suffix="alpha"
+        ;;
+    DS718+)
+        permanent="PEN"
+        serialstart="1930"
+        suffix="numeric"
+        ;;
+    DS720+)
+        permanent="QWR"
+        serialstart="2010 2110"
+        suffix="alpha"
+        ;;
+    DS918+)
         permanent="PDN"
-        serialstart="1780 1790 1860 1980"
+        serialstart="1910"
+        suffix="numeric"
+        ;;
+    DS920+)
+        permanent="SBR"
+        serialstart="2030 2040 20C0 2150"
+        suffix="alpha"
+        ;;
+    DS923+)
+        permanent="TQR"
+        serialstart="2270"
+        suffix="alpha"
+        ;;
+    DS1019+)
+        permanent="QXR"
+        serialstart="1850 1880"
         suffix="numeric"
         ;;
     DS1520+)
-        permanent="TRR"
-        serialstart="2270"
+        permanent="RYR"
+        serialstart="2060"
         suffix="alpha"
-        ;;    
+        ;;
     DS1522+)
         permanent="TRR"
         serialstart="2270"
@@ -819,28 +854,23 @@ function getvarsmshell()
         suffix="alpha"
         ;;
     DS1621xs+)
-        permanent="S7R"
-        serialstart="2080"
+        permanent="RVR"
+        serialstart="2070"
         suffix="alpha"
         ;;
     DS1819+)
-        permanent="RFR"
-        serialstart="1930 1940"
+        permanent="R5R"
+        serialstart="1890"
         suffix="alpha"
         ;;
     DS1821+)
-        permanent="S7R"
-        serialstart="2080"
+        permanent="SKR"
+        serialstart="2110"
         suffix="alpha"
         ;;
     DS1823xs+)
         permanent="V5R"
-        serialstart="22B0"
-        suffix="alpha"
-        ;;
-    DS220+)
-        permanent="XXX"
-        serialstart="0000"
+        serialstart="2280"
         suffix="alpha"
         ;;
     DS2419+)
@@ -849,14 +879,9 @@ function getvarsmshell()
         suffix="alpha"
         ;;
     DS2422+)
-        permanent="S7R"
-        serialstart="2080"
+        permanent="SLR"
+        serialstart="2140 2180"
         suffix="alpha"
-        ;;
-    DS3615xs)
-        permanent="LWN"
-        serialstart="1130 1230 1330 1430"
-        suffix="numeric"
         ;;
     DS3617xs)
         permanent="ODN"
@@ -865,57 +890,7 @@ function getvarsmshell()
         ;;
     DS3622xs+)
         permanent="SQR"
-        serialstart="2030 2040 20C0 2150"
-        suffix="alpha"
-        ;;
-    DS423+)
-        permanent="VKR"
-        serialstart="22A0"
-        suffix="alpha"
-        ;;
-    DS218+)
-        permanent="PDN"
-        serialstart="1780 1790 1860 1980"
-        suffix="numeric"
-        ;;
-    DS620slim)
-        permanent="PDN"
-        serialstart="1780 1790 1860 1980"
-        suffix="numeric"
-        ;;
-    DS718+)
-        permanent="PEN"
-        serialstart="1930"
-        suffix="numeric"
-        ;;
-    DS720+)
-        permanent="SBR"
-        serialstart="2030 2040 20C0 2150"
-        suffix="alpha"
-        ;;
-    DS723+)
-        permanent="TQR"
-        serialstart="2270"
-        suffix="alpha"
-        ;;
-    DS916+)
-        permanent="NZN"
-        serialstart="1130 1230 1330 1430"
-        suffix="numeric"
-        ;;
-    DS918+)
-        permanent="PDN"
-        serialstart="1780 1790 1860 1980"
-        suffix="numeric"
-        ;;
-    DS920+)
-        permanent="SBR"
-        serialstart="2030 2040 20C0 2150"
-        suffix="alpha"
-        ;;
-    DS923+)
-        permanent="TQR"
-        serialstart="2270"
+        serialstart="2150"
         suffix="alpha"
         ;;
     DVA1622)
@@ -939,18 +914,18 @@ function getvarsmshell()
         suffix="numeric"
         ;;
     FS6400)
-        permanent="PSN"
-        serialstart="1960"
-        suffix="numeric"
+        permanent="XXX"
+        serialstart="0000"
+        suffix="alpha"
+        ;;
+    HD6500)
+        permanent="RUR"
+        serialstart="20A0 21C0"
+        suffix="alpha"
         ;;
     RS1221+)
         permanent="RWR"
         serialstart="20B0"
-        suffix="alpha"
-        ;;
-    RS2423+)
-        permanent="XXX"
-        serialstart="0000"
         suffix="alpha"
         ;;
     RS1619xs+)
@@ -958,15 +933,10 @@ function getvarsmshell()
         serialstart="1920"
         suffix="alpha"
         ;;
-    RS3413xs+)
-        permanent="S7R"
-        serialstart="2080"
+    RS2423RP+)
+        permanent="V3R"
+        serialstart="22B0"
         suffix="alpha"
-        ;;
-    RS3618xs)
-        permanent="ODN"
-        serialstart="1130 1230 1330 1430"
-        suffix="numeric"
         ;;
     RS3621xs+)
         permanent="SZR"
@@ -975,21 +945,26 @@ function getvarsmshell()
         ;;
     RS4021xs+)
         permanent="T2R"
-        serialstart="2250"
+        serialstart="2160"
+        suffix="alpha"
+        ;;
+    SA3200D)
+        permanent="S4R"
+        serialstart="19A0"
         suffix="alpha"
         ;;
     SA3400)
         permanent="RJR"
-        serialstart="1920"
-        suffix="alpha"
-        ;;
-    SA3600)
-        permanent="RJR"
-        serialstart="1920"
+        serialstart="1970"
         suffix="alpha"
         ;;
     SA6400)
-        permanent="TQR"
+        permanent="W8R"
+        serialstart="2350"
+        suffix="alpha"
+        ;;
+    SA3410)
+        permanent="UMR"
         serialstart="2270"
         suffix="alpha"
         ;;
@@ -997,8 +972,9 @@ function getvarsmshell()
         permanent="XXX"
         serialstart="0000"
         suffix="alpha"
-        ;;        
-    esac        
+        ;;
+    esac
+
 
 }
 
