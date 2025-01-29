@@ -3522,6 +3522,7 @@ function my() {
       if [ -f /tmp/test_mode ]; then
         cecho g "###############################  This is Test Mode  ############################"
         curl -skL# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/functions_t.sh -o functions.sh
+        /bin/cp -vf /home/tc/redpill-load/build-loader_t.sh /home/tc/redpill-load/build-loader.sh
       else
         curl -skLO# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/functions.sh
       fi
