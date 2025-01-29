@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.1.0.1"
+rploaderver="1.2.0.0"
 build="master"
 redpillmake="prod"
 
@@ -12,6 +12,7 @@ modalias3="https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/$build
 timezone="UTC"
 ntpserver="pool.ntp.org"
 userconfigfile="/home/tc/user_config.json"
+configfile="/home/tc/redpill-load/config/pats.json" 
 
 gitdomain="raw.githubusercontent.com"
 mshellgz="my.sh.gz"
@@ -147,6 +148,7 @@ function history() {
     1.0.6.8 i915.modeset=0 menu processing improvement (FRIEND guidance console is activated when i915 transcoding is disabled)
     1.1.0.0 Added features for distribution of xTCRP (Tinycore Linux stripped down version)
     1.1.0.1 When using a single m.2 NVMe volume, the DDSML error issue has occurred, so menu usage has been excluded and related support has been strengthened.
+    1.2.0.0 Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -454,6 +456,8 @@ EOF
 # 2025.01.12 v1.1.0.1 
 # When using a single m.2 NVMe volume, the DDSML error issue has occurred, 
 # so menu usage has been excluded and related support has been strengthened.
+# 2025.01.29 v1.2.0.0 
+# Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
     
 function showlastupdate() {
     cat <<EOF
@@ -572,6 +576,9 @@ function showlastupdate() {
 # 2025.01.12 v1.1.0.1 
 # When using a single m.2 NVMe volume, the DDSML error issue has occurred, 
 # so menu usage has been excluded and related support has been strengthened.
+
+# 2025.01.29 v1.2.0.0 
+# Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
 
 EOF
 }
@@ -705,6 +712,23 @@ function cecho () {
 
 function getvarsmshell()
 {
+
+    # Set the path for the models.json file
+    MODELS_JSON="/home/tc/models.json"
+
+    # Define platform groups
+    platforms="epyc7002 broadwellnk broadwell broadwellnkv2 broadwellntbap purley denverton apollolake r1000 v1000 geminilake"
+
+    # Initialize MODELS array
+    MODELS=()
+
+    # Extract models for each platform and add them to the mdl file
+    for platform in $platforms; do
+      models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
+      if [ -n "$models" ]; then
+        MODELS+=($models)
+      fi
+    done
     
     SUVP=""
     ORIGIN_PLATFORM=""
@@ -723,15 +747,14 @@ function getvarsmshell()
     TARGET_PLATFORM=$(echo "$MODEL" | sed 's/DS/ds/' | sed 's/RS/rs/' | sed 's/+/p/' | sed 's/DVA/dva/' | sed 's/FS/fs/' | sed 's/SA/sa/' )
     SYNOMODEL="${TARGET_PLATFORM}_${TARGET_REVISION}"
     
-    MODELS="DS3615xs DS218+ DS1019+ DS620slim DS1520+ DS1522+ DS220+ DS2419+ DS423+ DS718+ DS1621+ DS1821+ DS1823xs+ DS1621xs+ DS2422+ DS3617xs DS3622xs+ DS720+ DS723+ DS918+ DS920+ DS923+ DS1819+ DVA3219 DVA3221 DVA1622 FS2500 RS1221+ RS1619xs+ RS2423+ RS3413xs+ RS3618xs RS3621xs+ RS4021xs+ SA3410 SA3610 SA6400"
-    if [ $(echo ${MODELS} | grep ${MODEL} | wc -l ) -eq 0 ]; then
+    if [ $(echo ${MODELS[@]} | grep ${MODEL} | wc -l ) -eq 0 ]; then
         echo "This synology model not supported by TCRP."
         exit 99
     fi
     
     if [ "$TARGET_REVISION" == "42218" ]; then
         KVER="4.4.180"
-        SUVP="" 
+        SUVP=""
     elif [ "$TARGET_REVISION" == "42962" ]; then
         KVER="4.4.180"
         MODELS6="DS423+ DS723+ DS923+ DS1823xs+ RS3621xs+ RS4021xs+ RS3618xs SA6400"
@@ -745,10 +768,7 @@ function getvarsmshell()
         SUVP="-1" 
     elif [ "$TARGET_REVISION" == "69057" ]; then
         KVER="4.4.302"
-        SUVP=""
-        if [ "${MODEL}" = "DS218+" ]; then
-          SUVP="-1"
-        fi
+        SUVP="-1"
     elif [ "$TARGET_REVISION" == "72806" ]; then
         KVER="4.4.302"
         SUVP="" 
@@ -757,52 +777,72 @@ function getvarsmshell()
         exit 0
     fi
 
-    case ${MODEL} in
-    DS218+ | DS718+ | DS918+ | DS1019+ | DS620slim )
-        ORIGIN_PLATFORM="apollolake"
-        ;;
-    DS3615xs | RS3413xs+ )
-        ORIGIN_PLATFORM="bromolow"
-        KVER="3.10.108"
-        ;;
-    DS3617xs | RS3618xs )
-        ORIGIN_PLATFORM="broadwell"
-        ;;
-    DS3622xs+ | DS1621xs+ | SA3400 | SA3600 | RS1619xs+ | RS3621xs+ | RS4021xs+ )
-        ORIGIN_PLATFORM="broadwellnk"
-        ;;
-    SA3410 | SA3610 )
-        ORIGIN_PLATFORM="broadwellnkv2"
-        ;;
-    DVA3221 | DVA3219 | DS1819+ | DS2419+ )
-        ORIGIN_PLATFORM="denverton"
-        ;;
-    DVA1622 | DS220+ | DS423+ | DS920+ | DS1520+ | DS720+ )
-        ORIGIN_PLATFORM="geminilake"
-        ;;
-    DS923+ | DS723+ | DS1522+ )
-        ORIGIN_PLATFORM="r1000"
-        ;;
-    DS1621+ | DS1821+ | DS1823xs+ | DS2422+ | FS2500 | RS1221+ | RS2423+ )
-        ORIGIN_PLATFORM="v1000"
-        ;;
-    SA6400 )
-        ORIGIN_PLATFORM="epyc7002"
-        KVER="5.10.55"
-        ;;
-    esac
+    #SFVAL=${SUVP:--0}
 
+    # Extract models for each platform and add them to the mdl file
+    for platform in $platforms; do
+      # Initialize MODELS array
+      MODELS=()
+      models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
+      if [ -n "$models" ]; then
+        MODELS=($models)
+      fi
+      if [ $(echo ${MODELS[@]} | grep ${MODEL} | wc -l ) -gt 0 ]; then
+        ORIGIN_PLATFORM="${platform}"
+        case ${platform} in
+        bromolow) KVER="3.10.108";;
+        epyc7002) KVER="5.10.55";; 
+        esac
+        break
+      fi
+    done    
+    
     case ${MODEL} in
-    DS1019+)
+    DS224+)
+        permanent="WBR"
+        serialstart="2350"
+        suffix="alpha"
+        ;;
+    DS423+)
+        permanent="VKR"
+        serialstart="22A0"
+        suffix="alpha"
+        ;;
+    DS718+)
+        permanent="PEN"
+        serialstart="1930"
+        suffix="numeric"
+        ;;
+    DS720+)
+        permanent="QWR"
+        serialstart="2010 2110"
+        suffix="alpha"
+        ;;
+    DS918+)
         permanent="PDN"
-        serialstart="1780 1790 1860 1980"
+        serialstart="1910"
+        suffix="numeric"
+        ;;
+    DS920+)
+        permanent="SBR"
+        serialstart="2030 2040 20C0 2150"
+        suffix="alpha"
+        ;;
+    DS923+)
+        permanent="TQR"
+        serialstart="2270"
+        suffix="alpha"
+        ;;
+    DS1019+)
+        permanent="QXR"
+        serialstart="1850 1880"
         suffix="numeric"
         ;;
     DS1520+)
-        permanent="TRR"
-        serialstart="2270"
+        permanent="RYR"
+        serialstart="2060"
         suffix="alpha"
-        ;;    
+        ;;
     DS1522+)
         permanent="TRR"
         serialstart="2270"
@@ -814,28 +854,23 @@ function getvarsmshell()
         suffix="alpha"
         ;;
     DS1621xs+)
-        permanent="S7R"
-        serialstart="2080"
+        permanent="RVR"
+        serialstart="2070"
         suffix="alpha"
         ;;
     DS1819+)
-        permanent="RFR"
-        serialstart="1930 1940"
+        permanent="R5R"
+        serialstart="1890"
         suffix="alpha"
         ;;
     DS1821+)
-        permanent="S7R"
-        serialstart="2080"
+        permanent="SKR"
+        serialstart="2110"
         suffix="alpha"
         ;;
     DS1823xs+)
         permanent="V5R"
-        serialstart="22B0"
-        suffix="alpha"
-        ;;
-    DS220+)
-        permanent="XXX"
-        serialstart="0000"
+        serialstart="2280"
         suffix="alpha"
         ;;
     DS2419+)
@@ -844,14 +879,9 @@ function getvarsmshell()
         suffix="alpha"
         ;;
     DS2422+)
-        permanent="S7R"
-        serialstart="2080"
+        permanent="SLR"
+        serialstart="2140 2180"
         suffix="alpha"
-        ;;
-    DS3615xs)
-        permanent="LWN"
-        serialstart="1130 1230 1330 1430"
-        suffix="numeric"
         ;;
     DS3617xs)
         permanent="ODN"
@@ -860,57 +890,7 @@ function getvarsmshell()
         ;;
     DS3622xs+)
         permanent="SQR"
-        serialstart="2030 2040 20C0 2150"
-        suffix="alpha"
-        ;;
-    DS423+)
-        permanent="VKR"
-        serialstart="22A0"
-        suffix="alpha"
-        ;;
-    DS218+)
-        permanent="PDN"
-        serialstart="1780 1790 1860 1980"
-        suffix="numeric"
-        ;;
-    DS620slim)
-        permanent="PDN"
-        serialstart="1780 1790 1860 1980"
-        suffix="numeric"
-        ;;
-    DS718+)
-        permanent="PEN"
-        serialstart="1930"
-        suffix="numeric"
-        ;;
-    DS720+)
-        permanent="SBR"
-        serialstart="2030 2040 20C0 2150"
-        suffix="alpha"
-        ;;
-    DS723+)
-        permanent="TQR"
-        serialstart="2270"
-        suffix="alpha"
-        ;;
-    DS916+)
-        permanent="NZN"
-        serialstart="1130 1230 1330 1430"
-        suffix="numeric"
-        ;;
-    DS918+)
-        permanent="PDN"
-        serialstart="1780 1790 1860 1980"
-        suffix="numeric"
-        ;;
-    DS920+)
-        permanent="SBR"
-        serialstart="2030 2040 20C0 2150"
-        suffix="alpha"
-        ;;
-    DS923+)
-        permanent="TQR"
-        serialstart="2270"
+        serialstart="2150"
         suffix="alpha"
         ;;
     DVA1622)
@@ -934,18 +914,18 @@ function getvarsmshell()
         suffix="numeric"
         ;;
     FS6400)
-        permanent="PSN"
-        serialstart="1960"
-        suffix="numeric"
+        permanent="XXX"
+        serialstart="0000"
+        suffix="alpha"
+        ;;
+    HD6500)
+        permanent="RUR"
+        serialstart="20A0 21C0"
+        suffix="alpha"
         ;;
     RS1221+)
         permanent="RWR"
         serialstart="20B0"
-        suffix="alpha"
-        ;;
-    RS2423+)
-        permanent="XXX"
-        serialstart="0000"
         suffix="alpha"
         ;;
     RS1619xs+)
@@ -953,15 +933,10 @@ function getvarsmshell()
         serialstart="1920"
         suffix="alpha"
         ;;
-    RS3413xs+)
-        permanent="S7R"
-        serialstart="2080"
+    RS2423RP+)
+        permanent="V3R"
+        serialstart="22B0"
         suffix="alpha"
-        ;;
-    RS3618xs)
-        permanent="ODN"
-        serialstart="1130 1230 1330 1430"
-        suffix="numeric"
         ;;
     RS3621xs+)
         permanent="SZR"
@@ -970,21 +945,26 @@ function getvarsmshell()
         ;;
     RS4021xs+)
         permanent="T2R"
-        serialstart="2250"
+        serialstart="2160"
+        suffix="alpha"
+        ;;
+    SA3200D)
+        permanent="S4R"
+        serialstart="19A0"
         suffix="alpha"
         ;;
     SA3400)
         permanent="RJR"
-        serialstart="1920"
-        suffix="alpha"
-        ;;
-    SA3600)
-        permanent="RJR"
-        serialstart="1920"
+        serialstart="1970"
         suffix="alpha"
         ;;
     SA6400)
-        permanent="TQR"
+        permanent="W8R"
+        serialstart="2350"
+        suffix="alpha"
+        ;;
+    SA3410)
+        permanent="UMR"
         serialstart="2270"
         suffix="alpha"
         ;;
@@ -992,8 +972,9 @@ function getvarsmshell()
         permanent="XXX"
         serialstart="0000"
         suffix="alpha"
-        ;;        
-    esac        
+        ;;
+    esac
+
 
 }
 
@@ -1797,27 +1778,28 @@ st "iscached" "Caching pat file" "Patfile ${SYNOMODEL}.pat is cached"
         cd /home/tc/redpill-load/cache
 st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVISION}"        
         sudo tar xvf /home/tc/redpill-load/cache/${SYNOMODEL}.pat ./VERSION && . ./VERSION && cat ./VERSION && rm ./VERSION
-        os_sha256=$(sha256sum /home/tc/redpill-load/cache/${SYNOMODEL}.pat | awk '{print $1}')
-        msgnormal "Pat file  sha256sum is : $os_sha256"
+        os_md5=$(md5sum /home/tc/redpill-load/cache/${SYNOMODEL}.pat | awk '{print $1}')
+        msgnormal "Pat file md5sum is : $os_md5"
 
         echo -n "Checking config file existence -> "
-        if [ -f "/home/tc/redpill-load/config/$MODEL/${major}.${minor}.${micro}-${buildnumber}/config.json" ]; then
+        if [ -f "/home/tc/redpill-load/config/pats.json" ]; then
             echo "OK"
-            configfile="/home/tc/redpill-load/config/$MODEL/${major}.${minor}.${micro}-${buildnumber}/config.json"
         else
-            echo "No config file found, The download may be corrupted or may not be run the original repo. Please re-download from original repo."
+            echo "No config file(pats.json) found, The download may be corrupted or may not be run the original repo. Please re-download from original repo."
             exit 99
         fi
 
         msgnormal "Editing config file !!!!!"
-        sed -i "/\"os\": {/!b;n;n;n;c\"sha256\": \"$os_sha256\"" ${configfile}
+       
         echo -n "Verifying config file -> "
-        verifyid="$(cat ${configfile} | jq -r -e '.os .sha256')"
+        verifyid=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.sum) | .[0]" "${configfile}")
+        sed -i "s/${verifyid}/$os_md5/" ${configfile}
+        verifyid="$os_md5"
 
-        if [ "$os_sha256" == "$verifyid" ]; then
+        if [ "$os_md5" == "$verifyid" ]; then
             echo "OK ! "
         else
-            echo "config file, os sha256 verify FAILED, check ${configfile} "
+            echo "config file, os md5 verify FAILED, check ${configfile} "
             exit 99
         fi
 
@@ -1830,10 +1812,9 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
     else
 
         echo "Could not find pat file locally cached"
-        configdir="/home/tc/redpill-load/config/${MODEL}/${TARGET_VERSION}-${TARGET_REVISION}"
-        configfile="${configdir}/config.json"
-        pat_url=$(cat ${configfile} | jq '.os .pat_url' | sed -s 's/"//g')
-        echo -e "Configdir : $configdir \nConfigfile: $configfile \nPat URL : $pat_url"
+        
+        pat_url=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.url) | .[0]" "${configfile}")
+        echo -e "Configfile: $configfile \nPat URL : $pat_url"
         echo "Downloading pat file from URL : ${pat_url} "
 
         chkavail
@@ -1864,7 +1845,7 @@ st "patextraction" "Pat file extracted" "VERSION:${TARGET_VERSION}-${TARGET_REVI
 
 function addrequiredexts() {
 
-    echo "Processing add_extensions entries found on custom_config.json file : ${EXTENSIONS}"
+    echo "Processing add_extensions entries found on models.json file : ${EXTENSIONS}"
     for extension in ${EXTENSIONS_SOURCE_URL}; do
         echo "Adding extension ${extension} "
         cd /home/tc/redpill-load/ && ./ext-manager.sh add "$(echo $extension | sed -s 's/"//g' | sed -s 's/,//g')"
@@ -2083,7 +2064,7 @@ function getPlatforms() {
 
 function selectPlatform() {
 
-    platform_selected=$(jq -s '.[0].build_configs=(.[1].build_configs + .[0].build_configs | unique_by(.id)) | .[0]'  custom_config.json | jq ".build_configs[] | select(.id==\"${1}\")")
+    platform_selected=$(jq -r ".${1}" models.json)
     echo "platform_selected=${platform_selected}"
 
 }
@@ -2107,8 +2088,8 @@ function readConfig() {
 function setplatform() {
 
     SYNOMODEL=${TARGET_PLATFORM}_${TARGET_REVISION}
-    MODEL=$(echo "${TARGET_PLATFORM}" | sed 's/ds/DS/' | sed 's/rs/RS/' | sed 's/p/+/' | sed 's/dva/DVA/' | sed 's/fs/FS/' | sed 's/sa/SA/' )
-    ORIGIN_PLATFORM="$(echo $platform_selected | jq -r -e '.platform_name')"
+    #MODEL=$(echo "${TARGET_PLATFORM}" | sed 's/ds/DS/' | sed 's/rs/RS/' | sed 's/p/+/' | sed 's/dva/DVA/' | sed 's/fs/FS/' | sed 's/sa/SA/' )
+    #ORIGIN_PLATFORM="$(echo $platform_selected | jq -r -e '.platform_name')"
 
 }
 
@@ -2127,9 +2108,9 @@ function getvars() {
     EXTENSIONS="$(echo $platform_selected | jq -r -e '.add_extensions[]' | grep json | awk -F: '{print $1}' | sed -s 's/"//g')"
     #EXTENSIONS_SOURCE_URL="$(echo $platform_selected | jq '.add_extensions[] .url')"
     EXTENSIONS_SOURCE_URL="$(echo $platform_selected | jq '.add_extensions[]' | grep json | awk '{print $2}')"
-    TARGET_PLATFORM="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[0])"
-    TARGET_VERSION="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[1])"
-    TARGET_REVISION="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[2])"
+    #TARGET_PLATFORM="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[0])"
+    #TARGET_VERSION="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[1])"
+    #TARGET_REVISION="$(echo $platform_selected | jq -r -e '.id | split("-")' | jq -r -e .[2])"
 
     tcrppart="${tcrpdisk}3"
     local_cache="/mnt/${tcrppart}/auxfiles"
@@ -2629,15 +2610,15 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
         # jun's mod must patch using custom.gz from the first partition, so you need to fix the partition.
         sed -i "s/BRP_OUT_P2}\/\${BRP_CUSTOM_RD_NAME/BRP_OUT_P1}\/\${BRP_CUSTOM_RD_NAME/g" /home/tc/redpill-load/build-loader.sh
         if [ "$FRKRNL" = "NO" ]; then
-            sudo BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+            sudo BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion} ${SYNOMODEL}
         else
-            BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+            BRP_JUN_MOD=1 BRP_DEBUG=0 BRP_USER_CFG=user_config.json ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion} ${SYNOMODEL}
         fi
     else
         if [ "$FRKRNL" = "NO" ]; then
-            sudo ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+            sudo ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion} ${SYNOMODEL}
         else
-            ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion}
+            ./build-loader.sh $MODEL $TARGET_VERSION-$TARGET_REVISION loader.img ${UPPER_ORIGIN_PLATFORM} ${vkersion} ${SYNOMODEL}
         fi    
     fi
 
@@ -2734,7 +2715,12 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     rdhash=$(sha256sum /mnt/${loaderdisk}2/rd.gz | awk '{print $1}')
     updateuserconfigfield "general" "rdhash" "$rdhash"
 
-    if [ ${ORIGIN_PLATFORM} = "geminilake" ] || [ ${ORIGIN_PLATFORM} = "v1000" ] || [ ${ORIGIN_PLATFORM} = "r1000" ]; then
+    if echo "apollolake geminilake purley" | grep -wq "${ORIGIN_PLATFORM}"; then
+        USB_LINE="${USB_LINE} nox2apic "
+        SATA_LINE="${SATA_LINE} nox2apic "    
+    fi
+
+    if echo "geminilake v1000 r1000" | grep -wq "${ORIGIN_PLATFORM}"; then
         echo "add modprobe.blacklist=mpt3sas for Device-tree based platforms"
         USB_LINE="${USB_LINE} modprobe.blacklist=mpt3sas "
         SATA_LINE="${SATA_LINE} modprobe.blacklist=mpt3sas "
@@ -2760,6 +2746,9 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
             fi
         fi
     fi
+
+    USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
+    SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
     
     msgwarning "Updated user_config with USB Command Line : $USB_LINE"
     json=$(jq --arg var "${USB_LINE}" '.general.usb_line = $var' $userconfigfile) && echo -E "${json}" | jq . >$userconfigfile
@@ -2776,7 +2765,7 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     
     [ ! -d /home/tc/rd.temp ] && mkdir /home/tc/rd.temp
     [ -d /home/tc/rd.temp ] && cd /home/tc/rd.temp
-    RD_COMPRESSED=$(cat /home/tc/redpill-load/config/$MODEL/${TARGET_VERSION}-${TARGET_REVISION}/config.json | jq -r -e ' .extra .compress_rd')
+    RD_COMPRESSED=$(cat /home/tc/redpill-load/config/${ORIGIN_PLATFORM}/${TARGET_VERSION}-${TARGET_REVISION}/config.json | jq -r -e ' .extra .compress_rd')
 
     if [ "$RD_COMPRESSED" = "false" ]; then
         echo "Ramdisk in not compressed "    
@@ -2822,6 +2811,9 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         #sudo tar xvfz /home/tc/rd.temp/exts/all-modules/sbin.tgz -C /home/tc/rd.temp
         #sudo cp -vf /home/tc/tools/dtc /home/tc/rd.temp/usr/bin
         #sudo curl -kL https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/main/rr/linuxrc.syno.impl -o /home/tc/rd.temp/linuxrc.syno.impl        
+    fi
+    if [ "${ORIGIN_PLATFORM}" = "broadwellntbap" ]; then
+        sudo sed -i 's/IsUCOrXA="yes"/XIsUCOrXA="yes"/g; s/IsUCOrXA=yes/XIsUCOrXA=yes/g' "/home/tc/rd.temp/usr/syno/share/environments.sh"
     fi
     sudo chmod +x /home/tc/rd.temp/usr/sbin/modprobe    
 
@@ -3231,7 +3223,7 @@ function rploader() {
 
     build)
 
-        getvars $2
+        getvars $ORIGIN_PLATFORM
         if [ -d /mnt/${tcrppart}/redpill-load/ ]; then
             offline="YES"
         else
@@ -3291,7 +3283,7 @@ echo "$3"
         ;;
 
     postupdate)
-        getvars $2
+        getvars $ORIGIN_PLATFORM
         checkinternet
         gitdownload
         postupdate
@@ -3511,21 +3503,13 @@ function my() {
   [ "$nvmes" = true ] && add-addons "nvmesystem" 
   [ "$dbgutils" = true ] && add-addons "dbgutils" 
   [ "$sortnetif" = true ] && add-addons "sortnetif" 
-  
-  if [ "${offline}" = "NO" ]; then
-      curl -skLO# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/custom_config.json
-      if [ -f /tmp/test_mode ]; then
-        cecho g "###############################  This is Test Mode  ############################"
-        curl -skL# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/functions_t.sh -o functions.sh
-      else
-        curl -skLO# https://$gitdomain/PeterSuh-Q3/tinycore-redpill/master/functions.sh
-      fi
-  fi
+
+  [ "${offline}" = "NO" ] && curl -skLO# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/models.json
 
   if [ "${MDLNAME}" = "all-modules" ]; then
-      sed -i "s/rr-modules/all-modules/g" custom_config.json
+      sed -i "s/rr-modules/all-modules/g" models.json
   elif [ "${MDLNAME}" = "rr-modules" ]; then
-      sed -i "s/all-modules/rr-modules/g" custom_config.json
+      sed -i "s/all-modules/rr-modules/g" models.json
   fi  
   
   echo
@@ -3536,7 +3520,7 @@ function my() {
   fi
   
   if [ -f /home/tc/custom-module/${TARGET_PLATFORM}.dts ]; then
-      sed -i "s/dtbpatch/redpill-dtb-static/g" custom_config.json
+      sed -i "s/dtbpatch/redpill-dtb-static/g" models.json
   fi
   
   if [ "$postupdate" = "Y" ]; then
@@ -3600,7 +3584,7 @@ function my() {
   echo "DN_MODEL is $DN_MODEL"
   
   cecho p "DSM PAT file pre-downloading in progress..."
-  URL="https://global.synologydownload.com/download/DSM/release/${TARGET_VERSION}/${TARGET_REVISION}${SUVP}/DSM_${DN_MODEL}_${TARGET_REVISION}.pat"
+  URL=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.url) | .[0]" "${configfile}")
   cecho y "$URL"
   patfile="/mnt/${tcrppart}/auxfiles/${SYNOMODEL}.pat"                                         
   
@@ -3630,23 +3614,22 @@ function my() {
       #    exit 99
       #  fi
       #else
+      echo  "download original pats.json file..."
+      curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/redpill-load/master/config/pats.json -o /home/tc/redpill-load/config/pats.json
       echo "offline = ${offline}"
         [ "${offline}" = "NO" ] && _pat_process    
       #fi
   
-      os_sha256=$(sha256sum ${patfile} | awk '{print $1}')                                
-      cecho y "Pat file  sha256sum is : $os_sha256"                                       
+      os_md5=$(md5sum ${patfile} | awk '{print $1}')                                
+      cecho y "Pat file md5sum is : $os_md5"                                       
+       
+      verifyid=$(jq -e -r ".\"${MODEL}\" | to_entries | map(select(.key | startswith(\"${BUILD}\"))) | map(.value.sum) | .[0]" "${configfile}")
+      cecho p "verifyid md5sum is : $verifyid"                                        
   
-      #verifyid="${sha256}"
-      id="${TARGET_PLATFORM}-${TARGET_VERSION}-${TARGET_REVISION}"
-      platform_selected=$(jq -s '.[0].build_configs=(.[1].build_configs + .[0].build_configs | unique_by(.id)) | .[0]' custom_config.json | jq ".build_configs[] | select(.id==\"${id}\")")
-      verifyid="$(echo $platform_selected | jq -r -e '.downloads .os .sha256')"
-      cecho p "verifyid  sha256sum is : $verifyid"                                        
-  
-      if [ "$os_sha256" = "$verifyid" ]; then                                            
-          cecho y "pat file sha256sum is OK ! "                                           
+      if [ "$os_md5" = "$verifyid" ]; then                                            
+          cecho y "pat file md5sum is OK ! "                                           
       else                                                                                
-          cecho y "os sha256 verify FAILED, check ${patfile}  "                           
+          cecho y "os md5sum verify FAILED, check ${patfile} "
           exit 99                                                                         
       fi
   fi
