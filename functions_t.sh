@@ -3637,6 +3637,8 @@ function my() {
       #    exit 99
       #  fi
       #else
+      echo  "download original pats.json file..."
+      curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/redpill-load/master/config/pats.json -o /home/tc/redpill-load/config/pats.json
       echo "offline = ${offline}"
         [ "${offline}" = "NO" ] && _pat_process    
       #fi
