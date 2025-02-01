@@ -2630,7 +2630,9 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
 
     msgnormal "Modify Jot Menu entry"
     # backup Jot menuentry to tempentry
+sudo cp -vf /tmp/grub.cfg /tmp/jotgrub3.cfg
     tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
+echo "$tempentry" > /tmp/jotgrub4.cfg
     #if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
     #    sudo sed -i '61,80d' /tmp/grub.cfg
     #else
@@ -2647,15 +2649,12 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     if [ "$WITHFRIEND" = "YES" ]; then
         echo
     else
-sudo cp -vf /tmp/grub.cfg /tmp/jotgrub0.cfg    
         sudo sed -i '31,34d' /tmp/grub.cfg
-sudo cp -vf /tmp/grub.cfg /tmp/jotgrub1.cfg
         # Check dom size and set max size accordingly for jot
         if [ "${BUS}" = "sata" ]; then
             DOM_PARA="dom_szmax=$(sudo /sbin/fdisk -l /dev/${loaderdisk} | head -1 | awk -F: '{print $2}' | awk '{ print $1*1024}')"
             sed -i "s/synoboot_satadom/${DOM_PARA} synoboot_satadom/" /tmp/tempentry.txt
         fi
-sudo cp -vf /tmp/grub.cfg /tmp/jotgrub2.cfg
         tinyjotfunc | sudo tee --append /tmp/grub.cfg
     fi
 
