@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! -f /home/tc/sd*3/initrd-friend ] && [ ! -f /home/tc/sd*3/bzImage-friend ]; then
+if [ ! -f /mnt/sd*3/initrd-friend ] && [ ! -f /mnt/sd*3/bzImage-friend ]; then
   URL="https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest/download/chksum"
   [ -n "$URL" ] && curl --connect-timeout 5 -s -k -L $URL -O
 
@@ -19,7 +19,7 @@ if [ ! -f /home/tc/sd*3/initrd-friend ] && [ ! -f /home/tc/sd*3/bzImage-friend ]
         echo "Download failed from github.com friend... !!!!!!!!"
     else
         echo "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"
-        sudo mv -vf *friend /home/tc/sd*3
+        sudo mv -vf *friend /mnt/sd*3
     fi
   fi
 else
