@@ -21,7 +21,7 @@ if [ ! -f "$TARGET_DIR"/initrd-friend ] && [ ! -f "$TARGET_DIR"/bzImage-friend ]
     else
         echo "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"
         if [ -n "$TARGET_DIR" ]; then
-            cp -p *friend "$TARGET_DIR" && rm -f *friend
+            cp -vpf --no-preserve=ownership *friend "$TARGET_DIR" && rm -f *friend
             #mv -vf --no-preserve=ownership *friend "$TARGET_DIR" 2>/dev/null
         else
             echo "Error: Target directory not found!"
