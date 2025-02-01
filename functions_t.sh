@@ -2648,11 +2648,13 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
         echo
     else
         sudo sed -i '31,34d' /tmp/grub.cfg
+sudo cp -vf /tmp/grub.cfg /tmp/jotgrub1.cfg
         # Check dom size and set max size accordingly for jot
         if [ "${BUS}" = "sata" ]; then
             DOM_PARA="dom_szmax=$(sudo /sbin/fdisk -l /dev/${loaderdisk} | head -1 | awk -F: '{print $2}' | awk '{ print $1*1024}')"
             sed -i "s/synoboot_satadom/${DOM_PARA} synoboot_satadom/" /tmp/tempentry.txt
         fi
+sudo cp -vf /tmp/grub.cfg /tmp/jotgrub2.cfg
         tinyjotfunc | sudo tee --append /tmp/grub.cfg
     fi
 
