@@ -6,7 +6,7 @@ if [ ! -f /home/tc/sd*3/initrd-friend ] && [ ! -f /home/tc/sd*3/bzImage-friend ]
 
   if [ -f chksum ]; then
     FRIENDVERSION="$(grep VERSION chksum | awk -F= '{print $2}')"
-    echo "bringing over friend version : $FRIENDVERSION \n"
+    echo "bringing over friend version : $FRIENDVERSION "
 
     LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest"`"
     FRTAG="${LATESTURL##*/}"
@@ -16,9 +16,10 @@ if [ ! -f /home/tc/sd*3/initrd-friend ] && [ ! -f /home/tc/sd*3/bzImage-friend ]
     -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/initrd-friend"
 
     if [ $? -ne 0 ]; then
-        msgalert "Download failed from github.com friend... !!!!!!!!"
+        echo "Download failed from github.com friend... !!!!!!!!"
     else
-        msgnormal "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"            
+        echo "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"
+        sudo mv -vf *friend /home/tc/sd*3
     fi
   fi
 else
