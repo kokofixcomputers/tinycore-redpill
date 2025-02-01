@@ -19,7 +19,7 @@ if [ ! -f /mnt/sd*3/initrd-friend ] && [ ! -f /mnt/sd*3/bzImage-friend ]; then
         echo "Download failed from github.com friend... !!!!!!!!"
     else
         echo "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"
-        sudo mv -vf --no-preserve=ownership *friend /mnt/sd*3 2>/dev/null
+        mv -vf --no-preserve=ownership *friend /mnt/sd*3 2>/dev/null
     fi
   fi
 else
