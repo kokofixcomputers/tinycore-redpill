@@ -16,16 +16,17 @@ if [ ! -f "$TARGET_DIR"/initrd-friend ] && [ ! -f "$TARGET_DIR"/bzImage-friend ]
     -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/bzImage-friend" \
     -O "https://github.com/PeterSuh-Q3/tcrpfriend/releases/download/${FRTAG}/initrd-friend"
 
-    if [ $? -ne 0 ]; then
-        echo "Download failed from github.com friend... !!!!!!!!"
-    else
+    if ls *friend >/dev/null 2>&1; then
         echo "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"
         if [ -n "$TARGET_DIR" ]; then
             cp -vpf --no-preserve=ownership *friend "$TARGET_DIR" && rm -f *friend
             #mv -vf --no-preserve=ownership *friend "$TARGET_DIR" 2>/dev/null
         else
             echo "Error: Target directory not found!"
-        fi        
+        fi
+    else
+        echo "Download failed from github.com friend... !!!!!!!!"
+        exit 99
     fi
   fi
 else
