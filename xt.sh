@@ -1,6 +1,7 @@
 #!/bin/bash
 
-if [ ! -f /mnt/sd*3/initrd-friend ] && [ ! -f /mnt/sd*3/bzImage-friend ]; then
+TARGET_DIR=$(find /mnt -maxdepth 1 -type d -name "sd*3" | head -1)
+if [ ! -f "$TARGET_DIR"/initrd-friend ] && [ ! -f "$TARGET_DIR"/bzImage-friend ]; then
   URL="https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest/download/chksum"
   [ -n "$URL" ] && curl --connect-timeout 5 -s -k -L $URL -O
 
@@ -19,7 +20,11 @@ if [ ! -f /mnt/sd*3/initrd-friend ] && [ ! -f /mnt/sd*3/bzImage-friend ]; then
         echo "Download failed from github.com friend... !!!!!!!!"
     else
         echo "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"
-        mv -vf --no-preserve=ownership *friend /mnt/sd*3 2>/dev/null
+        if [ -n "$TARGET_DIR" ]; then
+            mv -vf --no-preserve=ownership *friend "$TARGET_DIR" 2>/dev/null
+        else
+            echo "Error: Target directory not found!"
+        fi        
     fi
   fi
 else
@@ -27,4 +32,5 @@ else
 fi
 
 echo "change grub boot entry to xTCRP !!!"
-curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/grub/grub.cfg -o /mnt/sd*1/boot/grub/grub.cfg
+TARGET_DIR1=$(find /mnt -maxdepth 1 -type d -name "sd*1" | head -1)
+curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/grub/grub.cfg -o "$TARGET_DIR1"/boot/grub/grub.cfg
