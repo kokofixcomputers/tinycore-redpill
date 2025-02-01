@@ -4,7 +4,7 @@ set -u # Unbound variable errors are not allowed
 
 rploaderver="1.2.0.0"
 build="master"
-redpillmake="dev"
+redpillmake="prod"
 
 modalias4="https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/$build/modules.alias.4.json.gz"
 modalias3="https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/$build/modules.alias.3.json.gz"
@@ -3078,8 +3078,7 @@ function getredpillko() {
     TAG=""
     if [ "${offline}" = "NO" ]; then
         echo "Downloading ${ORIGIN_PLATFORM} ${KVER}+ redpill.ko ..."    
-        #LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/redpill-lkm${v}/releases/latest"`"
-        LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/RROrg/rr-lkms/releases/latest"`"
+        LATESTURL="`curl --connect-timeout 5 -skL -w %{url_effective} -o /dev/null "https://github.com/PeterSuh-Q3/redpill-lkm${v}/releases/latest"`"
         #echo "? = $?"
         #if [ $? -ne 0 ]; then
         #    echo "Error downloading last version of ${ORIGIN_PLATFORM} ${KVER}+ rp-lkms.zip tring other path..."
@@ -3098,8 +3097,7 @@ function getredpillko() {
         #        TAG="24.4.11"
         #    fi
             echo "TAG is ${TAG}"
-            #STATUS=`sudo curl --connect-timeout 5 -skL -w "%{http_code}" "https://github.com/PeterSuh-Q3/redpill-lkm${v}/releases/download/${TAG}/rp-lkms.zip" -o "/mnt/${tcrppart}/rp-lkms${v}.zip"`
-            STATUS=`sudo curl --connect-timeout 5 -skL -w "%{http_code}" "https://github.com/RROrg/rr-lkms/releases/download/${TAG}/rp-lkms-${TAG}.zip" -o "/mnt/${tcrppart}/rp-lkms.zip"`
+            STATUS=`sudo curl --connect-timeout 5 -skL -w "%{http_code}" "https://github.com/PeterSuh-Q3/redpill-lkm${v}/releases/download/${TAG}/rp-lkms.zip" -o "/mnt/${tcrppart}/rp-lkms${v}.zip"`
         #fi
     else
         echo "Unzipping ${ORIGIN_PLATFORM} ${KVER}+ redpill.ko ..."        
