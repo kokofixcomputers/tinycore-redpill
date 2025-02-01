@@ -36,4 +36,27 @@ fi
 echo "change grub boot entry to xTCRP !!!"
 TARGET_DIR1=$(find /mnt -maxdepth 1 -type d -name "sd*1" | head -1)
 curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/grub/grub.cfg -o "$TARGET_DIR1"/boot/grub/grub.cfg
+
 curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "$TARGET_DIR"/xtcrp.tgz
+
+#TAR_FILE=${TARGET_DIR}"/xtcrp.tgz"
+#SOURCE_FILE="/home/tc/user_config.json"
+
+# Check if the compressed file exists
+#if [ -f "$TAR_FILE" ]; then
+
+#    echo "add ${SOURCE_FILE} to ${TAR_FILE} !!!"
+
+    # Decompress the existing archive
+#    gunzip "$TAR_FILE"
+#    TAR_UNZIPPED="${TAR_FILE%.*}"
+    
+    # Add the file to the archive
+#    tar --append --file="$TAR_UNZIPPED" "$SOURCE_FILE"
+    
+    # Compress the archive again
+#    gzip "$TAR_UNZIPPED"
+#fi
+
+
+
