@@ -2630,9 +2630,8 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
 
     msgnormal "Modify Jot Menu entry"
     # backup Jot menuentry to tempentry
-sudo cp -vf /tmp/grub.cfg /tmp/jotgrub3.cfg
-    tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
-echo "$tempentry" > /tmp/jotgrub4.cfg
+    # Get Only USB Part from line 61 to 70
+    tempentry=$(cat /tmp/grub.cfg | head -n 70 | tail -n 10)
     #if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
     #    sudo sed -i '61,80d' /tmp/grub.cfg
     #else
@@ -2653,8 +2652,10 @@ echo "$tempentry" > /tmp/jotgrub4.cfg
         # Check dom size and set max size accordingly for jot
         if [ "${BUS}" = "sata" ]; then
             DOM_PARA="dom_szmax=$(sudo /sbin/fdisk -l /dev/${loaderdisk} | head -1 | awk -F: '{print $2}' | awk '{ print $1*1024}')"
-            sed -i "s/synoboot_satadom/${DOM_PARA} synoboot_satadom/" /tmp/tempentry.txt
+            sed -i "s/earlyprintk/${DOM_PARA} earlyprintk/" /tmp/tempentry.txt
         fi
+        sed -i "s/${ORIGIN_PLATFORM}/${MODEL}/" /tmp/tempentry.txt
+        sed -i "s/earlyprintk/syno_hw_version=${MODEL} earlyprintk/" /tmp/tempentry.txt
         tinyjotfunc | sudo tee --append /tmp/grub.cfg
     fi
 
