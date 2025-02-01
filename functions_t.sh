@@ -2630,8 +2630,8 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
 
     msgnormal "Modify Jot Menu entry"
     # backup Jot menuentry to tempentry
-    # Get Only USB Part from line 61 to 70
-    tempentry=$(cat /tmp/grub.cfg | head -n 70 | tail -n 10)
+    # Get Only USB Part from line 61 to 80
+    tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
     #if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
     #    sudo sed -i '61,80d' /tmp/grub.cfg
     #else
