@@ -2647,6 +2647,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
     if [ "$WITHFRIEND" = "YES" ]; then
         echo
     else
+sudo cp -vf /tmp/grub.cfg /tmp/jotgrub0.cfg    
         sudo sed -i '31,34d' /tmp/grub.cfg
 sudo cp -vf /tmp/grub.cfg /tmp/jotgrub1.cfg
         # Check dom size and set max size accordingly for jot
