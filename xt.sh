@@ -1,8 +1,6 @@
 #!/bin/bash
 
-
 if [ ! -f /home/tc/sd*3/initrd-friend ] && [ ! -f /home/tc/sd*3/bzImage-friend ]; then
-
   URL="https://github.com/PeterSuh-Q3/tcrpfriend/releases/latest/download/chksum"
   [ -n "$URL" ] && curl --connect-timeout 5 -s -k -L $URL -O
 
@@ -22,7 +20,9 @@ if [ ! -f /home/tc/sd*3/initrd-friend ] && [ ! -f /home/tc/sd*3/bzImage-friend ]
     else
         msgnormal "Bringing over my friend from github.com Done!!!!!!!!!!!!!!"            
     fi
-  fi  
+  fi
+else
+  echo "friend kernel aleady exists !!!"
 fi
 
 echo "change grub boot entry to xTCRP !!!"
