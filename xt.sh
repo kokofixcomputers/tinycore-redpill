@@ -36,4 +36,4 @@ fi
 echo "change grub boot entry to xTCRP !!!"
 TARGET_DIR1=$(find /mnt -maxdepth 1 -type d -name "sd*1" | head -1)
 curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/grub/grub.cfg -o "$TARGET_DIR1"/boot/grub/grub.cfg
-curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "$TARGET_DIR3"/xtcrp.tgz
+curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "$TARGET_DIR"/xtcrp.tgz
