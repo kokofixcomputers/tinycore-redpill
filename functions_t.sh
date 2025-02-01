@@ -2750,8 +2750,10 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         fi
     fi
 
-    USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
-    SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
+    if [ "$WITHFRIEND" = "YES" ]; then
+        USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
+        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
+    fi    
     
     msgwarning "Updated user_config with USB Command Line : $USB_LINE"
     json=$(jq --arg var "${USB_LINE}" '.general.usb_line = $var' $userconfigfile) && echo -E "${json}" | jq . >$userconfigfile
