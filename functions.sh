@@ -2630,6 +2630,7 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
 
     msgnormal "Modify Jot Menu entry"
     # backup Jot menuentry to tempentry
+    # Get Only USB Part from line 61 to 80
     tempentry=$(cat /tmp/grub.cfg | head -n 80 | tail -n 20)
     #if [ "$MACHINE" = "VIRTUAL" ] && [ "$HYPERVISOR" = "KVM" ]; then
     #    sudo sed -i '61,80d' /tmp/grub.cfg
@@ -2651,8 +2652,10 @@ st "copyfiles" "Copying files to P1,P2" "Copied boot files to the loader"
         # Check dom size and set max size accordingly for jot
         if [ "${BUS}" = "sata" ]; then
             DOM_PARA="dom_szmax=$(sudo /sbin/fdisk -l /dev/${loaderdisk} | head -1 | awk -F: '{print $2}' | awk '{ print $1*1024}')"
-            sed -i "s/synoboot_satadom/${DOM_PARA} synoboot_satadom/" /tmp/tempentry.txt
+            sed -i "s/earlyprintk/${DOM_PARA} earlyprintk/" /tmp/tempentry.txt
         fi
+        sed -i "s/${ORIGIN_PLATFORM}/${MODEL}/" /tmp/tempentry.txt
+        sed -i "s/earlyprintk/syno_hw_version=${MODEL} earlyprintk/" /tmp/tempentry.txt
         tinyjotfunc | sudo tee --append /tmp/grub.cfg
     fi
 
@@ -2747,8 +2750,10 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         fi
     fi
 
-    USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
-    SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
+    if [ "$WITHFRIEND" = "YES" ]; then
+        USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
+        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
+    fi    
     
     msgwarning "Updated user_config with USB Command Line : $USB_LINE"
     json=$(jq --arg var "${USB_LINE}" '.general.usb_line = $var' $userconfigfile) && echo -E "${json}" | jq . >$userconfigfile
