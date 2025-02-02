@@ -2314,34 +2314,22 @@ EOF
 
 }
 
-function tcrpentry_juniorusb() {
+function tcrpentry_junior() {
     
     cat <<EOF
-menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 0 ${DMPM}, USB' {
+menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 0 ${DMPM}' {
         savedefault
         search --set=root --fs-uuid $usbpart3uuid --hint hd0,msdos3
         echo Loading Linux...
-        linux /zImage-dsm ${USB_LINE} force_junior
+        if is_usb (hd0); then
+            set kernel_cmdline="${USB_LINE} force_junior"
+        else
+            set kernel_cmdline="${USB_LINE} synoboot_satadom=1 force_junior"
+        fi
+        linux /zImage-dsm $kernel_cmdline
         echo Loading initramfs...
         initrd /initrd-dsm
-        echo Entering Force Junior (For Re-install DSM, USB)
-        set gfxpayload=1024x768x16,1024x768
-}
-EOF
-
-}
-
-function tcrpentry_juniorsata() {
-    
-    cat <<EOF
-menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 0 ${DMPM}, SATA' {
-        savedefault
-        search --set=root --fs-uuid $usbpart3uuid --hint hd0,msdos3
-        echo Loading Linux...
-        linux /zImage-dsm ${SATA_LINE} force_junior
-        echo Loading initramfs...
-        initrd /initrd-dsm
-        echo Entering Force Junior (For Re-install DSM, SATA)
+        echo Entering Force Junior (For Re-install DSM)
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
@@ -2686,17 +2674,14 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         postupdateentry | sudo tee --append /tmp/grub.cfg
     fi
 
-    if [ "$FRKRNL" = "NO" ]; then
-        echo "Creating tinycore configure loader entry"
-        tinyentry | sudo tee --append /tmp/grub.cfg
-    else
-        echo "Creating xTCRP configure loader entry"
-        xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
-    fi    
+     echo "Creating tinycore configure loader entry"
+     tinyentry | sudo tee --append /tmp/grub.cfg
+     
+     echo "Creating xTCRP configure loader entry"
+     xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
 
     if [ "$WITHFRIEND" = "YES" ]; then
-        tcrpentry_juniorusb | sudo tee --append /tmp/grub.cfg 
-        tcrpentry_juniorsata | sudo tee --append /tmp/grub.cfg
+        tcrpentry_junior | sudo tee --append /tmp/grub.cfg 
     else
         echo "Creating tinycore Jot entry"
         echo "$(head -n 10 /tmp/tempentry.txt | sed 's/USB/USB\/SATA/g')" | sudo tee --append /tmp/grub.cfg
