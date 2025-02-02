@@ -2264,7 +2264,6 @@ function checkfilechecksum() {
 }
 
 function tinyentry() {
-
     cat <<EOF
 menuentry 'Tiny Core Image Build' {
         savedefault
@@ -2277,11 +2276,9 @@ menuentry 'Tiny Core Image Build' {
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
 function tcrpfriendentry() {
-    
     cat <<EOF
 menuentry 'Tiny Core Friend $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update ${smallfixnumber} ${DMPM}' {
         savedefault
@@ -2294,11 +2291,9 @@ menuentry 'Tiny Core Friend $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update $
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
 function xtcrpconfigureentry() {
-    
     cat <<EOF
 menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
         savedefault
@@ -2311,11 +2306,9 @@ menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
 function tcrpentry_junior() {
-    
     cat <<EOF
 menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 0 ${DMPM}' {
         savedefault
@@ -2323,21 +2316,19 @@ menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 
         echo Loading Linux...
         set kernel_cmdline="${USB_LINE} force_junior"
         set bus_type="${BUS}"
-        if "\$bus_type" != "usb"; then
-            set kernel_cmdline="\$kernel_cmdline synoboot_satadom=1"
+        if [ "\${bus_type}" != "usb" ]; then
+            set kernel_cmdline="\${kernel_cmdline} synoboot_satadom=1"
         fi
-        linux /zImage-dsm \$kernel_cmdline
+        linux /zImage-dsm \${kernel_cmdline}
         echo Loading initramfs...
         initrd /initrd-dsm
-        echo Entering Force Junior (For Re-install DSM)
+        echo Entering Force Junior (For Re-install DSM)
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
 function postupdateentry() {
-    
     cat <<EOF
 menuentry 'Tiny Core PostUpdate (RamDisk Update) $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update ${smallfixnumber} ${DMPM}' {
         savedefault
@@ -2350,7 +2341,6 @@ menuentry 'Tiny Core PostUpdate (RamDisk Update) $MODEL ${TARGET_VERSION}-${TARG
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
 function tinyjotfunc() {
