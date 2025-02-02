@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.2.0.0"
+rploaderver="1.2.1.0"
 build="master"
 redpillmake="prod"
 
@@ -149,6 +149,7 @@ function history() {
     1.1.0.0 Added features for distribution of xTCRP (Tinycore Linux stripped down version)
     1.1.0.1 When using a single m.2 NVMe volume, the DDSML error issue has occurred, so menu usage has been excluded and related support has been strengthened.
     1.2.0.0 Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
+    1.2.1.0 Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -458,6 +459,8 @@ EOF
 # so menu usage has been excluded and related support has been strengthened.
 # 2025.01.29 v1.2.0.0 
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
+# 2025.02.02 v1.2.1.0 
+# Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
     
 function showlastupdate() {
     cat <<EOF
@@ -579,6 +582,9 @@ function showlastupdate() {
 
 # 2025.01.29 v1.2.0.0 
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
+
+# 2025.02.02 v1.2.1.0 
+# Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
 
 EOF
 }
@@ -2212,14 +2218,16 @@ function backuploader() {
         sudo mv pigz /usr/bin/
     fi
 
-    if [ "$FRKRNL" = "YES" ]; then
-      sudo sh -c "tar -cf - ./ | pigz -p ${thread} > /mnt/${loaderdisk}3/xtcrp.tgz"
-      if [ $? -ne 0 ]; then
+    # backup xtcrp together
+    sudo sh -c "tar -cf - ./ | pigz -p ${thread} > /mnt/${loaderdisk}3/xtcrp.tgz"
+    if [ $? -ne 0 ]; then
         cecho r "An error occurred while backing up the loader!!!"
-      else
+    else
         cecho y "Successfully backed up the loader!!!"
-      fi    
-      return
+    fi
+
+    if [ "$FRKRNL" = "YES" ]; then
+        return
     fi
     
     if [ $(cat /usr/bin/filetool.sh | grep pigz | wc -l ) -eq 0 ]; then
@@ -2264,7 +2272,6 @@ function checkfilechecksum() {
 }
 
 function tinyentry() {
-
     cat <<EOF
 menuentry 'Tiny Core Image Build' {
         savedefault
@@ -2277,11 +2284,9 @@ menuentry 'Tiny Core Image Build' {
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
 function tcrpfriendentry() {
-    
     cat <<EOF
 menuentry 'Tiny Core Friend $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update ${smallfixnumber} ${DMPM}' {
         savedefault
@@ -2294,11 +2299,9 @@ menuentry 'Tiny Core Friend $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update $
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
 function xtcrpconfigureentry() {
-    
     cat <<EOF
 menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
         savedefault
@@ -2311,45 +2314,29 @@ menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
-function tcrpentry_juniorusb() {
-    
+function tcrpentry_junior() {
     cat <<EOF
-menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 0 ${DMPM}, USB' {
+menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 0 ${DMPM}' {
         savedefault
         search --set=root --fs-uuid $usbpart3uuid --hint hd0,msdos3
         echo Loading Linux...
-        linux /zImage-dsm ${USB_LINE} force_junior
+        set kernel_cmdline="${USB_LINE} force_junior"
+        set bus_type="${BUS}"
+        if [ "\${bus_type}" != "usb" ]; then
+            set kernel_cmdline="\${kernel_cmdline} synoboot_satadom=1"
+        fi
+        linux /zImage-dsm \${kernel_cmdline}
         echo Loading initramfs...
         initrd /initrd-dsm
-        echo Entering Force Junior (For Re-install DSM, USB)
+        echo Entering Force Junior (For Re-install DSM)
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
-}
-
-function tcrpentry_juniorsata() {
-    
-    cat <<EOF
-menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 0 ${DMPM}, SATA' {
-        savedefault
-        search --set=root --fs-uuid $usbpart3uuid --hint hd0,msdos3
-        echo Loading Linux...
-        linux /zImage-dsm ${SATA_LINE} force_junior
-        echo Loading initramfs...
-        initrd /initrd-dsm
-        echo Entering Force Junior (For Re-install DSM, SATA)
-        set gfxpayload=1024x768x16,1024x768
-}
-EOF
-
 }
 
 function postupdateentry() {
-    
     cat <<EOF
 menuentry 'Tiny Core PostUpdate (RamDisk Update) $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update ${smallfixnumber} ${DMPM}' {
         savedefault
@@ -2362,7 +2349,6 @@ menuentry 'Tiny Core PostUpdate (RamDisk Update) $MODEL ${TARGET_VERSION}-${TARG
         set gfxpayload=1024x768x16,1024x768
 }
 EOF
-
 }
 
 function tinyjotfunc() {
@@ -2678,6 +2664,43 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     USB_LINE="$(grep -A 5 "USB," /tmp/tempentry.txt | grep linux | cut -c 16-999)"
     SATA_LINE="$(grep -A 5 "SATA," /tmp/tempentry.txt | grep linux | cut -c 16-999)"
 
+    if echo "apollolake geminilake purley" | grep -wq "${ORIGIN_PLATFORM}"; then
+        USB_LINE="${USB_LINE} nox2apic"
+        SATA_LINE="${SATA_LINE} nox2apic"    
+    fi
+
+    if echo "geminilake v1000 r1000" | grep -wq "${ORIGIN_PLATFORM}"; then
+        echo "add modprobe.blacklist=mpt3sas for Device-tree based platforms"
+        USB_LINE="${USB_LINE} modprobe.blacklist=mpt3sas"
+        SATA_LINE="${SATA_LINE} modprobe.blacklist=mpt3sas"
+    fi
+
+    if [ -v CPU ]; then
+        if [ "${CPU}" == "AMD" ]; then
+            echo "Add configuration disable_mtrr_trim for AMD"
+            USB_LINE="${USB_LINE} disable_mtrr_trim=1"
+            SATA_LINE="${SATA_LINE} disable_mtrr_trim=1"
+        else
+            #if echo "epyc7002 apollolake geminilake" | grep -wq "${ORIGIN_PLATFORM}"; then
+            #    if [ "$MACHINE" = "VIRTUAL" ]; then
+            #        USB_LINE="${USB_LINE} intel_iommu=igfx_off "
+            #        SATA_LINE="${SATA_LINE} intel_iommu=igfx_off "
+            #    fi   
+            #fi    
+    
+            if [ -d "/home/tc/redpill-load/custom/extensions/nvmesystem" ]; then
+                echo "Add configuration pci=nommconf for nvmesystem addon"
+                USB_LINE="${USB_LINE} pci=nommconf"
+                SATA_LINE="${SATA_LINE} pci=nommconf"
+            fi
+        fi
+    fi
+
+    if [ "$WITHFRIEND" = "YES" ]; then
+        USB_LINE="${USB_LINE} syno_hw_version=${MODEL}"
+        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL}"
+    fi    
+
     if [ "$WITHFRIEND" = "YES" ]; then
         echo "Creating tinycore friend entry"
         tcrpfriendentry | sudo tee --append /tmp/grub.cfg
@@ -2686,17 +2709,14 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         postupdateentry | sudo tee --append /tmp/grub.cfg
     fi
 
-    if [ "$FRKRNL" = "NO" ]; then
-        echo "Creating tinycore configure loader entry"
-        tinyentry | sudo tee --append /tmp/grub.cfg
-    else
-        echo "Creating xTCRP configure loader entry"
-        xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
-    fi    
+     echo "Creating tinycore configure loader entry"
+     tinyentry | sudo tee --append /tmp/grub.cfg
+     
+     echo "Creating xTCRP configure loader entry"
+     xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
 
     if [ "$WITHFRIEND" = "YES" ]; then
-        tcrpentry_juniorusb | sudo tee --append /tmp/grub.cfg 
-        tcrpentry_juniorsata | sudo tee --append /tmp/grub.cfg
+        tcrpentry_junior | sudo tee --append /tmp/grub.cfg 
     else
         echo "Creating tinycore Jot entry"
         echo "$(head -n 10 /tmp/tempentry.txt | sed 's/USB/USB\/SATA/g')" | sudo tee --append /tmp/grub.cfg
@@ -2717,43 +2737,6 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     updateuserconfigfield "general" "zimghash" "$zimghash"
     rdhash=$(sha256sum /mnt/${loaderdisk}2/rd.gz | awk '{print $1}')
     updateuserconfigfield "general" "rdhash" "$rdhash"
-
-    if echo "apollolake geminilake purley" | grep -wq "${ORIGIN_PLATFORM}"; then
-        USB_LINE="${USB_LINE} nox2apic "
-        SATA_LINE="${SATA_LINE} nox2apic "    
-    fi
-
-    if echo "geminilake v1000 r1000" | grep -wq "${ORIGIN_PLATFORM}"; then
-        echo "add modprobe.blacklist=mpt3sas for Device-tree based platforms"
-        USB_LINE="${USB_LINE} modprobe.blacklist=mpt3sas "
-        SATA_LINE="${SATA_LINE} modprobe.blacklist=mpt3sas "
-    fi
-
-    if [ -v CPU ]; then
-        if [ "${CPU}" == "AMD" ]; then
-            echo "Add configuration disable_mtrr_trim for AMD"
-            USB_LINE="${USB_LINE} disable_mtrr_trim=1 "
-            SATA_LINE="${SATA_LINE} disable_mtrr_trim=1 "
-        else
-            #if echo "epyc7002 apollolake geminilake" | grep -wq "${ORIGIN_PLATFORM}"; then
-            #    if [ "$MACHINE" = "VIRTUAL" ]; then
-            #        USB_LINE="${USB_LINE} intel_iommu=igfx_off "
-            #        SATA_LINE="${SATA_LINE} intel_iommu=igfx_off "
-            #    fi   
-            #fi    
-    
-            if [ -d "/home/tc/redpill-load/custom/extensions/nvmesystem" ]; then
-                echo "Add configuration pci=nommconf for nvmesystem addon"
-                USB_LINE="${USB_LINE} pci=nommconf "
-                SATA_LINE="${SATA_LINE} pci=nommconf "
-            fi
-        fi
-    fi
-
-    if [ "$WITHFRIEND" = "YES" ]; then
-        USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
-        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
-    fi    
     
     msgwarning "Updated user_config with USB Command Line : $USB_LINE"
     json=$(jq --arg var "${USB_LINE}" '.general.usb_line = $var' $userconfigfile) && echo -E "${json}" | jq . >$userconfigfile
