@@ -133,6 +133,11 @@ else
     if [ ! -f /mnt/${tcrppart}/corepure64.gz ] && [ ! -f /mnt/${tcrppart}/vmlinuz64 ]; then
         get_tinycore
     fi
+    if [ ! -f /mnt/${tcrppart}/mydata.tgz ]; then
+        cd /mnt/${tcrppart}
+        sudo curl -kL#O  https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/mydata.tgz
+        cd ~
+    fi
 fi
 
 # restore user_config.json file from /mnt/sd#/lastsession directory 2023.10.21
