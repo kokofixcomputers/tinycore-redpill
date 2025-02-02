@@ -70,8 +70,6 @@ function get_tinycore() {
       echo "tinycore 14.0 md5 check is OK! ( corepure64.gz / vmlinuz64 ) "
       sudo mv corepure64.gz_copy corepure64.gz
       sudo mv vmlinuz64_copy vmlinuz64
-      sudo curl -kL#  https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/etc/shadow -o /etc/shadow
-      echo "/etc/shadow" >> /opt/.filetool.lst
       cd ~      
       return 0
     else
@@ -88,6 +86,8 @@ function update_tinycore() {
       echo "current tinycore version is not 14.0, update tinycore linux to 14.0..."
       get_tinycore
       if [ $? -eq 0 ]; then
+        sudo curl -kL#  https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/etc/shadow -o /etc/shadow
+        echo "/etc/shadow" >> /opt/.filetool.lst
         echo 'Y'|rploader backup
         restart
       fi
