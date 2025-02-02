@@ -2321,12 +2321,11 @@ menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 
         savedefault
         search --set=root --fs-uuid $usbpart3uuid --hint hd0,msdos3
         echo Loading Linux...
-        if is_usb (hd0); then
-            set kernel_cmdline="${USB_LINE} force_junior"
-        else
-            set kernel_cmdline="${USB_LINE} synoboot_satadom=1 force_junior"
+        set kernel_cmdline="${USB_LINE} force_junior"
+        if ! is_usb (hd0); then
+            set kernel_cmdline="\$kernel_cmdline synoboot_satadom=1"
         fi
-        linux /zImage-dsm $kernel_cmdline
+        linux /zImage-dsm \$kernel_cmdline
         echo Loading initramfs...
         initrd /initrd-dsm
         echo Entering Force Junior (For Re-install DSM)
