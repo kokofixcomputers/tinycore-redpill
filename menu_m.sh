@@ -143,6 +143,7 @@ else
         sudo curl -kL#O https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.2.0.0/cde.tgz
         sudo mkdir cde
         sudo tar -xzvf cde.tgz -C cde
+        sudo rm cde.tgz
         cd ~
     fi
 fi
