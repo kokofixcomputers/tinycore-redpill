@@ -2322,7 +2322,8 @@ menuentry 'Re-Install DSM of $MODEL ${TARGET_VERSION}-${TARGET_REVISION} Update 
         search --set=root --fs-uuid $usbpart3uuid --hint hd0,msdos3
         echo Loading Linux...
         set kernel_cmdline="${USB_LINE} force_junior"
-        if ! is_usb (hd0); then
+        set bus_type="${BUS}"
+        if ( \$bus_type != "usb" ); then
             set kernel_cmdline="\$kernel_cmdline synoboot_satadom=1"
         fi
         linux /zImage-dsm \$kernel_cmdline
