@@ -2212,15 +2212,13 @@ function backuploader() {
         sudo mv pigz /usr/bin/
     fi
 
-    if [ "$FRKRNL" = "YES" ]; then
-      sudo sh -c "tar -cf - ./ | pigz -p ${thread} > /mnt/${loaderdisk}3/xtcrp.tgz"
-      if [ $? -ne 0 ]; then
-        cecho r "An error occurred while backing up the loader!!!"
-      else
-        cecho y "Successfully backed up the loader!!!"
-      fi    
-      return
-    fi
+    # backup xtcrp together
+    sudo sh -c "tar -cf - ./ | pigz -p ${thread} > /mnt/${loaderdisk}3/xtcrp.tgz"
+    if [ $? -ne 0 ]; then
+    cecho r "An error occurred while backing up the loader!!!"
+    else
+    cecho y "Successfully backed up the loader!!!"
+    fi    
     
     if [ $(cat /usr/bin/filetool.sh | grep pigz | wc -l ) -eq 0 ]; then
         sudo sed -i "s/\-czvf/\-cvf \- \| pigz -p "${thread}" \>/g" /usr/bin/filetool.sh
