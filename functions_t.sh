@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.2.0.0"
+rploaderver="1.2.1.0"
 build="master"
 redpillmake="prod"
 
@@ -149,6 +149,7 @@ function history() {
     1.1.0.0 Added features for distribution of xTCRP (Tinycore Linux stripped down version)
     1.1.0.1 When using a single m.2 NVMe volume, the DDSML error issue has occurred, so menu usage has been excluded and related support has been strengthened.
     1.2.0.0 Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
+    1.2.1.0 Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -458,6 +459,8 @@ EOF
 # so menu usage has been excluded and related support has been strengthened.
 # 2025.01.29 v1.2.0.0 
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
+# 2025.02.02 v1.2.1.0 
+# Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
     
 function showlastupdate() {
     cat <<EOF
@@ -579,6 +582,9 @@ function showlastupdate() {
 
 # 2025.01.29 v1.2.0.0 
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
+
+# 2025.02.02 v1.2.1.0 
+# Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
 
 EOF
 }
