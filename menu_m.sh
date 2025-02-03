@@ -129,23 +129,23 @@ fi
 # update tinycore 14.0 2023.12.18
 if [ "$FRKRNL" = "NO" ]; then
     update_tinycore
-else
-    if [ ! -f /mnt/${tcrppart}/corepure64.gz ] && [ ! -f /mnt/${tcrppart}/vmlinuz64 ]; then
-        get_tinycore
-    fi
-    if [ ! -f /mnt/${tcrppart}/mydata.tgz ]; then
-        cd /mnt/${tcrppart}
-        sudo curl -kL#O https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/mydata.tgz
-        cd ~
-    fi
-    if [ ! -d /mnt/${tcrppart}/cde ]; then
-        cd /mnt/${tcrppart}    
-        sudo curl -kL#O https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.2.0.0/cde.tgz
-        sudo mkdir cde
-        sudo tar -xzvf cde.tgz -C cde
-        sudo rm cde.tgz
-        cd ~
-    fi
+#else
+#    if [ ! -f /mnt/${tcrppart}/corepure64.gz ] && [ ! -f /mnt/${tcrppart}/vmlinuz64 ]; then
+#        get_tinycore
+#    fi
+#    if [ ! -f /mnt/${tcrppart}/mydata.tgz ]; then
+#        cd /mnt/${tcrppart}
+#        sudo curl -kL#O https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/mydata.tgz
+#        cd ~
+#    fi
+#    if [ ! -d /mnt/${tcrppart}/cde ]; then
+#        cd /mnt/${tcrppart}    
+#        sudo curl -kL#O https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.2.0.0/cde.tgz
+#        sudo mkdir cde
+#        sudo tar -xzvf cde.tgz -C cde
+#        sudo rm cde.tgz
+#        cd ~
+#    fi
 fi
 
 # restore user_config.json file from /mnt/sd#/lastsession directory 2023.10.21
