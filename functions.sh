@@ -2712,8 +2712,8 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     fi
 
     if [ "$WITHFRIEND" = "YES" ]; then
-        USB_LINE="${USB_LINE} syno_hw_version=${MODEL}"
-        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL}"
+        USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
+        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
     fi    
 
     if [ "$WITHFRIEND" = "YES" ]; then
