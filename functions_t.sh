@@ -2227,18 +2227,18 @@ function backuploader() {
     fi
 
     if [ "$FRKRNL" = "YES" ]; then
-        TAR_FILE="/mnt/${tcrppart}/mydata.tgz"
+        TGZ_FILE="/mnt/${tcrppart}/mydata.tgz"
+        TAR_UNZIPPED="/mnt/${tcrppart}/mydata.tar"
         SOURCE_FILE="/home/tc/user_config.json"
         # Check if the compressed file exists
         if [ -f "$TAR_FILE" ]; then
-            echo "Adding ${SOURCE_FILE} to ${TAR_FILE} !!!"
+            echo "Adding ${SOURCE_FILE} to ${TGZ_FILE} !!!"
             # Decompress the existing archive
-            sudo gunzip "$TAR_FILE"
-            TAR_UNZIPPED="${TAR_FILE%.*}"
+            sudo gunzip "$TGZ_FILE"
             # Add the file to the archive
             sudo tar --append -C / --file="$TAR_UNZIPPED" "home/tc/user_config.json"
             # Compress the archive again and save with the original name
-            sudo sh -c "gzip -c $TAR_UNZIPPED > $TAR_FILE"
+            sudo sh -c "gzip -c $TAR_UNZIPPED > $TGZ_FILE"
             # Remove the decompressed temporary file
             sudo rm "$TAR_UNZIPPED"
         fi
