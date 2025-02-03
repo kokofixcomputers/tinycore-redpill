@@ -149,7 +149,7 @@ function history() {
     1.1.0.0 Added features for distribution of xTCRP (Tinycore Linux stripped down version)
     1.1.0.1 When using a single m.2 NVMe volume, the DDSML error issue has occurred, so menu usage has been excluded and related support has been strengthened.
     1.2.0.0 Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
-    1.2.1.0 Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
+    1.2.1.0 Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -460,7 +460,7 @@ EOF
 # 2025.01.29 v1.2.0.0 
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
 # 2025.02.02 v1.2.1.0 
-# Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
+# Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
     
 function showlastupdate() {
     cat <<EOF
@@ -584,7 +584,7 @@ function showlastupdate() {
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
 
 # 2025.02.02 v1.2.1.0 
-# Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
+# Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
 
 EOF
 }
@@ -2712,8 +2712,8 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     fi
 
     if [ "$WITHFRIEND" = "YES" ]; then
-        USB_LINE="${USB_LINE} syno_hw_version=${MODEL}"
-        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL}"
+        USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
+        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
     fi    
 
     if [ "$WITHFRIEND" = "YES" ]; then
