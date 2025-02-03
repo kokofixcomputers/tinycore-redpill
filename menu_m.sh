@@ -1482,7 +1482,7 @@ function inject_loader() {
   IDX_EX=0  
   SHR_EX=0  
     while read -r edisk; do
-        get_disk_type "${edisk}" "N"
+        get_disk_type_cnt "${edisk}" "N"
         
         if [ "${RAID_CNT}" -eq 3 ]; then
             case "${DOS_CNT} ${W95_CNT}" in
