@@ -2231,7 +2231,7 @@ function backuploader() {
         TAR_UNZIPPED="/mnt/${tcrppart}/mydata.tar"
         SOURCE_FILE="/home/tc/user_config.json"
         # Check if the compressed file exists
-        if [ -f "$TAR_FILE" ]; then
+        if [ -f "$TGZ_FILE" ]; then
             echo "Adding ${SOURCE_FILE} to ${TGZ_FILE} !!!"
             # Decompress the existing archive
             sudo gunzip "$TGZ_FILE"
