@@ -149,7 +149,7 @@ function history() {
     1.1.0.0 Added features for distribution of xTCRP (Tinycore Linux stripped down version)
     1.1.0.1 When using a single m.2 NVMe volume, the DDSML error issue has occurred, so menu usage has been excluded and related support has been strengthened.
     1.2.0.0 Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
-    1.2.1.0 Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
+    1.2.1.0 Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -460,7 +460,7 @@ EOF
 # 2025.01.29 v1.2.0.0 
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
 # 2025.02.02 v1.2.1.0 
-# Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
+# Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
     
 function showlastupdate() {
     cat <<EOF
@@ -584,7 +584,7 @@ function showlastupdate() {
 # Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
 
 # 2025.02.02 v1.2.1.0 
-# Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
+# Create tinycore-mshell and xTCRP together in grub boot. Merge boot entries without USB/SATA distinction and fix KP bug.
 
 EOF
 }
@@ -2227,6 +2227,21 @@ function backuploader() {
     fi
 
     if [ "$FRKRNL" = "YES" ]; then
+        TGZ_FILE="/mnt/${tcrppart}/mydata.tgz"
+        TAR_UNZIPPED="/mnt/${tcrppart}/mydata.tar"
+        SOURCE_FILE="/home/tc/user_config.json"
+        # Check if the compressed file exists
+        if [ -f "$TGZ_FILE" ]; then
+            echo "Adding ${SOURCE_FILE} to ${TGZ_FILE} !!!"
+            # Decompress the existing archive
+            sudo gunzip "$TGZ_FILE"
+            # Add the file to the archive
+            sudo tar --append -C / --file="$TAR_UNZIPPED" "home/tc/user_config.json"
+            # Compress the archive again and save with the original name
+            sudo sh -c "gzip -c $TAR_UNZIPPED > $TGZ_FILE"
+            # Remove the decompressed temporary file
+            sudo rm "$TAR_UNZIPPED"
+        fi
         return
     fi
     
@@ -2697,8 +2712,8 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
     fi
 
     if [ "$WITHFRIEND" = "YES" ]; then
-        USB_LINE="${USB_LINE} syno_hw_version=${MODEL} "
-        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL} "
+        USB_LINE="${USB_LINE} syno_hw_version=${MODEL}"
+        SATA_LINE="${SATA_LINE} syno_hw_version=${MODEL}"
     fi    
 
     if [ "$WITHFRIEND" = "YES" ]; then
@@ -2709,11 +2724,13 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         postupdateentry | sudo tee --append /tmp/grub.cfg
     fi
 
-     echo "Creating tinycore configure loader entry"
-     tinyentry | sudo tee --append /tmp/grub.cfg
-     
-     echo "Creating xTCRP configure loader entry"
-     xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
+    if [ -f /mnt/${tcrppart}/corepure64.gz ] && [ -f /mnt/${tcrppart}/vmlinuz64 ] && [ -d /mnt/${tcrppart}/cde ]; then
+        echo "Creating tinycore configure loader entry"
+        tinyentry | sudo tee --append /tmp/grub.cfg
+    fi
+    
+    echo "Creating xTCRP configure loader entry"
+    xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
 
     if [ "$WITHFRIEND" = "YES" ]; then
         tcrpentry_junior | sudo tee --append /tmp/grub.cfg 
