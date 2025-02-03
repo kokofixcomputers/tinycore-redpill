@@ -2236,9 +2236,9 @@ function backuploader() {
             sudo gunzip "$TAR_FILE"
             TAR_UNZIPPED="${TAR_FILE%.*}"
             # Add the file to the archive
-            sudo tar --append --file="$TAR_UNZIPPED" "$SOURCE_FILE"
+            sudo tar --append -C / --file="$TAR_UNZIPPED" "home/tc/user_config.json"
             # Compress the archive again and save with the original name
-            sudo sh -c "gzip -c "$TAR_UNZIPPED" > "$TAR_FILE""
+            sudo sh -c "gzip -c $TAR_UNZIPPED > $TAR_FILE"
             # Remove the decompressed temporary file
             sudo rm "$TAR_UNZIPPED"
         fi
