@@ -1615,9 +1615,9 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                             sleep 2
                         fi
      
-                        # +111M
+                        # +112M
                         echo "Create partitions on 1st disks... $edisk"
-                        echo -e "n\n\n+111M\nw\n" | sudo /sbin/fdisk "${edisk}"
+                        echo -e "n\n\n+112M\nw\n" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
       
@@ -1625,8 +1625,8 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "activate partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
        
-                        # +15M
-                        echo -e "n\n\n+15M\nw\n" | sudo /sbin/fdisk "${edisk}"
+                        # +14M
+                        echo -e "n\n\n+14M\nw\n" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
