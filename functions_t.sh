@@ -2709,11 +2709,13 @@ st "frienddownload" "Friend downloading" "TCRP friend copied to /mnt/${loaderdis
         postupdateentry | sudo tee --append /tmp/grub.cfg
     fi
 
-     echo "Creating tinycore configure loader entry"
-     tinyentry | sudo tee --append /tmp/grub.cfg
-     
-     echo "Creating xTCRP configure loader entry"
-     xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
+    if [ -f /mnt/${tcrppart}/corepure64.gz ] && [ -f /mnt/${tcrppart}/vmlinuz64 ] && [ -d /mnt/${tcrppart}/cde ]; then
+        echo "Creating tinycore configure loader entry"
+        tinyentry | sudo tee --append /tmp/grub.cfg
+    fi
+    
+    echo "Creating xTCRP configure loader entry"
+    xtcrpconfigureentry | sudo tee --append /tmp/grub.cfg
 
     if [ "$WITHFRIEND" = "YES" ]; then
         tcrpentry_junior | sudo tee --append /tmp/grub.cfg 
