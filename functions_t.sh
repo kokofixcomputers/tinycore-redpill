@@ -2227,8 +2227,7 @@ function backuploader() {
     fi
 
     if [ "$FRKRNL" = "YES" ]; then
-        #cd /mnt/${tcrppart}
-        TAR_FILE=${TARGET_DIR}"/mydata.tgz"
+        TAR_FILE="/mnt/${tcrppart}/mydata.tgz"
         SOURCE_FILE="/home/tc/user_config.json"
         # Check if the compressed file exists
         if [ -f "$TAR_FILE" ]; then
