@@ -1239,7 +1239,7 @@ function tcrpfriendentry_hdd() {
     cat <<EOF
 menuentry 'Tiny Core Friend ${MODEL} ${BUILD} Update 0 ${DMPM}' {
         savedefault
-        search --set=root --fs-uuid "12345678" --hint hd0,msdos${1}
+        search --set=root --fs-uuid "1234-5678" --hint hd0,msdos${1}
         echo Loading Linux...
         linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8
         echo Loading initramfs...
@@ -1254,7 +1254,7 @@ function xtcrpconfigureentry_hdd() {
     cat <<EOF
 menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
         savedefault
-        search --set=root --fs-uuid "12345678" --hint hd0,msdos${1}
+        search --set=root --fs-uuid "1234-5678" --hint hd0,msdos${1}
         echo Loading Linux...
         linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8 IWANTTOCONFIGURE
         echo Loading initramfs to configure loader...
