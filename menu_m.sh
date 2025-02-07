@@ -1486,7 +1486,7 @@ function get_disk_type_cnt() {
 function get_partition() {
     local disk=$1
     local num=$2
-    if [[ $disk == /dev/nv* ]]; then
+    if [[ "$disk" =~ ^/dev/nv ]]; then
         echo "${disk}p${num}"
     else
         echo "${disk}${num}"
