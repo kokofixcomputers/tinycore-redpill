@@ -1787,16 +1787,8 @@ function remove_loader() {
       debug_msg "=== Raw fdisk output ==="
       echo "$RAW_PARTITIONS"
       
-      # Step 2: 파티션 정보 필터링 (개선된 방법)
-      FILTERED=$(echo "$RAW_PARTITIONS" | awk '
-          /^Disk \/dev\// {disk=$2; sub(/:$/, "", disk)}
-          /^\/dev\// && $2 ~ /^[0-9]+$/ && $6 == "Linux" {
-              sub(/[0-9]+$/, "", $1)
-              if ($1 == disk) {
-                  print $1, $2, $5, $6
-              }
-          }
-      ')
+      # Step 2: 파티션 정보 필터링 
+      FILTERED=$(echo "$RAW_PARTITIONS" | awk '$NF=="Linux" && $(NF-1)==83 {print $1}')
       debug_msg "=== Filtered partitions ==="
       echo "$FILTERED"
       
