@@ -1,1 +1,1 @@
-     1.2.1.1 Renewal of SynoDisk bootloader injection function
+     1.2.1.2 SynoDisk with Bootloader Injection Supports NVMe DISK
