@@ -1772,6 +1772,25 @@ fi
 
 }
 
+function remove_loader() {
+
+    # Delete target partition 
+    sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
+        part_num="${dev##*[!0-9]}"
+        if [[ $part_num -ge 4 ]]; then
+            base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
+            echo "$base_dev $part_num"
+        fi
+    done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
+        cmd=""
+        for p in $(echo "$parts" | tr ' ' '\n' | sort -nr); do
+            cmd+="d\n$p\n"
+        done
+        echo -e "${cmd}w\n" | sudo fdisk "$dev"
+    done
+
+}
+
 function packing_loader() {
 
     echo "Would you like to pack your loader for a remote TCRP? [Yy/Nn] "
@@ -1843,6 +1862,7 @@ function additional() {
     eval "echo \"f \\\"${MSG55}\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"g \\\"${MSG12}\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"h \\\"Inject Bootloader to Syno DISK\\\"\"" >> "${TMP_PATH}/menua"
+    eval "echo \"j \\\"Remove the injected bootloader partition\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"i \\\"Packing loader file for remote update\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"k \\\"${MSG11}\\\"\"" >> "${TMP_PATH}/menua"    
     dialog --clear --backtitle "`backtitle`" --colors \
@@ -1878,6 +1898,7 @@ function additional() {
     f) cloneloader;;
     g) erasedisk;;
     h) inject_loader;;
+    j) remove_loader;;
     i) packing_loader;;
     k) keymapMenu ;;
     *) return;;
