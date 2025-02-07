@@ -1777,11 +1777,12 @@ function debug_msg() {
 }
 
 function remove_loader() {
+
   echo -n "(Warning) Do you want to remove partitions from Syno disk? [yY/nN] : "
   readanswer
   if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
 
-      LC_ALL=C sudo fdisk -l | awk '$NF=="Linux" && ($(NF-1)==83 || $(NF-1)==5) {print $1}' | while read -r dev; do
+      LC_ALL=C sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
           part_num="${dev##*[!0-9]}"
           if [[ $part_num -ge 4 ]]; then
               base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
@@ -1789,7 +1790,6 @@ function remove_loader() {
           fi
       done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
           cmd=""
-          # 파티션 번호 역순 정렬 (높은 번호 먼저 삭제)
           for p in $(echo "$parts" | tr ' ' '\n' | sort -nr); do
               cmd+="d\n$p\n"
           done
@@ -1798,6 +1798,7 @@ function remove_loader() {
   
   fi
   returnto "The entire process of removing the partition is completed! Press any key to continue..." && return
+
 }
 
 function packing_loader() {
