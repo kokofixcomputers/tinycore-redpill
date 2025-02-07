@@ -1862,7 +1862,7 @@ function additional() {
     eval "echo \"f \\\"${MSG55}\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"g \\\"${MSG12}\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"h \\\"Inject Bootloader to Syno DISK\\\"\"" >> "${TMP_PATH}/menua"
-    eval "echo \"j \\\"Remove the injected bootloader partition\\\"\"" >> "${TMP_PATH}/menua"
+    eval "echo \"m \\\"Remove the injected bootloader partition\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"i \\\"Packing loader file for remote update\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"k \\\"${MSG11}\\\"\"" >> "${TMP_PATH}/menua"    
     dialog --clear --backtitle "`backtitle`" --colors \
@@ -1898,7 +1898,7 @@ function additional() {
     f) cloneloader;;
     g) erasedisk;;
     h) inject_loader;;
-    j) remove_loader;;
+    m) remove_loader;;
     i) packing_loader;;
     k) keymapMenu ;;
     *) return;;
