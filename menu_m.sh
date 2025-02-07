@@ -1784,10 +1784,10 @@ function remove_loader() {
   if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
     
     debug_msg "Start: Searching for Linux partitions (type 83, number 4 and above)"
-    target_list=$(sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1,$(NF-1),$NF}')
+    target_list=$(sudo /sbin/fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1,$(NF-1),$NF}')
     debug_msg "Filtered partition list:\n$target_list"
     
-    sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
+    sudo /sbin/fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
         part_num="${dev##*[!0-9]}"
         debug_msg "Processing: $dev → number $part_num"
         
@@ -1810,7 +1810,7 @@ function remove_loader() {
         done
         
         debug_msg "Commands to be executed:\n$(echo -e "$cmd" | sed 's/^/  /')"
-        echo -e "${cmd}w\n" | sudo fdisk "$dev"
+        echo -e "${cmd}w\n" | sudo /sbin/fdisk "$dev"
         debug_msg "Execution completed: $dev"
     done
   
