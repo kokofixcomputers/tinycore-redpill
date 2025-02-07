@@ -1239,7 +1239,7 @@ function tcrpfriendentry_hdd() {
     cat <<EOF
 menuentry 'Tiny Core Friend ${MODEL} ${BUILD} Update 0 ${DMPM}' {
         savedefault
-    set root=(hd0,msdos${1})
+        search --set=root --fs-uuid "6234-C863" --hint hd0,msdos4
         echo Loading Linux...
         linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8
         echo Loading initramfs...
@@ -1301,8 +1301,8 @@ function wr_part1() {
 
     diskid=$(echo "${edisk}" | sed 's#/dev/##')
     spacechk "${loaderdisk}1" "${diskid}${1}"
-    FILESIZE1=$(ls -l /mnt/${loaderdisk}3/bzImage-friend | awk '{print$5}')
-    FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-friend | awk '{print$5}')
+    FILESIZE1=$(ls -l /mnt/${loaderdisk}3/zImage-dsm | awk '{print$5}')
+    FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-dsm | awk '{print$5}')
     
     a_num=$(echo $FILESIZE1 | bc)
     b_num=$(echo $FILESIZE2 | bc)
@@ -1335,10 +1335,10 @@ function wr_part1() {
 
     echo "Modifying grub.cfg for new loader boot..."
     sudo sed -i '61,$d' "${mdisk}${1}"/boot/grub/grub.cfg
-    tcrpfriendentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
+    tcrpfriendentry_hdd | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
 
-    sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdisk}${1}"
-    sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdisk}${1}"
+    sudo cp -vf /mnt/${loaderdisk}3/zImage-dsm  "${mdisk}${1}"
+    sudo cp -vf /mnt/${loaderdisk}3/initrd-dsm  "${mdisk}${1}"
 
     sudo mkdir -p /usr/local/share/locale
     sudo grub-install --target=x86_64-efi --boot-directory="${mdisk}${1}"/boot --efi-directory="${mdisk}${1}" --removable
@@ -1382,8 +1382,8 @@ function wr_part3() {
 
     diskid=$(echo "${edisk}" | sed 's#/dev/##')
     spacechk "${loaderdisk}3" "${diskid}${1}"
-    FILESIZE1=$(ls -l /mnt/${loaderdisk}3/zImage-dsm | awk '{print$5}')
-    FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-dsm | awk '{print$5}')
+    FILESIZE1=$(ls -l /mnt/${loaderdisk}3/bzImage-friend | awk '{print$5}')
+    FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-friend | awk '{print$5}')
     
     a_num=$(echo $FILESIZE1 | bc)
     b_num=$(echo $FILESIZE2 | bc)
@@ -1396,7 +1396,7 @@ function wr_part3() {
     
     [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
 
-    cd /mnt/${loaderdisk}3 && find . -name "*dsm*" -o -name "*user_config*" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+    cd /mnt/${loaderdisk}3 && find . -name "*friend*" -o -name "*user_config*" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
     true
 }
 
