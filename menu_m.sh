@@ -1774,20 +1774,25 @@ fi
 
 function remove_loader() {
 
-    # Delete target partition 
-    sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
-        part_num="${dev##*[!0-9]}"
-        if [[ $part_num -ge 4 ]]; then
-            base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
-            echo "$base_dev $part_num"
-        fi
-    done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
-        cmd=""
-        for p in $(echo "$parts" | tr ' ' '\n' | sort -nr); do
-            cmd+="d\n$p\n"
-        done
-        echo -e "${cmd}w\n" | sudo fdisk "$dev"
-    done
+  echo -n "(Warning) Do you want to remove partitions from Syno disk? [yY/nN] : "
+  readanswer
+  if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+      # Delete target partition 
+      sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
+          part_num="${dev##*[!0-9]}"
+          if [[ $part_num -ge 4 ]]; then
+              base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
+              echo "$base_dev $part_num"
+          fi
+      done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
+          cmd=""
+          for p in $(echo "$parts" | tr ' ' '\n' | sort -nr); do
+              cmd+="d\n$p\n"
+              echo "cmd = ${cmd}"
+          done
+          echo -e "${cmd}w\n" | sudo fdisk "$dev"
+      done
+  fi
 
 }
 
