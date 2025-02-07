@@ -59,29 +59,39 @@ function restoresession() {
     fi
 }
 
+function get_tinycore() {
+    cd /mnt/${tcrppart}
+    echo "Downloading tinycore 14.0..."
+    sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/corepure64.gz -o corepure64.gz_copy
+    sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/vmlinuz64 -o vmlinuz64_copy
+    md5_corepure64=$(sudo md5sum corepure64.gz_copy | awk '{print $1}')
+    md5_vmlinuz64=$(sudo md5sum vmlinuz64_copy | awk '{print $1}')
+    if [ ${md5_corepure64} = "f33c4560e3909a7784c0e83ce424ff5c" ] && [ ${md5_vmlinuz64} = "04cb17bbf7fbca9aaaa2e1356a936d7c" ]; then
+      echo "tinycore 14.0 md5 check is OK! ( corepure64.gz / vmlinuz64 ) "
+      sudo mv corepure64.gz_copy corepure64.gz
+      sudo mv vmlinuz64_copy vmlinuz64
+      cd ~      
+      return 0
+    else
+      cd ~
+      return 1
+    fi
+}
+
 function update_tinycore() {
   echo "check update for tinycore 14.0..."
-  cd /mnt/${tcrppart}
-  md5_corepure64=$(sudo md5sum corepure64.gz | awk '{print $1}')
-  md5_vmlinuz64=$(sudo md5sum vmlinuz64 | awk '{print $1}')
+  md5_corepure64=$(sudo md5sum /mnt/${tcrppart}/corepure64.gz | awk '{print $1}')
+  md5_vmlinuz64=$(sudo md5sum /mnt/${tcrppart}/vmlinuz64 | awk '{print $1}')
   if [ ${md5_corepure64} != "f33c4560e3909a7784c0e83ce424ff5c" ] || [ ${md5_vmlinuz64} != "04cb17bbf7fbca9aaaa2e1356a936d7c" ]; then
       echo "current tinycore version is not 14.0, update tinycore linux to 14.0..."
-      sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/corepure64.gz -o corepure64.gz_copy
-      sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/vmlinuz64 -o vmlinuz64_copy
-      md5_corepure64=$(sudo md5sum corepure64.gz_copy | awk '{print $1}')
-      md5_vmlinuz64=$(sudo md5sum vmlinuz64_copy | awk '{print $1}')
-      if [ ${md5_corepure64} = "f33c4560e3909a7784c0e83ce424ff5c" ] && [ ${md5_vmlinuz64} = "04cb17bbf7fbca9aaaa2e1356a936d7c" ]; then
-        echo "tinycore 14.0 md5 check is OK! ( corepure64.gz / vmlinuz64 ) "
-        sudo mv corepure64.gz_copy corepure64.gz
-        sudo mv vmlinuz64_copy vmlinuz64
+      get_tinycore
+      if [ $? -eq 0 ]; then
         sudo curl -kL#  https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/tinycore_14.0/etc/shadow -o /etc/shadow
         echo "/etc/shadow" >> /opt/.filetool.lst
-        cd ~
         echo 'Y'|rploader backup
         restart
       fi
   fi
-  cd ~
 }
 
 if [ -f /home/tc/my.sh ]; then
@@ -117,7 +127,26 @@ else
 fi
 
 # update tinycore 14.0 2023.12.18
-[ "$FRKRNL" = "NO" ] && update_tinycore
+if [ "$FRKRNL" = "NO" ]; then
+    update_tinycore
+#else
+#    if [ ! -f /mnt/${tcrppart}/corepure64.gz ] && [ ! -f /mnt/${tcrppart}/vmlinuz64 ]; then
+#        get_tinycore
+#    fi
+#    if [ ! -f /mnt/${tcrppart}/mydata.tgz ]; then
+#        cd /mnt/${tcrppart}
+#        sudo curl -kL#O https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/mydata.tgz
+#        cd ~
+#    fi
+#    if [ ! -d /mnt/${tcrppart}/cde ]; then
+#        cd /mnt/${tcrppart}    
+#        sudo curl -kL#O https://github.com/PeterSuh-Q3/tinycore-redpill/releases/download/v1.2.0.0/cde.tgz
+#        sudo mkdir cde
+#        sudo tar -xzvf cde.tgz -C cde
+#        sudo rm cde.tgz
+#        cd ~
+#    fi
+fi
 
 # restore user_config.json file from /mnt/sd#/lastsession directory 2023.10.21
 #restoresession
@@ -151,11 +180,14 @@ KEYMAP=$(jq -r -e '.general.keymap' "$USER_CONFIG_FILE")
 I915MODE=$(jq -r -e '.general.i915mode' "$USER_CONFIG_FILE")
 BFBAY=$(jq -r -e '.general.bay' "$USER_CONFIG_FILE")
 DMPM=$(jq -r -e '.general.devmod' "$USER_CONFIG_FILE")
+NVMES=$(jq -r -e '.general.nvmesystem' "$USER_CONFIG_FILE")
 LDRMODE=$(jq -r -e '.general.loadermode' "$USER_CONFIG_FILE")
 MDLNAME=$(jq -r -e '.general.modulename' "$USER_CONFIG_FILE")
 ucode=$(jq -r -e '.general.ucode' "$USER_CONFIG_FILE")
+
 lcode=$(echo $ucode | cut -c 4-)
 BLOCK_EUDEV="N"
+BLOCK_DDSML="N"
 
 # for test gettext
 #path_i="/usr/local/share/locale/ko_KR/LC_MESSAGES"
@@ -235,55 +267,25 @@ function usbidentify() {
 ###############################################################################
 # Shows available between DDSML and EUDEV
 function seleudev() {
-  checkforsas
+  
   eval "MSG27=\"\${MSG${tz}27}\""
   eval "MSG26=\"\${MSG${tz}26}\""
   eval "MSG40=\"\${MSG${tz}40}\""
 
-  if [ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
-    while true; do
-      dialog --clear --backtitle "`backtitle`" \
-    --menu "Choose a option" 0 0 0 \
-    e "${MSG26}" \
-    f "${MSG40}" \
-    2>${TMP_PATH}/resp
-      [ $? -ne 0 ] && return
-      resp=$(<${TMP_PATH}/resp)
-      [ -z "${resp}" ] && return
-      if [ "${resp}" = "e" ]; then
-        DMPM="EUDEV"
-        break
-      elif [ "${resp}" = "f" ]; then
-        DMPM="DDSML+EUDEV"
-        break
-      fi
-    done
+  checkforsas
+
+  if [ ${BLOCK_DDSML} = "Y" ] || [ "${MODEL}" = "SA6400" ] || [ "${BUS}" = "mmc" ]; then
+    menu_options=("e" "${MSG26}" "f" "${MSG40}")
+  elif [ ${BLOCK_EUDEV} = "Y" ]; then  
+    menu_options=("d" "${MSG27}" "f" "${MSG40}")
   else
-    if [ ${BLOCK_EUDEV} = "Y" ]; then
-      while true; do
+    menu_options=("d" "${MSG27}" "e" "${MSG26}" "f" "${MSG40}")
+  fi
+
+  while true; do
     dialog --clear --backtitle "`backtitle`" \
       --menu "Choose a option" 0 0 0 \
-      d "${MSG27}" \
-      f "${MSG40}" \
-      2>${TMP_PATH}/resp
-    [ $? -ne 0 ] && return
-    resp=$(<${TMP_PATH}/resp)
-    [ -z "${resp}" ] && return
-    if [ "${resp}" = "d" ]; then
-      DMPM="DDSML"
-      break
-    elif [ "${resp}" = "f" ]; then
-      DMPM="DDSML+EUDEV"
-      break
-    fi
-      done
-    else
-      while true; do
-        dialog --clear --backtitle "`backtitle`" \
-          --menu "Choose a option" 0 0 0 \
-      d "${MSG27}" \
-      e "${MSG26}" \
-      f "${MSG40}" \
+      "${menu_options[@]}" \
       2>${TMP_PATH}/resp
     [ $? -ne 0 ] && return
     resp=$(<${TMP_PATH}/resp)
@@ -298,74 +300,64 @@ function seleudev() {
       DMPM="DDSML+EUDEV"
       break
     fi
-      done
-    fi
-  fi 
+  done
 
-  curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/redpill-load/master/bundled-exts.json -o /home/tc/redpill-load/bundled-exts.json
+  del-addon "eudev"
+  del-addon "ddsml"
+  if [ "${DMPM}" = "DDSML" ]; then
+      add-addons "ddsml"
+  elif [ "${DMPM}" = "EUDEV" ]; then
+      add-addons "eudev"
+  elif [ "${DMPM}" = "DDSML+EUDEV" ]; then
+      add-addons "ddsml"
+      add-addons "eudev"
+  fi
+  
+  #curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/redpill-load/master/bundled-exts.json -o /home/tc/redpill-load/bundled-exts.json
   sudo rm -rf /home/tc/redpill-load/custom/extensions/ddsml
   sudo rm -rf /home/tc/redpill-load/custom/extensions/eudev
   writeConfigKey "general" "devmod" "${DMPM}"
 
 }
 
-
 ###############################################################################
 # Shows available between FRIEND and JOT
 function selectldrmode() {
   eval "MSG28=\"\${MSG${tz}28}\""
   eval "MSG29=\"\${MSG${tz}29}\""  
+
   if [ "${MODEL}" = "SA6400" ]; then  
-    while true; do
-      dialog --clear --backtitle "`backtitle`" \
-        --menu "Choose a option" 0 0 0 \
-        f "${MSG28}, all-modules(tcrp)" \
-        j "${MSG29}, all-modules(tcrp)" \
-      2>${TMP_PATH}/resp
-      [ $? -ne 0 ] && return
-      resp=$(<${TMP_PATH}/resp)
-      [ -z "${resp}" ] && return
-      if [ "${resp}" = "f" ]; then
-        LDRMODE="FRIEND"
-        MDLNAME="all-modules"
-        break
-      elif [ "${resp}" = "j" ]; then
-        LDRMODE="JOT"
-        MDLNAME="all-modules"      
-        break
-      fi
-    done
-  else
-    while true; do
-      dialog --clear --backtitle "`backtitle`" \
-        --menu "Choose a option" 0 0 0 \
-        f "${MSG28}, all-modules(tcrp)" \
-        j "${MSG29}, all-modules(tcrp)" \
-        k "${MSG28}, rr-modules"\
-        l "${MSG29}, rr-modules" \
-      2>${TMP_PATH}/resp
-      [ $? -ne 0 ] && return
-      resp=$(<${TMP_PATH}/resp)
-      [ -z "${resp}" ] && return
-      if [ "${resp}" = "f" ]; then
-        LDRMODE="FRIEND"
-        MDLNAME="all-modules"
-        break
-      elif [ "${resp}" = "j" ]; then
-        LDRMODE="JOT"
-        MDLNAME="all-modules"      
-        break
-      elif [ "${resp}" = "k" ]; then
-        LDRMODE="FRIEND"
-        MDLNAME="rr-modules"
-        break
-      elif [ "${resp}" = "l" ]; then
-        LDRMODE="JOT"
-        MDLNAME="rr-modules"
-        break
-      fi
-    done
+    menu_options=("f" "${MSG28}, all-modules(tcrp)" "j" "${MSG29}, all-modules(tcrp)")
+  else  
+    menu_options=("f" "${MSG28}, all-modules(tcrp)" "j" "${MSG29}, all-modules(tcrp)" "k" "${MSG28}, rr-modules" "l" "${MSG29}, rr-modules")
   fi
+  
+  while true; do
+    dialog --clear --backtitle "`backtitle`" \
+      --menu "Choose a option" 0 0 0 \
+      "${menu_options[@]}" \
+    2>${TMP_PATH}/resp
+    [ $? -ne 0 ] && return
+    resp=$(<${TMP_PATH}/resp)
+    [ -z "${resp}" ] && return
+    if [ "${resp}" = "f" ]; then
+      LDRMODE="FRIEND"
+      MDLNAME="all-modules"
+      break
+    elif [ "${resp}" = "j" ]; then
+      LDRMODE="JOT"
+      MDLNAME="all-modules"      
+      break
+    elif [ "${resp}" = "k" ]; then
+      LDRMODE="FRIEND"
+      MDLNAME="rr-modules"
+      break
+    elif [ "${resp}" = "l" ]; then
+      LDRMODE="JOT"
+      MDLNAME="rr-modules"
+      break
+    fi
+  done
 
   writeConfigKey "general" "loadermode" "${LDRMODE}"
   writeConfigKey "general" "modulename" "${MDLNAME}"
@@ -418,80 +410,67 @@ done
 # Shows available models to user choose one
 function modelMenu() {
 
-  M_GRP1="SA6400 DS3622xs+ DS1621xs+ RS3621xs+ RS4021xs+ DS3617xs RS3618xs" #RS1619xs+
-  #M_GRP2="DS3615xs"
-  M_GRP3="DVA3221 DVA3219 DS1819+ DS2419+"
-  M_GRP4="DS218+ DS918+ DS1019+ DS620slim DS718+"
-  M_GRP5="DS923+ DS723+ DS1522+"
-  M_GRP6="DS1621+ DS1821+ DS1823xs+ DS2422+ FS2500 RS1221+ RS2423+"
-  M_GRP7="DS220+ DS423+ DS720+ DS920+ DS1520+ DVA1622"
+  # Set the path for the models.json file
+  MODELS_JSON="/home/tc/models.json"
   
-RESTRICT=1
-while true; do
-  echo "" > "${TMP_PATH}/mdl"
+  # Define platform groups
+  M_GRP1="epyc7002 broadwellnk broadwell broadwellnkv2 broadwellntbap purley"
+  M_GRP3="denverton"
+  M_GRP4="apollolake"
+  M_GRP5="r1000"
+  M_GRP6="v1000"
+  M_GRP7="geminilake"
   
-#  if [ "$HBADETECT" = "ON" ]; then
-#      if [ "${AFTERHASWELL}" == "OFF" ]; then
-#        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-#        echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-#      else
-#        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-#        echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-#        echo "${M_GRP4}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-#        echo "${M_GRP3}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-#      fi
-#  else
-      if [ "${AFTERHASWELL}" == "OFF" ]; then
-        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-        echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP6}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-      else
-        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP4}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP7}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"        
-        echo "${M_GRP6}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-        echo "${M_GRP3}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
+  RESTRICT=1
+  
+  # Initialize the mdl file
+  > "${TMP_PATH}/mdl"
+  
+  # Determine which platforms to use based on AFTERHASWELL
+  if [ "${AFTERHASWELL}" == "OFF" ]; then
+    platforms="${M_GRP1} ${M_GRP5} ${M_GRP6}"
+  else
+    platforms="${M_GRP1} ${M_GRP4} ${M_GRP5} ${M_GRP7} ${M_GRP6} ${M_GRP3}"
     RESTRICT=0
-      fi
-#  fi      
-  
-  if [ ${RESTRICT} -eq 1 ]; then
-        echo "Release-model-restriction" >> "${TMP_PATH}/mdl"
-  else  
-        echo "" > "${TMP_PATH}/mdl"
-        echo "${M_GRP1}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        #echo "${M_GRP2}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP4}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP5}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
-        echo "${M_GRP7}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"        
-        echo "${M_GRP6}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"    
-        echo "${M_GRP3}" | tr ' ' '\n' >> "${TMP_PATH}/mdl"
   fi
   
-  echo "" > "${TMP_PATH}/mdl_final"
-  line_number=2
+  # Extract models for each platform and add them to the mdl file
+  for platform in $platforms; do
+    models=$(jq -r ".$platform.models[]" "$MODELS_JSON" 2>/dev/null)
+    if [ -n "$models" ]; then
+      echo "$models" >> "${TMP_PATH}/mdl"
+    fi
+  done
+  
+  # Add restriction release option if RESTRICT is 1
+  if [ ${RESTRICT} -eq 1 ]; then
+    echo "Release-model-restriction" >> "${TMP_PATH}/mdl"
+  fi
+  
+  # Create the final model list with suggestions
+  > "${TMP_PATH}/mdl_final"
+  line_number=1
   model_list=$(tail -n +$line_number "${TMP_PATH}/mdl")
   while read -r model; do
     suggestion=$(setSuggest $model)
     echo "$model \"\Zb$suggestion\Zn\"" >> "${TMP_PATH}/mdl_final"
   done <<< "$model_list"
   
+  # Display dialog for model selection
   dialog --backtitle "`backtitle`" --default-item "${MODEL}" --colors \
     --menu "Choose a model\n" 0 0 0 \
     --file "${TMP_PATH}/mdl_final" 2>${TMP_PATH}/resp
+  
+  # Check for dialog exit status
   [ $? -ne 0 ] && return
   resp=$(<${TMP_PATH}/resp)
-  [ -z "${resp}" ] && return  
+  [ -z "${resp}" ] && return
   
+  # Handle the case when "Release-model-restriction" is selected
   if [ "${resp}" = "Release-model-restriction" ]; then
     RESTRICT=0
-    continue
+    # Additional actions can be performed here if needed
   fi
-  break
-done
     
   MODEL="`<${TMP_PATH}/resp`"
   writeConfigKey "general" "model" "${MODEL}"
@@ -512,7 +491,7 @@ done
   #fi
   writeConfigKey "general" "version" "${BUILD}"  
 
-  if [ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
+  if [ "${BLOCK_DDSML}" = "Y" ]||[ "${MODEL}" = "SA6400" ]||[ "${BUS}" = "mmc" ]; then
     if [ "$HBADETECT" = "ON" ]; then
         DMPM="DDSML+EUDEV"
     else
@@ -529,40 +508,79 @@ done
 function setSuggest() {
 
   case $1 in
-    DS620slim)   platform="apollolake";bay="TOWER_6_Bay";mcpu="Intel Celeron J3355";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;  
+    SA6400)      platform="epyc7002(DT)";bay="RACK_12_Bay";mcpu="AMD EPYC 7272";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu} \"";;
+    DS1621xs+)   platform="broadwellnk";bay="TOWER_6_Bay";mcpu="Intel Xeon D-1527";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    DS3622xs+)   platform="broadwellnk";bay="TOWER_12_Bay";mcpu="Intel Xeon D-1531";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    FS3600)      platform="broadwellnk";bay="RACK_24_Bay";mcpu="Intel Xeon D-1567";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    RS1619xs+)   platform="broadwellnk";bay="RACK_16_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    RS3621RPxs)  platform="broadwellnk";bay="RACK_12_Bay";mcpu="Intel Xeon D-1531";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    RS3621xs+)   platform="broadwellnk";bay="RACK_12_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;    
+    RS4021xs+)   platform="broadwellnk";bay="RACK_16_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    SA3400)      platform="broadwellnk";bay="RACK_12_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    SA3600)      platform="broadwellnk";bay="RACK_12_Bay";mcpu="Intel Xeon D-1567";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    DS3018xs)    platform="broadwellnk";bay="TOWER_6_Bay";mcpu="Intel Pentium D1508";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    FS1018)      platform="broadwellnk";bay="TOWER_12_Bay";mcpu="Intel Pentium D1508";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    FS3400)      platform="broadwellnk";bay="RACK_24_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    RS3618xs)    platform="broadwell";bay="RACK_12_Bay_2";mcpu="Intel Xeon D-1521";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;    
+    DS3617xs)    platform="broadwell";bay="TOWER_12_Bay";mcpu="Intel Xeon D-1527";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;        
+    DS3617xsII)  platform="broadwell";bay="TOWER_12_Bay";mcpu="Intel Xeon D-1527";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;        
+    FS2017)      platform="broadwell";bay="RACK_24_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;    
+    RS18017xs+)  platform="broadwell";bay="RACK_12_Bay_2";mcpu="Intel Xeon D-1531";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    RS3617RPxs)  platform="broadwell";bay="RACK_12_Bay_2";mcpu="Intel Xeon D-1521";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    RS3617xs+)   platform="broadwell";bay="RACK_12_Bay_2";mcpu="Intel Xeon E3-1230v2";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    RS4017xs+)   platform="broadwell";bay="RACK_16_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    FS3410)      platform="broadwellnkv2(DT)";bay="RACK_24_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    SA3410)      platform="broadwellnkv2(DT)";bay="RACK_12_Bay";mcpu="Intel Xeon D-1567";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    SA3610)      platform="broadwellnkv2(DT)";bay="RACK_12_Bay";mcpu="Intel Xeon D-1567";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    SA3200D)     platform="broadwellntbap";bay="RACK_12_Bay";mcpu="Intel Xeon D-1521";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    SA3400D)     platform="broadwellntbap";bay="RACK_12_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    FS6400)      platform="purley(DT)";bay="RACK_24_Bay";mcpu="Intel Xeon® Silver 4110";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
+    HD6500)      platform="purley(DT)";bay="RACK_60_Bay";mcpu="Intel Xeon Silver 4210R";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
     DS1019+)     platform="apollolake";bay="TOWER_5_Bay";mcpu="Intel Celeron J3455";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
-    DS1520+)     platform="geminilake(DT)";bay="TOWER_5_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;    
+    DS620slim)   platform="apollolake";bay="TOWER_6_Bay";mcpu="Intel Celeron J3355";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
+    DS218+)      platform="apollolake";bay="TOWER_2_Bay";mcpu="Intel Celeron J3355";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
+    DS418play)   platform="apollolake";bay="TOWER_4_Bay";mcpu="Intel Celeron J3355";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
+    DS718+)      platform="apollolake";bay="TOWER_2_Bay";mcpu="Intel Celeron J3455";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
+    DS918+)      platform="apollolake";bay="TOWER_4_Bay";mcpu="Intel Celeron J3455";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
     DS1522+)     platform="r1000(DT)";bay="TOWER_5_Bay";mcpu="AMD Ryzen R1600";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}20}\"";;    
+    DS723+)      platform="r1000(DT)";bay="TOWER_2_Bay";mcpu="AMD Ryzen R1600";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}20}\"";;
+    DS923+)      platform="r1000(DT)";bay="TOWER_4_Bay";mcpu="AMD Ryzen R1600";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}20}\"";;
+    RS422+)      platform="r1000(DT)";bay="RACK_4_Bay";mcpu="AMD Ryzen R1600";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}20}\"";;
+    DS1520+)     platform="geminilake(DT)";bay="TOWER_5_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;    
+    DS220+)      platform="geminilake(DT)";bay="TOWER_2_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
+    DS224+)      platform="geminilake(DT)";bay="TOWER_2_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
+    DS420+)      platform="geminilake(DT)";bay="TOWER_4_Bay";mcpu="Intel Celeron J4025";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
+    DS423+)      platform="geminilake(DT)";bay="TOWER_4_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;    
+    DS720+)      platform="geminilake(DT)";bay="TOWER_2_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;    
+    DS920+)      platform="geminilake(DT)";bay="TOWER_4_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;    
+    DVA1622)     platform="geminilake(DT)";bay="TOWER_2_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}, \${MSG${tz}21}\"";;
     DS1621+)     platform="v1000(DT)";bay="TOWER_6_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
     DS1821+)     platform="v1000(DT)";bay="TOWER_8_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
     DS1823xs+)   platform="v1000(DT)";bay="TOWER_8_Bay";mcpu="AMD Ryzen V1780B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;            
-    DS1621xs+)   platform="broadwellnk";bay="TOWER_6_Bay";mcpu="Intel Xeon D-1527";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
-    DS218+)      platform="apollolake";bay="TOWER_2_Bay";mcpu="Intel Celeron J3355";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;      
-    DS220+)      platform="geminilake(DT)";bay="TOWER_2_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
     DS2422+)     platform="v1000(DT)";bay="TOWER_12_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
-    DS3615xs)    platform="bromolow";bay="TOWER_12_Bay";mcpu="Intel Core i3-4130";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
-    DS3617xs)    platform="broadwell";bay="TOWER_12_Bay";mcpu="Intel Xeon D-1527";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;    
-    DS3622xs+)   platform="broadwellnk";bay="TOWER_12_Bay";mcpu="Intel Xeon D-1531";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
-    DS423+)      platform="geminilake(DT)";bay="TOWER_4_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
-    DS718+)      platform="apollolake";bay="TOWER_2_Bay";mcpu="Intel Celeron J3455";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;        
-    DS720+)      platform="geminilake(DT)";bay="TOWER_2_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
-    DS723+)      platform="r1000(DT)";bay="TOWER_2_Bay";mcpu="AMD Ryzen R1600";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}20}\"";;
-    DS918+)      platform="apollolake";bay="TOWER_4_Bay";mcpu="Intel Celeron J3455";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;    
-    DS920+)      platform="geminilake(DT)";bay="TOWER_4_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}\"";;
-    DS923+)      platform="r1000(DT)";bay="TOWER_4_Bay";mcpu="AMD Ryzen R1600";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}20}\"";;
-    DVA1622)     platform="geminilake(DT)";bay="TOWER_2_Bay";mcpu="Intel Celeron J4125";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}17}, \${MSG${tz}21}\"";;
-    DS1819+)     platform="denverton";bay="TOWER_8_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;
-    DS2419+)     platform="denverton";bay="TOWER_12_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;    
-    DVA3219)     platform="denverton";bay="TOWER_4_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;    
-    DVA3221)     platform="denverton";bay="TOWER_4_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}24}, \${MSG${tz}21}\"";;    
     FS2500)      platform="v1000(DT)";bay="RACK_12_Bay_2";mcpu="AMD Ryzen V1780B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
     RS1221+)     platform="v1000(DT)";bay="RACK_8_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
+    RS1221RP+)   platform="v1000(DT)";bay="RACK_8_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;    
+    RS2421+)     platform="v1000(DT)";bay="RACK_12_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
+    RS2421RP+)   platform="v1000(DT)";bay="RACK_12_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";; 
     RS2423+)     platform="v1000(DT)";bay="RACK_12_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;        
-    RS3618xs)    platform="broadwell";bay="RACK_12_Bay";mcpu="Intel Xeon D-1521";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
-    RS3621xs+)   platform="broadwellnk";bay="RACK_12_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;    
-    RS4021xs+)   platform="broadwellnk";bay="RACK_16_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
-    #RS1619xs+)   platform="broadwellnk";bay="RACK_16_Bay";mcpu="Intel Xeon D-1541";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}16}\"";;
-    SA6400)      platform="epyc7002(DT)";bay="RACK_12_Bay";mcpu="AMD EPYC 7272";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu} \"";;
+    RS2423RP+)   platform="v1000(DT)";bay="RACK_12_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
+    RS2821RP+)   platform="v1000(DT)";bay="RACK_16_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
+    RS822+)      platform="v1000(DT)";bay="RACK_4_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
+    RS822RP+)    platform="v1000(DT)";bay="RACK_4_Bay";mcpu="AMD Ryzen V1500B";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
+    DS1819+)     platform="denverton";bay="TOWER_8_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;
+    DS2419+)     platform="denverton";bay="TOWER_12_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;  
+    DS2419+II)   platform="denverton";bay="TOWER_12_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;
+    DVA3219)     platform="denverton";bay="TOWER_4_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;    
+    DVA3221)     platform="denverton";bay="TOWER_4_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}24}, \${MSG${tz}21}\"";; 
+    RS820+)      platform="denverton";bay="RACK_4_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}24}, \${MSG${tz}21}\"";;
+    RS820RP+)    platform="denverton";bay="RACK_4_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}24}, \${MSG${tz}21}\"";;
+    DS1618+)     platform="denverton";bay="TOWER_6_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}25}, \${MSG${tz}21}\"";;
+    RS2418+)     platform="denverton";bay="RACK_12_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}24}, \${MSG${tz}21}\"";;
+    RS2418RP+)   platform="denverton";bay="RACK_12_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}24}, \${MSG${tz}21}\"";;
+    RS2818RP+)   platform="denverton";bay="RACK_16_Bay";mcpu="Intel Atom C3538";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}23}, \${MSG${tz}24}, \${MSG${tz}21}\"";;
+    DS3615xs)    platform="bromolow";bay="TOWER_12_Bay";mcpu="Intel Core i3-4130";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu}, \${MSG${tz}22}\"";;
+    *)    platform="Any platform";bay="Any Bay";mcpu="Intel or AMD";eval "desc=\"[${MODEL}]:${platform},${bay},${mcpu} \"";;
   esac
 
   if [ $(echo ${platform} | grep "(DT)" | wc -l) -gt 0 ]; then
@@ -1009,8 +1027,8 @@ function langMenu() {
   writeConfigKey "general" "ucode" "${ucode}"  
   [ "$FRKRNL" = "NO" ] && writexsession
 
-  tz="US"
-  load_us
+  tz="ZZ"
+  load_zz
   
   setSuggest $MODEL
   
@@ -1221,7 +1239,7 @@ function tcrpfriendentry_hdd() {
     cat <<EOF
 menuentry 'Tiny Core Friend ${MODEL} ${BUILD} Update 0 ${DMPM}' {
         savedefault
-    set root=(hd0,msdos${1})
+        search --set=root --fs-uuid "1234-5678" --hint hd0,msdos${1}
         echo Loading Linux...
         linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8
         echo Loading initramfs...
@@ -1232,6 +1250,20 @@ EOF
 
 }
 
+function xtcrpconfigureentry_hdd() {
+    cat <<EOF
+menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
+        savedefault
+        search --set=root --fs-uuid "1234-5678" --hint hd0,msdos${1}
+        echo Loading Linux...
+        linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8 IWANTTOCONFIGURE
+        echo Loading initramfs to configure loader...
+        initrd /initrd-friend
+        echo Loding xTCRP RAMDISK to configure loader...
+}
+EOF
+}
+
 function add-addon() {
 
   [ "${1}" = "mac-spoof" ] && echo -n "(Warning) Enabling mac-spoof may compromise San Manager and VMM. Do you still want to add it? [yY/nN] : "
@@ -1240,7 +1272,7 @@ function add-addon() {
   
   readanswer    
   if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then    
-    jsonfile=$(jq ". |= .+ {\"${1}\": \"https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/${1}/rpext-index.json\"}" ~/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > ~/redpill-load/bundled-exts.json    
+    jsonfile=$(jq ". |= .+ {\"${1}\": \"https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/${1}/rpext-index.json\"}" /home/tc/redpill-load/bundled-exts.json) && echo $jsonfile | jq . > /home/tc/redpill-load/bundled-exts.json    
   fi
 }
 
@@ -1269,20 +1301,32 @@ function spacechk() {
   echo "SPACELEFT = ${SPACELEFT_FORMATTED} bytes (${SPACELEFT_MB} MB)"
 }
 
+function get_partition() {
+    local disk=$1
+    local num=$2
+    if [[ "$disk" =~ ^/dev/nv ]]; then
+        echo "${disk}p${num}"
+    else
+        echo "${disk}${num}"
+    fi
+}
+
 function wr_part1() {
 
-    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
-    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
+    fediskpart="$(get_partition "${edisk}" ${1})"
+    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
+    
+    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
       while true; do
         sleep 1
-        echo "Mounting ${edisk}${1} ..."
-        sudo mount "${edisk}${1}" "${mdisk}${1}"
-        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${fediskpart} ..."
+        sudo mount "${fediskpart}" "${mdiskpart}"
+        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdisk}${1}"/*
+    sudo rm -rf "${mdiskpart}"/*
 
-    diskid=$(echo "${edisk}" | sed 's#/dev/##')
-    spacechk "${loaderdisk}1" "${diskid}${1}"
+    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')
+    spacechk "${loaderdisk}1" "${diskid}"
     FILESIZE1=$(ls -l /mnt/${loaderdisk}3/bzImage-friend | awk '{print$5}')
     FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-friend | awk '{print$5}')
     
@@ -1306,64 +1350,69 @@ function wr_part1() {
         TOTALUSED_FORMATTED=$(printf "%'d" "${TOTALUSED}")
         TOTALUSED_MB=$((TOTALUSED / 1024 / 1024))
         echo "FIXED TOTALUSED = ${TOTALUSED_FORMATTED} bytes (${TOTALUSED_MB} MB)"
-        [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+        [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
     fi
 
     if [ -z ${ZIMAGESIZE} ]; then
-        cd /mnt/${loaderdisk}1 && sudo find . | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+        cd /mnt/${loaderdisk}1 && sudo find . | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
     else
-        cd /mnt/${loaderdisk}1 && sudo find . -not -name "zImage" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+        cd /mnt/${loaderdisk}1 && sudo find . -not -name "zImage" | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
     fi
 
     echo "Modifying grub.cfg for new loader boot..."
-    sudo sed -i '61,$d' "${mdisk}${1}"/boot/grub/grub.cfg
-    tcrpfriendentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
+    sudo sed -i '61,$d' "${mdiskpart}"/boot/grub/grub.cfg
+    tcrpfriendentry_hdd ${1} | sudo tee --append "${mdiskpart}"/boot/grub/grub.cfg
+    xtcrpconfigureentry_hdd ${1} | sudo tee --append "${mdiskpart}"/boot/grub/grub.cfg
 
-    sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdisk}${1}"
-    sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdisk}${1}"
+    sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdiskpart}"
+    sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdiskpart}"
 
     sudo mkdir -p /usr/local/share/locale
-    sudo grub-install --target=x86_64-efi --boot-directory="${mdisk}${1}"/boot --efi-directory="${mdisk}${1}" --removable
-    [ $? -ne 0 ] && returnto "excute grub-install ${mdisk}${1} failed. Stop processing!!! " && false
-    sudo grub-install --target=i386-pc --boot-directory="${mdisk}${1}"/boot "${edisk}"
-    [ $? -ne 0 ] && returnto "excute grub-install ${mdisk}${1} failed. Stop processing!!! " && false
+    sudo grub-install --target=x86_64-efi --boot-directory="${mdiskpart}"/boot --efi-directory="${mdiskpart}" --removable
+    [ $? -ne 0 ] && returnto "excute grub-install ${mdiskpart} failed. Stop processing!!! " && false
+    sudo grub-install --target=i386-pc --boot-directory="${mdiskpart}"/boot "${edisk}"
+    [ $? -ne 0 ] && returnto "excute grub-install ${mdiskpart} failed. Stop processing!!! " && false
     true
 }
 
 function wr_part2() {
 
-    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
-    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
+    fediskpart="$(get_partition "${edisk}" ${1})"
+    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
+    
+    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
     while true; do
         sleep 1
-        echo "Mounting ${edisk}${1} ..."
-        sudo mount "${edisk}${1}" "${mdisk}${1}"
-        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${fediskpart} ..."
+        sudo mount "${fediskpart}" "${mdiskpart}"
+        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdisk}${1}"/*
-        
-    spacechk "${loaderdisk}2" "${diskid}${1}"
-    [ 0${SPACEUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${SPACEUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+    sudo rm -rf "${mdiskpart}"/*
+
+    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')        
+    spacechk "${loaderdisk}2" "${diskid}"
+    [ 0${SPACEUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${SPACEUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
   
-    cd /mnt/${loaderdisk}2 && sudo find . | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+    cd /mnt/${loaderdisk}2 && sudo find . | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
     true
 }
 
 function wr_part3() {
 
-    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
-
-    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
+    fediskpart="$(get_partition "${edisk}" ${1})"
+    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
+    
+    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
     while true; do
         sleep 1
-        echo "Mounting ${edisk}${1} ..."
-        sudo mount "${edisk}${1}" "${mdisk}${1}"
-        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${fediskpart} ..."
+        sudo mount "${fediskpart}" "${mdiskpart}"
+        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdisk}${1}"/*
+    sudo rm -rf "${mdiskpart}"/*
 
-    diskid=$(echo "${edisk}" | sed 's#/dev/##')
-    spacechk "${loaderdisk}3" "${diskid}${1}"
+    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')
+    spacechk "${loaderdisk}3" "${diskid}"
     FILESIZE1=$(ls -l /mnt/${loaderdisk}3/zImage-dsm | awk '{print$5}')
     FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-dsm | awk '{print$5}')
     
@@ -1376,9 +1425,11 @@ function wr_part3() {
     TOTALUSED_MB=$((TOTALUSED / 1024 / 1024))
     echo "TOTALUSED = ${TOTALUSED_FORMATTED} bytes (${TOTALUSED_MB} MB)"
     
-    [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+    [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
 
-    cd /mnt/${loaderdisk}3 && find . -name "*dsm*" -o -name "*user_config*" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+    cd /mnt/${loaderdisk}3 && find . -name "*dsm*" -o -name "*user_config*" | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
+    sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "${mdiskpart}"/xtcrp.tgz
+    
     true
 }
 
@@ -1428,7 +1479,7 @@ function get_disk_type_cnt() {
 
     RAID_CNT="$(sudo /sbin/fdisk -l | grep "fd Linux raid autodetect" | grep ${1} | wc -l )"
     DOS_CNT="$(sudo /sbin/fdisk -l | grep "83 Linux" | grep ${1} | wc -l )"
-    W95_CNT="$(sudo /sbin/fdisk -l | grep "W95 Ext" | grep ${1} | wc -l )" 
+    W95_CNT="$(sudo /sbin/fdisk -l | grep "95 Ext" | grep ${1} | wc -l )" 
     EXT_CNT="$(sudo /sbin/fdisk -l | grep "Extended" | grep ${1} | wc -l )" 
     # for FIXED Linux RAID
     RAID_FIX_CNT="$(sudo /sbin/fdisk -l | grep "Linux RAID" | grep ${1} | wc -l )"
@@ -1459,80 +1510,67 @@ function inject_loader() {
 
   #[ "$MACHINE" = "VIRTUAL" ] &&    returnto "Virtual system environment is not supported. Two or more BASIC type hard disks are required on bare metal. (SSD not possible)... Stop processing!!! " && return
 
-  IDX=0
-  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+  BASIC=0
+  SHR=0  
+  BASIC_EX=0  
+  SHR_EX=0  
+  while read -r edisk; do
       get_disk_type_cnt "${edisk}" "N"
-      if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 0 ] && [ "${W95_CNT}" -eq 0 ]; then
-          echo "This is BASIC or JBOD Type Hard Disk. $edisk"
-          IDX=$((${IDX} + 1))
+      
+      if [ "${RAID_CNT}" -eq 3 ]; then
+          case "${DOS_CNT} ${W95_CNT}" in
+              "0 0")
+                  echo "This is BASIC or JBOD Type Hard Disk. $edisk"
+                  ((BASIC++))
+                  ;;
+              "0 1")
+                  echo "This is SHR Type Hard Disk. $edisk"
+                  ((SHR++))
+                  ;;
+              "2 0")
+                  echo "This is BASIC Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
+                  ((BASIC_EX++))
+                  ;;
+              "1 0")
+                  if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
+                      echo "This is BASIC Type Hard Disk and Has synoboot3 Boot Partition $edisk"
+                      ((BASIC_EX++))
+                  fi
+                  ;;
+              "2 1")
+                  echo "This is SHR Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
+                  ((SHR_EX++))
+                  ;;
+              "1 1")
+                  if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
+                      echo "This is SHR Type Hard Disk and Has synoboot3 Boot Partition $edisk"
+                      ((SHR_EX++))
+                  fi
+                  ;;
+          esac
       fi
-  done
-
-  SHR=0
-  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
-      get_disk_type_cnt "${edisk}" "N"
-      if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 0 ] && [ "${W95_CNT}" -eq 1 ]; then
-          echo "This is SHR Type Hard Disk. $edisk"
-          SHR=$((${SHR} + 1))
-      fi
-  done
-
-  IDX_EX=0
-  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
-      get_disk_type_cnt "${edisk}" "N"
-      if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 2 ] && [ "${W95_CNT}" -eq 0 ]; then
-          echo "This is BASIC Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition  $edisk"
-          IDX_EX=$((${IDX_EX} + 1))
-      fi
-  done
-  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
-      get_disk_type_cnt "${edisk}" "N"
-      if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 1 ] && [ "${W95_CNT}" -eq 0 ]; then
-            if [ $(/sbin/blkid | grep ${edisk} | grep "6234-C863" | wc -l ) -eq 1 ]; then
-              echo "This is BASIC Type Hard Disk and Has synoboot3 Boot Partition $edisk"
-              IDX_EX=$((${IDX_EX} + 1))
-            fi    
-      fi
-  done
-
-  SHR_EX=0
-  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
-      get_disk_type_cnt "${edisk}" "N"
-      if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 2 ] && [ "${W95_CNT}" -eq 1 ]; then
-          echo "This is SHR Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
-          SHR_EX=$((${SHR_EX} + 1))
-      fi
-  done
-  for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
-      get_disk_type_cnt "${edisk}" "N"
-      if [ "${RAID_CNT}" -eq 3 ] && [ "${DOS_CNT}" -eq 1 ] && [ "${W95_CNT}" -eq 1 ]; then
-            if [ $(/sbin/blkid | grep ${edisk} | grep "6234-C863" | wc -l ) -eq 1 ]; then
-              echo "This is SHR Type Hard Disk and Has synoboot3 Boot Partition $edisk"
-              SHR_EX=$((${SHR_EX} + 1))
-          fi
-      fi
-  done
+  done < <(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://')
 
   do_ex_first=""    
-  if [ ${IDX_EX} -eq 2 ] || [ `expr ${IDX_EX} + ${SHR_EX}` -eq 2 ]; then
+  if [ ${BASIC_EX} -eq 2 ] || [ `expr ${BASIC_EX} + ${SHR_EX}` -eq 2 ]; then
     echo "There is at least one BASIC or SHR type disk each with an injected bootloader...OK"
     do_ex_first="Y"
-  elif [ ${IDX} -eq 2 ] || [ `expr ${IDX} + ${SHR}` -gt 1 ]; then
+  elif [ ${BASIC} -eq 2 ] || [ `expr ${BASIC} + ${SHR}` -gt 1 ]; then
     echo "There is at least one disk of type BASIC or SHR...OK"
     if [ -z "${do_ex_first}" ]; then
       do_ex_first="N"
     fi
-  #elif [ ${IDX_EX} -eq 0 ] && [ ${SHR_EX} -gt 1 ]; then 
+  #elif [ ${BASIC_EX} -eq 0 ] && [ ${SHR_EX} -gt 1 ]; then 
   else
-      echo "IDX = ${IDX}, SHR = ${SHR}, IDX_EX = ${IDX_EX}, SHR_EX=${SHR_EX}"
+      echo "BASIC = ${BASIC}, SHR = ${SHR}, BASIC_EX = ${BASIC_EX}, SHR_EX=${SHR_EX}"
       returnto "There is not enough Type Disk. Function Exit now!!! Press any key to continue..." && return  
   fi
 
   echo "do_ex_first = ${do_ex_first}"
   
-# [ ${IDX} -gt 1 ] BASIC more than 2 
-# [ ${IDX} -gt 0 && ${SHR} -gt 0 ] BASIC more than 1 && SHR more than 1
-# [ ${IDX} -eq 0 && ${SHR} -gt 2 ] BASIC 0 && SHR more than 3
+# [ ${BASIC} -gt 1 ] BASIC more than 2 
+# [ ${BASIC} -gt 0 && ${SHR} -gt 0 ] BASIC more than 1 && SHR more than 1
+# [ ${BASIC} -eq 0 && ${SHR} -gt 2 ] BASIC 0 && SHR more than 3
 echo -n "(Warning) Do you want to port the bootloader to Syno disk? [yY/nN] : "
 readanswer
 if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -1552,12 +1590,12 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
     fi
 
     if [ "${do_ex_first}" = "N" ]; then
-        if [ ${IDX} -eq 2 ] || [ `expr ${IDX} + ${SHR}` -gt 1 ]; then
+        if [ ${BASIC} -eq 2 ] || [ `expr ${BASIC} + ${SHR}` -gt 1 ]; then
             echo "New bootloader injection (including /sbin/fdisk partition creation)..."
 
             BOOTMAKE=""
               SYNOP3MAKE=""
-            for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+            for edisk in $(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://' ); do
          
                 model=$(lsblk -o PATH,MODEL | grep $edisk | head -1)
                 get_disk_type_cnt "${edisk}" "Y"
@@ -1585,7 +1623,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "activate partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
                       
-                        last_sector="$(sudo /sbin/fdisk -l "${edisk}" | grep "${edisk}5" | awk '{print $3}')"
+                        last_sector="$(sudo /sbin/fdisk -l "${edisk}" | grep "$(get_partition "${edisk}" 5)" | awk '{print $3}')"
                         last_sector=$((${last_sector} + 1))
                         echo "1st disk's part 6 last sector is $last_sector"
                         
@@ -1594,8 +1632,8 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
-                        sudo mkfs.vfat -F16 "${edisk}4"
-                        synop1=${edisk}4 
+                        sudo mkfs.vfat -i 12345678 -F16 "$(get_partition "${edisk}" 4)"
+                        synop1=$(get_partition "${edisk}" 4)
                         wr_part1 "4"
                         [ $? -ne 0 ] && return
      
@@ -1610,9 +1648,9 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                             sleep 2
                         fi
      
-                        # +98M
+                        # +112M
                         echo "Create partitions on 1st disks... $edisk"
-                        echo -e "n\n\n+98M\nw\n" | sudo /sbin/fdisk "${edisk}"
+                        echo -e "n\n\n+112M\nw\n" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
       
@@ -1620,19 +1658,19 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "activate partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
        
-                        # +26M
-                        echo -e "n\n\n+26M\nw\n" | sudo /sbin/fdisk "${edisk}"
+                        # +14M
+                        echo -e "n\n\n+14M\nw\n" | sudo /sbin/fdisk "${edisk}"
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
-                        sudo mkfs.vfat -F16 "${edisk}5"
-                        synop1=${edisk}5
+                        sudo mkfs.vfat -i 12345678 -F16 "$(get_partition "${edisk}" 5)"
+                        synop1=$(get_partition "${edisk}" 5)
                         wr_part1 "5"
                         [ $? -ne 0 ] && return
 
                     fi 
-                    sudo mkfs.vfat -F16 "${edisk}6"
-                    synop2=${edisk}6    
+                    sudo mkfs.vfat -F16 "$(get_partition "${edisk}" 6)"
+                    synop2=$(get_partition "${edisk}" 6)    
                     wr_part2 "6"
                     [ $? -ne 0 ] && return
 
@@ -1656,15 +1694,15 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         sleep 1
     
                         #prepare_img
-                        sudo mkfs.vfat -i 6234C863 -F16 "${edisk}4"
+                        sudo mkfs.vfat -i 6234C863 -F16 "$(get_partition "${edisk}" 4)"
                         [ $? -ne 0 ] && return
        
-                        #sudo dd if="${loopdev}p3" of="${edisk}4"
+                        #sudo dd if="${loopdev}p3" of="$(get_partition "${edisk}" 4)"
     
                         wr_part3 "4"
                         [ $? -ne 0 ] && return
     
-                        synop3=${edisk}4
+                        synop3=$(get_partition "${edisk}" 4)
                     else
                         echo "The synoboot3 was already made!!!"
                         continue
@@ -1679,9 +1717,9 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
             done
         fi
     elif [ "${do_ex_first}" = "Y" ]; then
-        if [ ${IDX_EX} -eq 2 ] || [ `expr ${IDX_EX} + ${SHR_EX}` -eq 2 ]; then
+        if [ ${BASIC_EX} -eq 2 ] || [ `expr ${BASIC_EX} + ${SHR_EX}` -eq 2 ]; then
             echo "Reinject bootloader (into existing partition)..."
-            for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+            for edisk in $(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://' ); do
          
                 model=$(lsblk -o PATH,MODEL | grep $edisk | head -1)
                 get_disk_type_cnt "${edisk}" "Y"
@@ -1695,14 +1733,14 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                     prepare_grub
                     [ $? -ne 0 ] && return
                     if [ "${W95_CNT}" -eq 1 ]; then
-                        synop1=${edisk}4                    
+                        synop1=$(get_partition "${edisk}" 4)                    
                         wr_part1 "4"
                     else 
-                        synop1=${edisk}5
+                        synop1=$(get_partition "${edisk}" 5)
                         wr_part1 "5"
                     fi
 
-                       synop2=${edisk}6                 
+                       synop2=$(get_partition "${edisk}" 6)                 
                     wr_part2 "6"
                     [ $? -ne 0 ] && return
                     continue
@@ -1717,7 +1755,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         wr_part3 "4"
                         [ $? -ne 0 ] && return
     
-                        synop3=${edisk}4
+                        synop3=$(get_partition "${edisk}" 4)
                     fi
                     continue
                 fi
@@ -1731,6 +1769,35 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
     sudo umount ${synop1} && sudo umount ${synop2} && sudo umount ${synop3}
     returnto "The entire process of injecting the boot loader into the disk has been completed! Press any key to continue..." && return
 fi
+
+}
+
+function debug_msg() {
+    echo "[DEBUG] $1" >&2
+}
+
+function remove_loader() {
+
+  echo -n "(Warning) Do you want to remove partitions from Syno disk? [yY/nN] : "
+  readanswer
+  if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+
+      LC_ALL=C sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
+          part_num="${dev##*[!0-9]}"
+          if [[ $part_num -ge 4 ]]; then
+              base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
+              echo "$base_dev $part_num"
+          fi
+      done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
+          cmd=""
+          for p in $(echo "$parts" | tr ' ' '\n' | sort -nr); do
+              cmd+="d\n$p\n"
+          done
+          echo -e "${cmd}w\n" | sudo fdisk "$dev"
+      done
+  
+  fi
+  returnto "The entire process of removing the partition is completed! Press any key to continue..." && return
 
 }
 
@@ -1779,10 +1846,8 @@ function i915_edit() {
 
 function additional() {
 
-  [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("nvmesystem")') = true ] && nvmes="Remove" || nvmes="Add"
   [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("mac-spoof")') = true ] && spoof="Remove" || spoof="Add"
   [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("dbgutils")') = true ] && dbgutils="Remove" || dbgutils="Add"
-
   [ $(cat /home/tc/user_config.json | grep "synoboot_satadom=2" | wc -l) -eq 1 ] && DOMKIND="Native" || DOMKIND="Fake"
   [ "${I915MODE}" == "1" ] && DISPLAYI915="Disable" || DISPLAYI915="Enable"
 
@@ -1797,7 +1862,6 @@ function additional() {
 
   while true; do
     eval "echo \"a \\\"${spoof} ${MSG50}\\\"\"" > "${TMP_PATH}/menua"
-    eval "echo \"w \\\"${nvmes} nvmesystem Addon\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"y \\\"${dbgutils} dbgutils Addon\\\"\"" >> "${TMP_PATH}/menua"
     [ "${BUS}" != "usb" ] && eval "echo \"j \\\"Active ${DOMKIND} Satadom Option\\\"\"" >> "${TMP_PATH}/menua"
     [ ${platform} = "geminilake(DT)" ] || [ ${platform} = "epyc7002(DT)" ] || [ ${platform} = "apollolake" ] && eval "echo \"z \\\"${DISPLAYI915} i915 module \\\"\"" >> "${TMP_PATH}/menua"
@@ -1808,6 +1872,7 @@ function additional() {
     eval "echo \"f \\\"${MSG55}\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"g \\\"${MSG12}\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"h \\\"Inject Bootloader to Syno DISK\\\"\"" >> "${TMP_PATH}/menua"
+    eval "echo \"m \\\"Remove the injected bootloader partition\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"i \\\"Packing loader file for remote update\\\"\"" >> "${TMP_PATH}/menua"
     eval "echo \"k \\\"${MSG11}\\\"\"" >> "${TMP_PATH}/menua"    
     dialog --clear --backtitle "`backtitle`" --colors \
@@ -1818,10 +1883,6 @@ function additional() {
     a) 
       [ "${spoof}" = "Add" ] && add-addon "mac-spoof" || del-addon "mac-spoof"
       [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("mac-spoof")') = true ] && spoof="Remove" || spoof="Add"
-      ;;
-    w) 
-      [ "${nvmes}" = "Add" ] && add-addon "nvmesystem" || del-addon "nvmesystem"
-      [ $(cat ~/redpill-load/bundled-exts.json | jq 'has("nvmesystem")') = true ] && nvmes="Remove" || nvmes="Add"
       ;;
     y) 
       [ "${dbgutils}" = "Add" ] && add-addon "dbgutils" || del-addon "dbgutils"
@@ -1847,6 +1908,7 @@ function additional() {
     f) cloneloader;;
     g) erasedisk;;
     h) inject_loader;;
+    m) remove_loader;;
     i) packing_loader;;
     k) keymapMenu ;;
     *) return;;
@@ -2129,8 +2191,8 @@ locale
 #End Locale Setting process
 export TEXTDOMAINDIR="/usr/local/share/locale"
 set -o allexport
-tz="US"
-load_us
+tz="ZZ"
+load_zz
 
 # Download ethtool
 if [ "$FRKRNL" = "NO" ] && [ "$(which ethtool)_" == "_" ]; then
@@ -2141,7 +2203,7 @@ if [ "$FRKRNL" = "NO" ] && [ "$(which ethtool)_" == "_" ]; then
    sudo echo "iproute2.tcz" >> /mnt/${tcrppart}/cde/onboot.lst
 fi
 
-[ "$FRKRNL" = "NO" ] && sortnetif
+sortnetif
 
 if [ "$FRKRNL" = "NO" ] && [ $(cat /mnt/${tcrppart}/cde/onboot.lst|grep "kmaps.tczglibc_apps.tcz" | wc -w) -gt 0 ]; then
     sudo sed -i "/kmaps.tczglibc_apps.tcz/d" /mnt/${tcrppart}/cde/onboot.lst    
@@ -2175,6 +2237,13 @@ if [ "${BUS}" = "mmc"  ]; then
     DMPM="EUDEV"
     writeConfigKey "general" "devmod" "${DMPM}"          
 fi
+
+if [ "${NVMES}" = "null"  ]; then
+    NVMES="false"
+    writeConfigKey "general" "nvmesystem" "${NVMES}"
+fi
+
+[ "${NVMES}" = "false" ] && BLOCK_DDSML="N" || BLOCK_DDSML="Y"
 
 if [ "${LDRMODE}" = "null" ]; then
     LDRMODE="FRIEND"
@@ -2358,6 +2427,7 @@ writeConfigKey "general" "bay" "${bay}"
 
 # Until urxtv is available, Korean menu is used only on remote terminals.
 while true; do
+  [ "${NVMES}" = "false" ] && nvmeaction="Add" || nvmeaction="Remove"
   eval "echo \"c \\\"\${MSG${tz}01}, (${DMPM})\\\"\""     > "${TMP_PATH}/menu" 
   eval "echo \"m \\\"\${MSG${tz}02}, (${MODEL})\\\"\""   >> "${TMP_PATH}/menu"
   if [ -n "${MODEL}" ]; then
@@ -2373,7 +2443,8 @@ while true; do
     [ $(/sbin/ifconfig | grep eth7 | wc -l) -gt 0 ] && eval "echo \"v \\\"\${MSG${tz}04} 8\\\"\""         >> "${TMP_PATH}/menu"
     [ "${CPU}" != "HP" ] && eval "echo \"z \\\"\${MSG${tz}06} (${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"
     eval "echo \"k \\\"\${MSG${tz}56}\\\"\""             >> "${TMP_PATH}/menu"
-    eval "echo \"q \\\"\${MSG${tz}41} (${bay})\\\"\""      >> "${TMP_PATH}/menu"    
+    eval "echo \"q \\\"\${MSG${tz}41} (${bay})\\\"\""      >> "${TMP_PATH}/menu"
+    eval "echo \"w \\\"${nvmeaction} nvmesystem Addon(NVMe single volume use)\\\"\"" >> "${TMP_PATH}/menu"
     eval "echo \"p \\\"\${MSG${tz}18} (${BUILD}, ${LDRMODE}, ${MDLNAME})\\\"\""   >> "${TMP_PATH}/menu"      
   fi
   echo "n \"Additional Functions\""  >> "${TMP_PATH}/menu"      
@@ -2413,6 +2484,21 @@ while true; do
     z) selectldrmode ;    NEXT="p" ;;
     k) remapsata ;        NEXT="p" ;;
     q) storagepanel;      NEXT="p" ;;    
+    w) 
+      if [ "${NVMES}" = "false" ]; then 
+        add-addon "nvmesystem"
+        NVMES="true"
+        BLOCK_DDSML="Y"
+        DMPM="EUDEV"
+      else  
+        del-addon "nvmesystem"
+        NVMES="false"
+        BLOCK_DDSML="N"
+        DMPM="DDSML"
+      fi  
+      writeConfigKey "general" "nvmesystem" "${NVMES}"
+      writeConfigKey "general" "devmod" "${DMPM}"
+      ;;
     p) if [ "${LDRMODE}" == "FRIEND" ]; then
          make "fri" "${prevent_init}" 
        else  

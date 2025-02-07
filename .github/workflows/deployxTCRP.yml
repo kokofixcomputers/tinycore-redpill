@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Bring last uploaded mydata.tgz files from tinycore-redpill & lastest img
         run: |
           sudo apt-get update
@@ -147,11 +147,13 @@ jobs:
           gzip -c tinycore-redpill.${VERSION}.xtcrp.img > /opt/output/tinycore-redpill.${VERSION}.xtcrp.img.gz
           qemu-img convert -f raw -O vmdk tinycore-redpill.${VERSION}.xtcrp.img tinycore-redpill.${VERSION}.xtcrp.vmdk
           gzip -c tinycore-redpill.${VERSION}.xtcrp.vmdk > /opt/output/tinycore-redpill.${VERSION}.xtcrp.vmdk.gz
+          qemu-img convert -f raw -O vhdx -o subformat=dynamic -p tinycore-redpill.${VERSION}.xtcrp.img tinycore-redpill.${VERSION}.xtcrp.vhdx
+          gzip -c tinycore-redpill.${VERSION}.xtcrp.vhdx > /opt/output/tinycore-redpill.${VERSION}.xtcrp.vhdx.gz
           ls -ltr /opt/output
           
       - name: Upload MshellImage-${{ steps.get-version.outputs.VERSION }}
         if: success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MshellImage-${{ steps.get-version.outputs.VERSION }}
           path: /opt/output

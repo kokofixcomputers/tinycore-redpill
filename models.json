@@ -1,0 +1,243 @@
+{
+    "apollolake": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "DS1019+",
+            "DS620slim",
+            "DS218+",
+            "DS418play",
+            "DS718+",
+            "DS918+"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "powersched": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/powersched/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "broadwell": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "FS3400",
+            "RS3618xs",
+            "DS3617xs",
+            "DS3617xsII",
+            "FS2017",
+            "RS18017xs+",
+            "RS3617RPxs",
+            "RS3617xs+",
+            "RS4017xs+"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "broadwellnk": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "DS1621xs+",
+            "DS3622xs+",
+            "FS3600",
+            "RS1619xs+",
+            "RS3621RPxs",
+            "RS3621xs+",
+            "RS4021xs+",
+            "SA3400",
+            "SA3600",
+            "DS3018xs",
+            "FS1018"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "broadwellnkv2": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "FS3410",
+            "SA3410",
+            "SA3610"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "broadwellntbap": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "SA3200D",
+            "SA3400D"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "denverton": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "DS1819+",
+            "DS2419+",
+            "DS2419+II",
+            "DVA3219",
+            "DVA3221",
+            "RS820+",
+            "RS820RP+",
+            "DS1618+",
+            "RS2418+",
+            "RS2418RP+",
+            "RS2818RP+"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "geminilake": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "DS1520+",
+            "DS220+",
+            "DS224+",
+            "DS420+",
+            "DS423+",
+            "DS720+",
+            "DS920+",
+            "DVA1622"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "powersched": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/powersched/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "purley": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "FS6400",
+            "HD6500"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "r1000": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "DS1522+",
+            "DS723+",
+            "DS923+",
+            "RS422+"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "powersched": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/powersched/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "v1000": {
+        "productvers": {
+            "7.0": "4.4.180",
+            "7.1": "4.4.180",
+            "7.2": "4.4.302"
+        },
+        "models": [
+            "DS1621+",
+            "DS1821+",
+            "DS1823xs+",
+            "DS2422+",
+            "FS2500",
+            "RS1221+",
+            "RS1221RP+",
+            "RS2421+",
+            "RS2421RP+",
+            "RS2423+",
+            "RS2423RP+",
+            "RS2821RP+",
+            "RS822+",
+            "RS822RP+"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "powersched": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/powersched/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    },
+    "epyc7002": {
+        "productvers": {
+            "7.1": "7.1-5.10.55",
+            "7.2": "7.2-5.10.55"
+        },
+        "models": [
+            "SA6400"
+        ],
+        "add_extensions": [
+            {
+              "all-modules": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-modules/master/all-modules/rpext-index.json",
+              "powersched": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/powersched/rpext-index.json",
+              "sortnetif": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/sortnetif/rpext-index.json",
+              "storagepanel": "https://raw.githubusercontent.com/PeterSuh-Q3/tcrp-addons/master/storagepanel/rpext-index.json"
+            }
+        ]
+    }
+}

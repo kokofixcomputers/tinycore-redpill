@@ -13,9 +13,6 @@ function check_internet() {
 
 function gitclone() {
     git clone -b master --single-branch --depth=1 https://github.com/PeterSuh-Q3/redpill-load.git
-    if [ $? -ne 0 ]; then
-        git clone -b master --single-branch --depth=1 https://gitea.com/PeterSuh-Q3/redpill-load.git
-    fi    
 }
 
 function gitdownload() {
@@ -92,6 +89,24 @@ if [ -z "${1-}" ]; then
   [ -f /tmp/test_mode ] && rm /tmp/test_mode
 else
   touch /tmp/test_mode
+fi
+
+if [ -d /mnt/${tcrppart}/redpill-load/ ]; then
+    offline="YES"
+else
+    offline="NO"
+fi  
+
+if [ "${offline}" = "NO" ]; then
+    curl -skLO# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/models.json
+    if [ -f /tmp/test_mode ]; then
+      cecho g "###############################  This is Test Mode  ############################"
+      curl -skL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/functions_t.sh -o functions.sh
+      chmod +x /home/tc/redpill-load/*.sh
+      /bin/cp -vf /home/tc/redpill-load/build-loader_t.sh /home/tc/redpill-load/build-loader.sh
+    else
+      curl -skLO# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/master/functions.sh
+    fi
 fi
 
 /home/tc/menu_m.sh
