@@ -1792,17 +1792,17 @@ function remove_loader() {
       debug_msg "=== Filtered partitions ==="
       echo "$FILTERED"
       
-      # Step 3: 파티션 처리 및 장치 맵 생성
+      # Step 3: 파티션 처리
       TEMP_FILE=$(mktemp)
       echo "$FILTERED" | while read -r dev part_num id type; do
-          debug_msg "Processing $dev$part_num → Number: $part_num, ID: $id, Type: $type"
+          debug_msg "Processing $dev → Number: $part_num, ID: $id, Type: $type"
           
-          if [[ $part_num -ge 4 && $id == "83" && $type == "Linux" ]]; then
-              base_dev=$dev
+          if [[ $part_num -ge 4 ]]; then
+              base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
               debug_msg "Valid partition: $base_dev $part_num"
               echo "$base_dev $part_num" >> $TEMP_FILE
           else
-              debug_msg "Skipping $dev$part_num (not matching criteria)"
+              debug_msg "Skipping $dev (number < 4)"
           fi
       done
       
