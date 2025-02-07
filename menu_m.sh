@@ -1494,9 +1494,9 @@ function inject_loader() {
 
   #[ "$MACHINE" = "VIRTUAL" ] &&    returnto "Virtual system environment is not supported. Two or more BASIC type hard disks are required on bare metal. (SSD not possible)... Stop processing!!! " && return
 
-  IDX=0
+  BASIC=0
   SHR=0  
-  IDX_EX=0  
+  BASIC_EX=0  
   SHR_EX=0  
     while read -r edisk; do
         get_disk_type_cnt "${edisk}" "N"
@@ -1505,7 +1505,7 @@ function inject_loader() {
             case "${DOS_CNT} ${W95_CNT}" in
                 "0 0")
                     echo "This is BASIC or JBOD Type Hard Disk. $edisk"
-                    ((IDX++))
+                    ((BASIC++))
                     ;;
                 "0 1")
                     echo "This is SHR Type Hard Disk. $edisk"
@@ -1513,12 +1513,12 @@ function inject_loader() {
                     ;;
                 "2 0")
                     echo "This is BASIC Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
-                    ((IDX_EX++))
+                    ((BASIC_EX++))
                     ;;
                 "1 0")
                     if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
                         echo "This is BASIC Type Hard Disk and Has synoboot3 Boot Partition $edisk"
-                        ((IDX_EX++))
+                        ((BASIC_EX++))
                     fi
                     ;;
                 "2 1")
@@ -1536,25 +1536,25 @@ function inject_loader() {
     done < <(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://')
 
   do_ex_first=""    
-  if [ ${IDX_EX} -eq 2 ] || [ `expr ${IDX_EX} + ${SHR_EX}` -eq 2 ]; then
+  if [ ${BASIC_EX} -eq 2 ] || [ `expr ${BASIC_EX} + ${SHR_EX}` -eq 2 ]; then
     echo "There is at least one BASIC or SHR type disk each with an injected bootloader...OK"
     do_ex_first="Y"
-  elif [ ${IDX} -eq 2 ] || [ `expr ${IDX} + ${SHR}` -gt 1 ]; then
+  elif [ ${BASIC} -eq 2 ] || [ `expr ${BASIC} + ${SHR}` -gt 1 ]; then
     echo "There is at least one disk of type BASIC or SHR...OK"
     if [ -z "${do_ex_first}" ]; then
       do_ex_first="N"
     fi
-  #elif [ ${IDX_EX} -eq 0 ] && [ ${SHR_EX} -gt 1 ]; then 
+  #elif [ ${BASIC_EX} -eq 0 ] && [ ${SHR_EX} -gt 1 ]; then 
   else
-      echo "IDX = ${IDX}, SHR = ${SHR}, IDX_EX = ${IDX_EX}, SHR_EX=${SHR_EX}"
+      echo "BASIC = ${BASIC}, SHR = ${SHR}, BASIC_EX = ${BASIC_EX}, SHR_EX=${SHR_EX}"
       returnto "There is not enough Type Disk. Function Exit now!!! Press any key to continue..." && return  
   fi
 
   echo "do_ex_first = ${do_ex_first}"
   
-# [ ${IDX} -gt 1 ] BASIC more than 2 
-# [ ${IDX} -gt 0 && ${SHR} -gt 0 ] BASIC more than 1 && SHR more than 1
-# [ ${IDX} -eq 0 && ${SHR} -gt 2 ] BASIC 0 && SHR more than 3
+# [ ${BASIC} -gt 1 ] BASIC more than 2 
+# [ ${BASIC} -gt 0 && ${SHR} -gt 0 ] BASIC more than 1 && SHR more than 1
+# [ ${BASIC} -eq 0 && ${SHR} -gt 2 ] BASIC 0 && SHR more than 3
 echo -n "(Warning) Do you want to port the bootloader to Syno disk? [yY/nN] : "
 readanswer
 if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -1574,7 +1574,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
     fi
 
     if [ "${do_ex_first}" = "N" ]; then
-        if [ ${IDX} -eq 2 ] || [ `expr ${IDX} + ${SHR}` -gt 1 ]; then
+        if [ ${BASIC} -eq 2 ] || [ `expr ${BASIC} + ${SHR}` -gt 1 ]; then
             echo "New bootloader injection (including /sbin/fdisk partition creation)..."
 
             BOOTMAKE=""
@@ -1701,7 +1701,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
             done
         fi
     elif [ "${do_ex_first}" = "Y" ]; then
-        if [ ${IDX_EX} -eq 2 ] || [ `expr ${IDX_EX} + ${SHR_EX}` -eq 2 ]; then
+        if [ ${BASIC_EX} -eq 2 ] || [ `expr ${BASIC_EX} + ${SHR_EX}` -eq 2 ]; then
             echo "Reinject bootloader (into existing partition)..."
             for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
          
