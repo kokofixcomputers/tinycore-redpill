@@ -1498,42 +1498,42 @@ function inject_loader() {
   SHR=0  
   BASIC_EX=0  
   SHR_EX=0  
-    while read -r edisk; do
-        get_disk_type_cnt "${edisk}" "N"
-        
-        if [ "${RAID_CNT}" -eq 3 ]; then
-            case "${DOS_CNT} ${W95_CNT}" in
-                "0 0")
-                    echo "This is BASIC or JBOD Type Hard Disk. $edisk"
-                    ((BASIC++))
-                    ;;
-                "0 1")
-                    echo "This is SHR Type Hard Disk. $edisk"
-                    ((SHR++))
-                    ;;
-                "2 0")
-                    echo "This is BASIC Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
-                    ((BASIC_EX++))
-                    ;;
-                "1 0")
-                    if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
-                        echo "This is BASIC Type Hard Disk and Has synoboot3 Boot Partition $edisk"
-                        ((BASIC_EX++))
-                    fi
-                    ;;
-                "2 1")
-                    echo "This is SHR Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
-                    ((SHR_EX++))
-                    ;;
-                "1 1")
-                    if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
-                        echo "This is SHR Type Hard Disk and Has synoboot3 Boot Partition $edisk"
-                        ((SHR_EX++))
-                    fi
-                    ;;
-            esac
-        fi
-    done < <(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://')
+  while read -r edisk; do
+      get_disk_type_cnt "${edisk}" "N"
+      
+      if [ "${RAID_CNT}" -eq 3 ]; then
+          case "${DOS_CNT} ${W95_CNT}" in
+              "0 0")
+                  echo "This is BASIC or JBOD Type Hard Disk. $edisk"
+                  ((BASIC++))
+                  ;;
+              "0 1")
+                  echo "This is SHR Type Hard Disk. $edisk"
+                  ((SHR++))
+                  ;;
+              "2 0")
+                  echo "This is BASIC Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
+                  ((BASIC_EX++))
+                  ;;
+              "1 0")
+                  if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
+                      echo "This is BASIC Type Hard Disk and Has synoboot3 Boot Partition $edisk"
+                      ((BASIC_EX++))
+                  fi
+                  ;;
+              "2 1")
+                  echo "This is SHR Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
+                  ((SHR_EX++))
+                  ;;
+              "1 1")
+                  if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
+                      echo "This is SHR Type Hard Disk and Has synoboot3 Boot Partition $edisk"
+                      ((SHR_EX++))
+                  fi
+                  ;;
+          esac
+      fi
+  done < <(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://')
 
   do_ex_first=""    
   if [ ${BASIC_EX} -eq 2 ] || [ `expr ${BASIC_EX} + ${SHR_EX}` -eq 2 ]; then
