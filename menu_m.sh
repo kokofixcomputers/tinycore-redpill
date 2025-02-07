@@ -1388,7 +1388,8 @@ function wr_part2() {
         [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
     done
     sudo rm -rf "${mdiskpart}"/*
-        
+
+    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')        
     spacechk "${loaderdisk}2" "${diskid}"
     [ 0${SPACEUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${SPACEUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
   
