@@ -1239,7 +1239,7 @@ function tcrpfriendentry_hdd() {
     cat <<EOF
 menuentry 'Tiny Core Friend ${MODEL} ${BUILD} Update 0 ${DMPM}' {
         savedefault
-        search --set=root --fs-uuid "1234-5678" --hint hd0,msdos${1}
+    set root=(hd0,msdos${1})
         echo Loading Linux...
         linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8
         echo Loading initramfs...
@@ -1248,20 +1248,6 @@ menuentry 'Tiny Core Friend ${MODEL} ${BUILD} Update 0 ${DMPM}' {
 }
 EOF
 
-}
-
-function xtcrpconfigureentry_hdd() {
-    cat <<EOF
-menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
-        savedefault
-        search --set=root --fs-uuid "1234-5678" --hint hd0,msdos${1}
-        echo Loading Linux...
-        linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8 IWANTTOCONFIGURE
-        echo Loading initramfs to configure loader...
-        initrd /initrd-friend
-        echo Loding xTCRP RAMDISK to configure loader...
-}
-EOF
 }
 
 function add-addon() {
@@ -1350,7 +1336,6 @@ function wr_part1() {
     echo "Modifying grub.cfg for new loader boot..."
     sudo sed -i '61,$d' "${mdisk}${1}"/boot/grub/grub.cfg
     tcrpfriendentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
-    xtcrpconfigureentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
 
     sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdisk}${1}"
     sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdisk}${1}"
@@ -1412,8 +1397,6 @@ function wr_part3() {
     [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
 
     cd /mnt/${loaderdisk}3 && find . -name "*dsm*" -o -name "*user_config*" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
-    sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "${mdisk}${1}"/xtcrp.tgz
-    
     true
 }
 
@@ -1616,7 +1599,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
-                        sudo mkfs.vfat -i 12345678 -F16 "${edisk}4"
+                        sudo mkfs.vfat -F16 "${edisk}4"
                         synop1=${edisk}4 
                         wr_part1 "4"
                         [ $? -ne 0 ] && return
@@ -1647,7 +1630,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
-                        sudo mkfs.vfat -i 12345678 -F16 "${edisk}5"
+                        sudo mkfs.vfat -F16 "${edisk}5"
                         synop1=${edisk}5
                         wr_part1 "5"
                         [ $? -ne 0 ] && return
