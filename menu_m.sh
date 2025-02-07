@@ -1301,20 +1301,32 @@ function spacechk() {
   echo "SPACELEFT = ${SPACELEFT_FORMATTED} bytes (${SPACELEFT_MB} MB)"
 }
 
+function get_partition() {
+    local disk=$1
+    local num=$2
+    if [[ "$disk" =~ ^/dev/nv ]]; then
+        echo "${disk}p${num}"
+    else
+        echo "${disk}${num}"
+    fi
+}
+
 function wr_part1() {
 
-    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
-    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
+    fediskpart="$(get_partition "${edisk}" ${1})"
+    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
+    
+    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
       while true; do
         sleep 1
-        echo "Mounting ${edisk}${1} ..."
-        sudo mount "${edisk}${1}" "${mdisk}${1}"
-        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${fediskpart} ..."
+        sudo mount "${fediskpart}" "${mdiskpart}"
+        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdisk}${1}"/*
+    sudo rm -rf "${mdiskpart}"/*
 
-    diskid=$(echo "${edisk}" | sed 's#/dev/##')
-    spacechk "${loaderdisk}1" "${diskid}${1}"
+    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')
+    spacechk "${loaderdisk}1" "${diskid}"
     FILESIZE1=$(ls -l /mnt/${loaderdisk}3/bzImage-friend | awk '{print$5}')
     FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-friend | awk '{print$5}')
     
@@ -1338,65 +1350,68 @@ function wr_part1() {
         TOTALUSED_FORMATTED=$(printf "%'d" "${TOTALUSED}")
         TOTALUSED_MB=$((TOTALUSED / 1024 / 1024))
         echo "FIXED TOTALUSED = ${TOTALUSED_FORMATTED} bytes (${TOTALUSED_MB} MB)"
-        [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+        [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
     fi
 
     if [ -z ${ZIMAGESIZE} ]; then
-        cd /mnt/${loaderdisk}1 && sudo find . | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+        cd /mnt/${loaderdisk}1 && sudo find . | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
     else
-        cd /mnt/${loaderdisk}1 && sudo find . -not -name "zImage" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+        cd /mnt/${loaderdisk}1 && sudo find . -not -name "zImage" | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
     fi
 
     echo "Modifying grub.cfg for new loader boot..."
-    sudo sed -i '61,$d' "${mdisk}${1}"/boot/grub/grub.cfg
-    tcrpfriendentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
-    xtcrpconfigureentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
+    sudo sed -i '61,$d' "${mdiskpart}"/boot/grub/grub.cfg
+    tcrpfriendentry_hdd ${1} | sudo tee --append "${mdiskpart}"/boot/grub/grub.cfg
+    xtcrpconfigureentry_hdd ${1} | sudo tee --append "${mdiskpart}"/boot/grub/grub.cfg
 
-    sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdisk}${1}"
-    sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdisk}${1}"
+    sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdiskpart}"
+    sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdiskpart}"
 
     sudo mkdir -p /usr/local/share/locale
-    sudo grub-install --target=x86_64-efi --boot-directory="${mdisk}${1}"/boot --efi-directory="${mdisk}${1}" --removable
-    [ $? -ne 0 ] && returnto "excute grub-install ${mdisk}${1} failed. Stop processing!!! " && false
-    sudo grub-install --target=i386-pc --boot-directory="${mdisk}${1}"/boot "${edisk}"
-    [ $? -ne 0 ] && returnto "excute grub-install ${mdisk}${1} failed. Stop processing!!! " && false
+    sudo grub-install --target=x86_64-efi --boot-directory="${mdiskpart}"/boot --efi-directory="${mdiskpart}" --removable
+    [ $? -ne 0 ] && returnto "excute grub-install ${mdiskpart} failed. Stop processing!!! " && false
+    sudo grub-install --target=i386-pc --boot-directory="${mdiskpart}"/boot "${edisk}"
+    [ $? -ne 0 ] && returnto "excute grub-install ${mdiskpart} failed. Stop processing!!! " && false
     true
 }
 
 function wr_part2() {
 
-    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
-    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
+    fediskpart="$(get_partition "${edisk}" ${1})"
+    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
+    
+    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
     while true; do
         sleep 1
-        echo "Mounting ${edisk}${1} ..."
-        sudo mount "${edisk}${1}" "${mdisk}${1}"
-        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${fediskpart} ..."
+        sudo mount "${fediskpart}" "${mdiskpart}"
+        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdisk}${1}"/*
+    sudo rm -rf "${mdiskpart}"/*
         
-    spacechk "${loaderdisk}2" "${diskid}${1}"
-    [ 0${SPACEUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${SPACEUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+    spacechk "${loaderdisk}2" "${diskid}"
+    [ 0${SPACEUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${SPACEUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
   
-    cd /mnt/${loaderdisk}2 && sudo find . | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+    cd /mnt/${loaderdisk}2 && sudo find . | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
     true
 }
 
 function wr_part3() {
 
-    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
-
-    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
+    fediskpart="$(get_partition "${edisk}" ${1})"
+    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
+    
+    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
     while true; do
         sleep 1
-        echo "Mounting ${edisk}${1} ..."
-        sudo mount "${edisk}${1}" "${mdisk}${1}"
-        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${fediskpart} ..."
+        sudo mount "${fediskpart}" "${mdiskpart}"
+        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdisk}${1}"/*
+    sudo rm -rf "${mdiskpart}"/*
 
-    diskid=$(echo "${edisk}" | sed 's#/dev/##')
-    spacechk "${loaderdisk}3" "${diskid}${1}"
+    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')
+    spacechk "${loaderdisk}3" "${diskid}"
     FILESIZE1=$(ls -l /mnt/${loaderdisk}3/zImage-dsm | awk '{print$5}')
     FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-dsm | awk '{print$5}')
     
@@ -1409,10 +1424,10 @@ function wr_part3() {
     TOTALUSED_MB=$((TOTALUSED / 1024 / 1024))
     echo "TOTALUSED = ${TOTALUSED_FORMATTED} bytes (${TOTALUSED_MB} MB)"
     
-    [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+    [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
 
-    cd /mnt/${loaderdisk}3 && find . -name "*dsm*" -o -name "*user_config*" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
-    sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "${mdisk}${1}"/xtcrp.tgz
+    cd /mnt/${loaderdisk}3 && find . -name "*dsm*" -o -name "*user_config*" | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
+    sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "${mdiskpart}"/xtcrp.tgz
     
     true
 }
@@ -1481,16 +1496,6 @@ function get_disk_type_cnt() {
         echo "EXT_CNT=${EXT_CNT}"
     fi    
              
-}
-
-function get_partition() {
-    local disk=$1
-    local num=$2
-    if [[ "$disk" =~ ^/dev/nv ]]; then
-        echo "${disk}p${num}"
-    else
-        echo "${disk}${num}"
-    fi
 }
 
 function inject_loader() {
