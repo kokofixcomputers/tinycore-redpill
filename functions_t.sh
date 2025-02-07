@@ -678,15 +678,16 @@ EOF
 function getloaderdisk() {
     loaderdisk=""
     while read -r edisk; do
-        if [ $(sudo /sbin/fdisk -l "$edisk" | grep -c "83 Linux") -eq 3 ]; then
-            loaderdisk=$(/sbin/blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?3//g' | awk -F/ '{print $NF}' | head -n 1)
-            if [ -n "$loaderdisk" ]; then
-                break
-            else
-                # check for the other type
-                loaderdisk="$(echo ${edisk} | cut -c 1-12 | awk -F\/ '{print $3}')"
-                [ -n "$loaderdisk" ] && break
-            fi
+	    linux_partitions=$(fdisk -l | grep "83 Linux" | grep "${edisk}" | wc -l)
+        [ $linux_partitions -eq 2 ] && continue
+        partition_number=$((linux_partitions == 1 ? 4 : 3))
+        loaderdisk=$(/sbin/blkid | grep "6234-C863" | cut -d ':' -f1 | sed 's/p\?${partition_number}//g' | awk -F/ '{print $NF}' | head -n 1)
+        if [ -n "$loaderdisk" ]; then
+            break
+        else
+            # check for the other type
+            loaderdisk="$(echo ${edisk} | cut -c 1-12 | awk -F\/ '{print $3}')"
+            [ -n "$loaderdisk" ] && break
         fi
     done < <(lsblk -ndo NAME | grep -v '^loop' | grep -v '^zram' | sed 's/^/\/dev\//')
 
