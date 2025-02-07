@@ -1782,60 +1782,18 @@ function remove_loader() {
   readanswer
   if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
 
-      # Step 1: 영어로 fdisk 출력 얻기
-      RAW_PARTITIONS=$(LC_ALL=C sudo fdisk -l 2>/dev/null)
-      debug_msg "=== Raw fdisk output ==="
-      echo "$RAW_PARTITIONS"
-      
-      # Step 2: 파티션 정보 필터링 
-      FILTERED=$(echo "$RAW_PARTITIONS" | awk '$NF=="Linux" && $(NF-1)==83 {print $1}')
-      debug_msg "=== Filtered partitions ==="
-      echo "$FILTERED"
-      
-      # Step 3: 파티션 처리
-      TEMP_FILE=$(mktemp)
-      echo "$FILTERED" | while read -r dev part_num id type; do
-          debug_msg "Processing $dev → Number: $part_num, ID: $id, Type: $type"
-          
+      LC_ALL=C sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
+          part_num="${dev##*[!0-9]}"
           if [[ $part_num -ge 4 ]]; then
               base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
-              debug_msg "Valid partition: $base_dev $part_num"
-              echo "$base_dev $part_num" >> $TEMP_FILE
-          else
-              debug_msg "Skipping $dev (number < 4)"
+              echo "$base_dev $part_num"
           fi
-      done
-      
-      debug_msg "=== Temporary device map ==="
-      cat $TEMP_FILE
-      
-      # Step 4: 장치별 파티션 그룹화
-      GROUPED=$(sort -u $TEMP_FILE | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}')
-      rm $TEMP_FILE
-      
-      debug_msg "=== Grouped partitions ==="
-      echo "$GROUPED"
-      
-      # Step 5: 삭제 명령 실행 (테스트 모드)
-      echo "$GROUPED" | while read -r dev parts; do
-          debug_msg "Processing device: $dev"
-          debug_msg "Partitions to delete: $parts"
-          
+      done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
           cmd=""
-          sorted_parts=$(echo "$parts" | tr ' ' '\n' | sort -nr | tr '\n' ' ')
-          debug_msg "Sorted partitions (DESC): $sorted_parts"
-          
-          for p in $sorted_parts; do
+          for p in $(echo "$parts" | tr ' ' '\n' | sort -nr); do
               cmd+="d\n$p\n"
-              debug_msg "[Command draft]\n$cmd"
           done
-          
-          debug_msg "Final command sequence:"
-          echo -e "${cmd}w\n" | sed 's/^/  /'
-          
-          # 실제 실행 (주의: 테스트 후 주석 해제)
-          # echo -e "${cmd}w\n" | sudo fdisk "$dev"
-          debug_msg "Test mode: Command not executed"
+          echo -e "${cmd}w\n" | sudo fdisk "$dev"
       done
   
   fi
