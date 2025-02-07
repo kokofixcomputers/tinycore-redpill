@@ -1483,6 +1483,16 @@ function get_disk_type_cnt() {
              
 }
 
+function get_partition() {
+    local disk=$1
+    local num=$2
+    if [[ $disk == /dev/nv* ]]; then
+        echo "${disk}p${num}"
+    else
+        echo "${disk}${num}"
+    fi
+}
+
 function inject_loader() {
 
   if [ ! -f /mnt/${loaderdisk}3/bzImage-friend ] || [ ! -f /mnt/${loaderdisk}3/initrd-friend ] || [ ! -f /mnt/${loaderdisk}3/zImage-dsm ] || [ ! -f /mnt/${loaderdisk}3/initrd-dsm ] || [ ! -f /mnt/${loaderdisk}3/user_config.json ] || [ ! $(grep -i "Tiny Core Friend" /mnt/${loaderdisk}1/boot/grub/grub.cfg | wc -l) -eq 1 ]; then
@@ -1579,7 +1589,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
 
             BOOTMAKE=""
               SYNOP3MAKE=""
-            for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+            for edisk in $(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://' ); do
          
                 model=$(lsblk -o PATH,MODEL | grep $edisk | head -1)
                 get_disk_type_cnt "${edisk}" "Y"
@@ -1607,7 +1617,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "activate partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
                       
-                        last_sector="$(sudo /sbin/fdisk -l "${edisk}" | grep "${edisk}5" | awk '{print $3}')"
+                        last_sector="$(sudo /sbin/fdisk -l "${edisk}" | grep "$(get_partition "${edisk}" 5)" | awk '{print $3}')"
                         last_sector=$((${last_sector} + 1))
                         echo "1st disk's part 6 last sector is $last_sector"
                         
@@ -1616,8 +1626,8 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
-                        sudo mkfs.vfat -i 12345678 -F16 "${edisk}4"
-                        synop1=${edisk}4 
+                        sudo mkfs.vfat -i 12345678 -F16 "$(get_partition "${edisk}" 4)"
+                        synop1=$(get_partition "${edisk}" 4)
                         wr_part1 "4"
                         [ $? -ne 0 ] && return
      
@@ -1647,14 +1657,14 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
-                        sudo mkfs.vfat -i 12345678 -F16 "${edisk}5"
-                        synop1=${edisk}5
+                        sudo mkfs.vfat -i 12345678 -F16 "$(get_partition "${edisk}" 5)"
+                        synop1=$(get_partition "${edisk}" 5)
                         wr_part1 "5"
                         [ $? -ne 0 ] && return
 
                     fi 
-                    sudo mkfs.vfat -F16 "${edisk}6"
-                    synop2=${edisk}6    
+                    sudo mkfs.vfat -F16 "$(get_partition "${edisk}" 6)"
+                    synop2=$(get_partition "${edisk}" 6)    
                     wr_part2 "6"
                     [ $? -ne 0 ] && return
 
@@ -1678,15 +1688,15 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         sleep 1
     
                         #prepare_img
-                        sudo mkfs.vfat -i 6234C863 -F16 "${edisk}4"
+                        sudo mkfs.vfat -i 6234C863 -F16 "$(get_partition "${edisk}" 4)"
                         [ $? -ne 0 ] && return
        
-                        #sudo dd if="${loopdev}p3" of="${edisk}4"
+                        #sudo dd if="${loopdev}p3" of="$(get_partition "${edisk}" 4)"
     
                         wr_part3 "4"
                         [ $? -ne 0 ] && return
     
-                        synop3=${edisk}4
+                        synop3=$(get_partition "${edisk}" 4)
                     else
                         echo "The synoboot3 was already made!!!"
                         continue
@@ -1703,7 +1713,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
     elif [ "${do_ex_first}" = "Y" ]; then
         if [ ${BASIC_EX} -eq 2 ] || [ `expr ${BASIC_EX} + ${SHR_EX}` -eq 2 ]; then
             echo "Reinject bootloader (into existing partition)..."
-            for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
+            for edisk in $(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://' ); do
          
                 model=$(lsblk -o PATH,MODEL | grep $edisk | head -1)
                 get_disk_type_cnt "${edisk}" "Y"
@@ -1717,14 +1727,14 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                     prepare_grub
                     [ $? -ne 0 ] && return
                     if [ "${W95_CNT}" -eq 1 ]; then
-                        synop1=${edisk}4                    
+                        synop1=$(get_partition "${edisk}" 4)                    
                         wr_part1 "4"
                     else 
-                        synop1=${edisk}5
+                        synop1=$(get_partition "${edisk}" 5)
                         wr_part1 "5"
                     fi
 
-                       synop2=${edisk}6                 
+                       synop2=$(get_partition "${edisk}" 6)                 
                     wr_part2 "6"
                     [ $? -ne 0 ] && return
                     continue
@@ -1739,7 +1749,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         wr_part3 "4"
                         [ $? -ne 0 ] && return
     
-                        synop3=${edisk}4
+                        synop3=$(get_partition "${edisk}" 4)
                     fi
                     continue
                 fi
