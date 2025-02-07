@@ -1301,32 +1301,20 @@ function spacechk() {
   echo "SPACELEFT = ${SPACELEFT_FORMATTED} bytes (${SPACELEFT_MB} MB)"
 }
 
-function get_partition() {
-    local disk=$1
-    local num=$2
-    if [[ "$disk" =~ ^/dev/nv ]]; then
-        echo "${disk}p${num}"
-    else
-        echo "${disk}${num}"
-    fi
-}
-
 function wr_part1() {
 
-    fediskpart="$(get_partition "${edisk}" ${1})"
-    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
-    
-    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
+    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
+    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
       while true; do
         sleep 1
-        echo "Mounting ${fediskpart} ..."
-        sudo mount "${fediskpart}" "${mdiskpart}"
-        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${edisk}${1} ..."
+        sudo mount "${edisk}${1}" "${mdisk}${1}"
+        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdiskpart}"/*
+    sudo rm -rf "${mdisk}${1}"/*
 
-    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')
-    spacechk "${loaderdisk}1" "${diskid}"
+    diskid=$(echo "${edisk}" | sed 's#/dev/##')
+    spacechk "${loaderdisk}1" "${diskid}${1}"
     FILESIZE1=$(ls -l /mnt/${loaderdisk}3/bzImage-friend | awk '{print$5}')
     FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-friend | awk '{print$5}')
     
@@ -1350,69 +1338,65 @@ function wr_part1() {
         TOTALUSED_FORMATTED=$(printf "%'d" "${TOTALUSED}")
         TOTALUSED_MB=$((TOTALUSED / 1024 / 1024))
         echo "FIXED TOTALUSED = ${TOTALUSED_FORMATTED} bytes (${TOTALUSED_MB} MB)"
-        [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+        [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
     fi
 
     if [ -z ${ZIMAGESIZE} ]; then
-        cd /mnt/${loaderdisk}1 && sudo find . | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
+        cd /mnt/${loaderdisk}1 && sudo find . | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
     else
-        cd /mnt/${loaderdisk}1 && sudo find . -not -name "zImage" | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
+        cd /mnt/${loaderdisk}1 && sudo find . -not -name "zImage" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
     fi
 
     echo "Modifying grub.cfg for new loader boot..."
-    sudo sed -i '61,$d' "${mdiskpart}"/boot/grub/grub.cfg
-    tcrpfriendentry_hdd ${1} | sudo tee --append "${mdiskpart}"/boot/grub/grub.cfg
-    xtcrpconfigureentry_hdd ${1} | sudo tee --append "${mdiskpart}"/boot/grub/grub.cfg
+    sudo sed -i '61,$d' "${mdisk}${1}"/boot/grub/grub.cfg
+    tcrpfriendentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
+    xtcrpconfigureentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
 
-    sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdiskpart}"
-    sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdiskpart}"
+    sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdisk}${1}"
+    sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdisk}${1}"
 
     sudo mkdir -p /usr/local/share/locale
-    sudo grub-install --target=x86_64-efi --boot-directory="${mdiskpart}"/boot --efi-directory="${mdiskpart}" --removable
-    [ $? -ne 0 ] && returnto "excute grub-install ${mdiskpart} failed. Stop processing!!! " && false
-    sudo grub-install --target=i386-pc --boot-directory="${mdiskpart}"/boot "${edisk}"
-    [ $? -ne 0 ] && returnto "excute grub-install ${mdiskpart} failed. Stop processing!!! " && false
+    sudo grub-install --target=x86_64-efi --boot-directory="${mdisk}${1}"/boot --efi-directory="${mdisk}${1}" --removable
+    [ $? -ne 0 ] && returnto "excute grub-install ${mdisk}${1} failed. Stop processing!!! " && false
+    sudo grub-install --target=i386-pc --boot-directory="${mdisk}${1}"/boot "${edisk}"
+    [ $? -ne 0 ] && returnto "excute grub-install ${mdisk}${1} failed. Stop processing!!! " && false
     true
 }
 
 function wr_part2() {
 
-    fediskpart="$(get_partition "${edisk}" ${1})"
-    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
-    
-    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
+    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
+    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
     while true; do
         sleep 1
-        echo "Mounting ${fediskpart} ..."
-        sudo mount "${fediskpart}" "${mdiskpart}"
-        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${edisk}${1} ..."
+        sudo mount "${edisk}${1}" "${mdisk}${1}"
+        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdiskpart}"/*
-
-    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')        
-    spacechk "${loaderdisk}2" "${diskid}"
-    [ 0${SPACEUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${SPACEUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+    sudo rm -rf "${mdisk}${1}"/*
+        
+    spacechk "${loaderdisk}2" "${diskid}${1}"
+    [ 0${SPACEUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${SPACEUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
   
-    cd /mnt/${loaderdisk}2 && sudo find . | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
+    cd /mnt/${loaderdisk}2 && sudo find . | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
     true
 }
 
 function wr_part3() {
 
-    fediskpart="$(get_partition "${edisk}" ${1})"
-    mdiskpart=$(echo "${fediskpart}" | sed 's/dev/mnt/')
-    
-    [ ! -d "${mdiskpart}" ] && sudo mkdir "${mdiskpart}"
+    mdisk=$(echo "${edisk}" | sed 's/dev/mnt/')
+
+    [ ! -d "${mdisk}${1}" ] && sudo mkdir "${mdisk}${1}"
     while true; do
         sleep 1
-        echo "Mounting ${fediskpart} ..."
-        sudo mount "${fediskpart}" "${mdiskpart}"
-        [ $( mount | grep "${fediskpart}" | wc -l ) -gt 0 ] && break
+        echo "Mounting ${edisk}${1} ..."
+        sudo mount "${edisk}${1}" "${mdisk}${1}"
+        [ $( mount | grep "${edisk}${1}" | wc -l ) -gt 0 ] && break
     done
-    sudo rm -rf "${mdiskpart}"/*
+    sudo rm -rf "${mdisk}${1}"/*
 
-    diskid=$(echo "${fediskpart}" | sed 's#/dev/##')
-    spacechk "${loaderdisk}3" "${diskid}"
+    diskid=$(echo "${edisk}" | sed 's#/dev/##')
+    spacechk "${loaderdisk}3" "${diskid}${1}"
     FILESIZE1=$(ls -l /mnt/${loaderdisk}3/zImage-dsm | awk '{print$5}')
     FILESIZE2=$(ls -l /mnt/${loaderdisk}3/initrd-dsm | awk '{print$5}')
     
@@ -1425,10 +1409,10 @@ function wr_part3() {
     TOTALUSED_MB=$((TOTALUSED / 1024 / 1024))
     echo "TOTALUSED = ${TOTALUSED_FORMATTED} bytes (${TOTALUSED_MB} MB)"
     
-    [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdiskpart}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
+    [ 0${TOTALUSED} -ge 0${SPACELEFT} ] && sudo umount "${mdisk}${1}" && returnto "Source Partition is too big ${TOTALUSED}, Space left ${SPACELEFT} !!!. Stop processing!!! " && false
 
-    cd /mnt/${loaderdisk}3 && find . -name "*dsm*" -o -name "*user_config*" | sudo cpio -pdm "${mdiskpart}" 2>/dev/null
-    sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "${mdiskpart}"/xtcrp.tgz
+    cd /mnt/${loaderdisk}3 && find . -name "*dsm*" -o -name "*user_config*" | sudo cpio -pdm "${mdisk}${1}" 2>/dev/null
+    sudo curl -kL# https://raw.githubusercontent.com/PeterSuh-Q3/tinycore-redpill/refs/heads/main/xtcrp.tgz -o "${mdisk}${1}"/xtcrp.tgz
     
     true
 }
@@ -1510,67 +1494,67 @@ function inject_loader() {
 
   #[ "$MACHINE" = "VIRTUAL" ] &&    returnto "Virtual system environment is not supported. Two or more BASIC type hard disks are required on bare metal. (SSD not possible)... Stop processing!!! " && return
 
-  BASIC=0
+  IDX=0
   SHR=0  
-  BASIC_EX=0  
+  IDX_EX=0  
   SHR_EX=0  
-  while read -r edisk; do
-      get_disk_type_cnt "${edisk}" "N"
-      
-      if [ "${RAID_CNT}" -eq 3 ]; then
-          case "${DOS_CNT} ${W95_CNT}" in
-              "0 0")
-                  echo "This is BASIC or JBOD Type Hard Disk. $edisk"
-                  ((BASIC++))
-                  ;;
-              "0 1")
-                  echo "This is SHR Type Hard Disk. $edisk"
-                  ((SHR++))
-                  ;;
-              "2 0")
-                  echo "This is BASIC Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
-                  ((BASIC_EX++))
-                  ;;
-              "1 0")
-                  if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
-                      echo "This is BASIC Type Hard Disk and Has synoboot3 Boot Partition $edisk"
-                      ((BASIC_EX++))
-                  fi
-                  ;;
-              "2 1")
-                  echo "This is SHR Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
-                  ((SHR_EX++))
-                  ;;
-              "1 1")
-                  if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
-                      echo "This is SHR Type Hard Disk and Has synoboot3 Boot Partition $edisk"
-                      ((SHR_EX++))
-                  fi
-                  ;;
-          esac
-      fi
-  done < <(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://')
+    while read -r edisk; do
+        get_disk_type_cnt "${edisk}" "N"
+        
+        if [ "${RAID_CNT}" -eq 3 ]; then
+            case "${DOS_CNT} ${W95_CNT}" in
+                "0 0")
+                    echo "This is BASIC or JBOD Type Hard Disk. $edisk"
+                    ((IDX++))
+                    ;;
+                "0 1")
+                    echo "This is SHR Type Hard Disk. $edisk"
+                    ((SHR++))
+                    ;;
+                "2 0")
+                    echo "This is BASIC Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
+                    ((IDX_EX++))
+                    ;;
+                "1 0")
+                    if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
+                        echo "This is BASIC Type Hard Disk and Has synoboot3 Boot Partition $edisk"
+                        ((IDX_EX++))
+                    fi
+                    ;;
+                "2 1")
+                    echo "This is SHR Type Hard Disk and Has synoboot1 and synoboot2 Boot Partition $edisk"
+                    ((SHR_EX++))
+                    ;;
+                "1 1")
+                    if [ $(sudo /sbin/blkid | grep ${edisk} | grep -c "6234-C863") -eq 1 ]; then
+                        echo "This is SHR Type Hard Disk and Has synoboot3 Boot Partition $edisk"
+                        ((SHR_EX++))
+                    fi
+                    ;;
+            esac
+        fi
+    done < <(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://')
 
   do_ex_first=""    
-  if [ ${BASIC_EX} -eq 2 ] || [ `expr ${BASIC_EX} + ${SHR_EX}` -eq 2 ]; then
+  if [ ${IDX_EX} -eq 2 ] || [ `expr ${IDX_EX} + ${SHR_EX}` -eq 2 ]; then
     echo "There is at least one BASIC or SHR type disk each with an injected bootloader...OK"
     do_ex_first="Y"
-  elif [ ${BASIC} -eq 2 ] || [ `expr ${BASIC} + ${SHR}` -gt 1 ]; then
+  elif [ ${IDX} -eq 2 ] || [ `expr ${IDX} + ${SHR}` -gt 1 ]; then
     echo "There is at least one disk of type BASIC or SHR...OK"
     if [ -z "${do_ex_first}" ]; then
       do_ex_first="N"
     fi
-  #elif [ ${BASIC_EX} -eq 0 ] && [ ${SHR_EX} -gt 1 ]; then 
+  #elif [ ${IDX_EX} -eq 0 ] && [ ${SHR_EX} -gt 1 ]; then 
   else
-      echo "BASIC = ${BASIC}, SHR = ${SHR}, BASIC_EX = ${BASIC_EX}, SHR_EX=${SHR_EX}"
+      echo "IDX = ${IDX}, SHR = ${SHR}, IDX_EX = ${IDX_EX}, SHR_EX=${SHR_EX}"
       returnto "There is not enough Type Disk. Function Exit now!!! Press any key to continue..." && return  
   fi
 
   echo "do_ex_first = ${do_ex_first}"
   
-# [ ${BASIC} -gt 1 ] BASIC more than 2 
-# [ ${BASIC} -gt 0 && ${SHR} -gt 0 ] BASIC more than 1 && SHR more than 1
-# [ ${BASIC} -eq 0 && ${SHR} -gt 2 ] BASIC 0 && SHR more than 3
+# [ ${IDX} -gt 1 ] BASIC more than 2 
+# [ ${IDX} -gt 0 && ${SHR} -gt 0 ] BASIC more than 1 && SHR more than 1
+# [ ${IDX} -eq 0 && ${SHR} -gt 2 ] BASIC 0 && SHR more than 3
 echo -n "(Warning) Do you want to port the bootloader to Syno disk? [yY/nN] : "
 readanswer
 if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -1590,12 +1574,12 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
     fi
 
     if [ "${do_ex_first}" = "N" ]; then
-        if [ ${BASIC} -eq 2 ] || [ `expr ${BASIC} + ${SHR}` -gt 1 ]; then
+        if [ ${IDX} -eq 2 ] || [ `expr ${IDX} + ${SHR}` -gt 1 ]; then
             echo "New bootloader injection (including /sbin/fdisk partition creation)..."
 
             BOOTMAKE=""
               SYNOP3MAKE=""
-            for edisk in $(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://' ); do
+            for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
          
                 model=$(lsblk -o PATH,MODEL | grep $edisk | head -1)
                 get_disk_type_cnt "${edisk}" "Y"
@@ -1623,7 +1607,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "activate partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
                       
-                        last_sector="$(sudo /sbin/fdisk -l "${edisk}" | grep "$(get_partition "${edisk}" 5)" | awk '{print $3}')"
+                        last_sector="$(sudo /sbin/fdisk -l "${edisk}" | grep "${edisk}5" | awk '{print $3}')"
                         last_sector=$((${last_sector} + 1))
                         echo "1st disk's part 6 last sector is $last_sector"
                         
@@ -1632,8 +1616,8 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
-                        sudo mkfs.vfat -i 12345678 -F16 "$(get_partition "${edisk}" 4)"
-                        synop1=$(get_partition "${edisk}" 4)
+                        sudo mkfs.vfat -i 12345678 -F16 "${edisk}4"
+                        synop1=${edisk}4 
                         wr_part1 "4"
                         [ $? -ne 0 ] && return
      
@@ -1663,14 +1647,14 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         [ $? -ne 0 ] && returnto "make logical partition on ${edisk} failed. Stop processing!!! " && return
                         sleep 1
  
-                        sudo mkfs.vfat -i 12345678 -F16 "$(get_partition "${edisk}" 5)"
-                        synop1=$(get_partition "${edisk}" 5)
+                        sudo mkfs.vfat -i 12345678 -F16 "${edisk}5"
+                        synop1=${edisk}5
                         wr_part1 "5"
                         [ $? -ne 0 ] && return
 
                     fi 
-                    sudo mkfs.vfat -F16 "$(get_partition "${edisk}" 6)"
-                    synop2=$(get_partition "${edisk}" 6)    
+                    sudo mkfs.vfat -F16 "${edisk}6"
+                    synop2=${edisk}6    
                     wr_part2 "6"
                     [ $? -ne 0 ] && return
 
@@ -1694,15 +1678,15 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         sleep 1
     
                         #prepare_img
-                        sudo mkfs.vfat -i 6234C863 -F16 "$(get_partition "${edisk}" 4)"
+                        sudo mkfs.vfat -i 6234C863 -F16 "${edisk}4"
                         [ $? -ne 0 ] && return
        
-                        #sudo dd if="${loopdev}p3" of="$(get_partition "${edisk}" 4)"
+                        #sudo dd if="${loopdev}p3" of="${edisk}4"
     
                         wr_part3 "4"
                         [ $? -ne 0 ] && return
     
-                        synop3=$(get_partition "${edisk}" 4)
+                        synop3=${edisk}4
                     else
                         echo "The synoboot3 was already made!!!"
                         continue
@@ -1717,9 +1701,9 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
             done
         fi
     elif [ "${do_ex_first}" = "Y" ]; then
-        if [ ${BASIC_EX} -eq 2 ] || [ `expr ${BASIC_EX} + ${SHR_EX}` -eq 2 ]; then
+        if [ ${IDX_EX} -eq 2 ] || [ `expr ${IDX_EX} + ${SHR_EX}` -eq 2 ]; then
             echo "Reinject bootloader (into existing partition)..."
-            for edisk in $(sudo /sbin/fdisk -l | grep -e "Disk /dev/sd" -e "Disk /dev/nv" | awk '{print $2}' | sed 's/://' ); do
+            for edisk in $(sudo /sbin/fdisk -l | grep "Disk /dev/sd" | awk '{print $2}' | sed 's/://' ); do
          
                 model=$(lsblk -o PATH,MODEL | grep $edisk | head -1)
                 get_disk_type_cnt "${edisk}" "Y"
@@ -1733,14 +1717,14 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                     prepare_grub
                     [ $? -ne 0 ] && return
                     if [ "${W95_CNT}" -eq 1 ]; then
-                        synop1=$(get_partition "${edisk}" 4)                    
+                        synop1=${edisk}4                    
                         wr_part1 "4"
                     else 
-                        synop1=$(get_partition "${edisk}" 5)
+                        synop1=${edisk}5
                         wr_part1 "5"
                     fi
 
-                       synop2=$(get_partition "${edisk}" 6)                 
+                       synop2=${edisk}6                 
                     wr_part2 "6"
                     [ $? -ne 0 ] && return
                     continue
@@ -1755,7 +1739,7 @@ if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                         wr_part3 "4"
                         [ $? -ne 0 ] && return
     
-                        synop3=$(get_partition "${edisk}" 4)
+                        synop3=${edisk}4
                     fi
                     continue
                 fi
