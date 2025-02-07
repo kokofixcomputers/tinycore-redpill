@@ -1772,27 +1772,50 @@ fi
 
 }
 
+# Debug message function
+function debug_msg() {
+    echo "[DEBUG $(date +'%T')] $1" >&2
+}
+
 function remove_loader() {
 
   echo -n "(Warning) Do you want to remove partitions from Syno disk? [yY/nN] : "
   readanswer
   if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
-      # Delete target partition 
-      sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
-          part_num="${dev##*[!0-9]}"
-          if [[ $part_num -ge 4 ]]; then
-              base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
-              echo "$base_dev $part_num"
-          fi
-      done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
-          cmd=""
-          for p in $(echo "$parts" | tr ' ' '\n' | sort -nr); do
-              cmd+="d\n$p\n"
-              echo "cmd = ${cmd}"
-          done
-          echo -e "${cmd}w\n" | sudo fdisk "$dev"
-      done
+    
+    debug_msg "Start: Searching for Linux partitions (type 83, number 4 and above)"
+    target_list=$(sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1,$(NF-1),$NF}')
+    debug_msg "Filtered partition list:\n$target_list"
+    
+    sudo fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
+        part_num="${dev##*[!0-9]}"
+        debug_msg "Processing: $dev → number $part_num"
+        
+        if [[ $part_num -ge 4 ]]; then
+            base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
+            debug_msg "Base device identified: $dev → $base_dev"
+            echo "$base_dev $part_num"
+        else
+            debug_msg "Skipped: $dev (number < 4)"
+        fi
+    done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
+        debug_msg "Starting processing for device [$dev]: partitions ${parts}"
+        sorted_parts=$(echo "$parts" | tr ' ' '\n' | sort -nr | tr '\n' ' ')
+        debug_msg "Reverse sorting completed: $sorted_parts"
+        
+        cmd=""
+        for p in $sorted_parts; do
+            cmd+="d\n$p\n"
+            debug_msg "Command added: Delete partition $p → Current command:\n${cmd}"
+        done
+        
+        debug_msg "Commands to be executed:\n$(echo -e "$cmd" | sed 's/^/  /')"
+        echo -e "${cmd}w\n" | sudo fdisk "$dev"
+        debug_msg "Execution completed: $dev"
+    done
+  
   fi
+  returnto "The entire process of removing the partition is completed! Press any key to continue..." && return
 
 }
 
