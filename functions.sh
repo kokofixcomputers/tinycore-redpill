@@ -2,7 +2,7 @@
 
 set -u # Unbound variable errors are not allowed
 
-rploaderver="1.2.1.1"
+rploaderver="1.2.1.2"
 build="master"
 redpillmake="prod"
 
@@ -151,6 +151,7 @@ function history() {
     1.2.0.0 Added new platforms purley, broadwellnkv2, broadwellntbap and started supporting all models for each platform
     1.2.1.0 Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
     1.2.1.1 Renewal of SynoDisk bootloader injection function
+    1.2.1.2 SynoDisk with Bootloader Injection Supports NVMe DISK
     --------------------------------------------------------------------------------------
 EOF
 }
@@ -464,6 +465,8 @@ EOF
 # Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
 # 2025.02.06 v1.2.1.1 
 # Renewal of SynoDisk bootloader injection function
+# 2025.02.07 1.2.1.2 
+# RSynoDisk with Bootloader Injection Supports NVMe DISK
     
 function showlastupdate() {
     cat <<EOF
@@ -591,6 +594,9 @@ function showlastupdate() {
 
 # 2025.02.06 v1.2.1.1 
 # Renewal of SynoDisk bootloader injection function
+
+# 2025.02.07 1.2.1.2 
+# RSynoDisk with Bootloader Injection Supports NVMe DISK
 
 EOF
 }
