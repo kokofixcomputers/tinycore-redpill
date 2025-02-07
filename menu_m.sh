@@ -1239,7 +1239,7 @@ function tcrpfriendentry_hdd() {
     cat <<EOF
 menuentry 'Tiny Core Friend ${MODEL} ${BUILD} Update 0 ${DMPM}' {
         savedefault
-        search --set=root --fs-uuid "12345678" --hint hd0,msdos5
+        search --set=root --fs-uuid "12345678" --hint hd0,msdos${1}
         echo Loading Linux...
         linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8
         echo Loading initramfs...
@@ -1254,7 +1254,7 @@ function xtcrpconfigureentry_hdd() {
     cat <<EOF
 menuentry 'xTCRP Configure Boot Loader (Loader Build)' {
         savedefault
-        search --set=root --fs-uuid "12345678" --hint hd0,msdos5
+        search --set=root --fs-uuid "12345678" --hint hd0,msdos${1}
         echo Loading Linux...
         linux /bzImage-friend loglevel=3 waitusb=5 vga=791 net.ifnames=0 biosdevname=0 console=ttyS0,115200n8 IWANTTOCONFIGURE
         echo Loading initramfs to configure loader...
@@ -1349,8 +1349,8 @@ function wr_part1() {
 
     echo "Modifying grub.cfg for new loader boot..."
     sudo sed -i '61,$d' "${mdisk}${1}"/boot/grub/grub.cfg
-    tcrpfriendentry_hdd | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
-    xtcrpconfigureentry_hdd | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
+    tcrpfriendentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
+    xtcrpconfigureentry_hdd ${1} | sudo tee --append "${mdisk}${1}"/boot/grub/grub.cfg
 
     sudo cp -vf /mnt/${loaderdisk}3/bzImage-friend  "${mdisk}${1}"
     sudo cp -vf /mnt/${loaderdisk}3/initrd-friend  "${mdisk}${1}"
