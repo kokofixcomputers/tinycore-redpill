@@ -1772,46 +1772,66 @@ fi
 
 }
 
-# Debug message function
-function debug_msg() {
-    echo "[DEBUG $(date +'%T')] $1" >&2
-}
-
 function remove_loader() {
 
   echo -n "(Warning) Do you want to remove partitions from Syno disk? [yY/nN] : "
   readanswer
   if [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+
+    # Step 1: Get raw partition list
+    RAW_PARTITIONS=$(sudo fdisk -l 2>/dev/null)
+    echo "=== Raw fdisk output ==="
+    echo "$RAW_PARTITIONS"
     
-    debug_msg "Start: Searching for Linux partitions (type 83, number 4 and above)"
-    target_list=$(sudo /sbin/fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1,$(NF-1),$NF}')
-    debug_msg "Filtered partition list:\n$target_list"
+    # Step 2: Filter target partitions
+    FILTERED=$(echo "$RAW_PARTITIONS" | awk '$NF=="Linux" && $(NF-1)==83 {print $1}')
+    echo -e "\n=== Filtered partitions ==="
+    echo "$FILTERED"
     
-    sudo /sbin/fdisk -l | awk '$NF=="Linux" && $(NF-1)==83 {print $1}' | while read -r dev; do
+    # Step 3: Process partitions and generate device map
+    TEMP_FILE=$(mktemp)
+    echo "$FILTERED" | while read -r dev; do
         part_num="${dev##*[!0-9]}"
-        debug_msg "Processing: $dev → number $part_num"
+        echo "Processing $dev → Number: $part_num"
         
         if [[ $part_num -ge 4 ]]; then
-            base_dev=$(lsblk -no pkname "$dev" | xargs -I{} echo "/dev/{}")
-            debug_msg "Base device identified: $dev → $base_dev"
-            echo "$base_dev $part_num"
+            base_dev=$(lsblk -no pkname "$dev" 2>/dev/null | xargs -I{} echo "/dev/{}")
+            echo "Valid partition: $base_dev $part_num"
+            echo "$base_dev $part_num" >> $TEMP_FILE
         else
-            debug_msg "Skipped: $dev (number < 4)"
+            echo "Skipping $dev (partition number < 4)"
         fi
-    done | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}' | while read -r dev parts; do
-        debug_msg "Starting processing for device [$dev]: partitions ${parts}"
-        sorted_parts=$(echo "$parts" | tr ' ' '\n' | sort -nr | tr '\n' ' ')
-        debug_msg "Reverse sorting completed: $sorted_parts"
+    done
+    
+    echo -e "\n=== Temporary device map ==="
+    cat $TEMP_FILE
+    
+    # Step 4: Group partitions by device
+    GROUPED=$(cat $TEMP_FILE | sort -u | awk '{arr[$1]=arr[$1]" "$2} END{for (i in arr) print i, arr[i]}')
+    rm $TEMP_FILE
+    
+    echo -e "\n=== Grouped partitions ==="
+    echo "$GROUPED"
+    
+    # Step 5: Execute deletion commands
+    echo "$GROUPED" | while read -r dev parts; do
+        echo -e "\nProcessing device: $dev"
+        echo "Partitions to delete: $parts"
         
         cmd=""
+        sorted_parts=$(echo "$parts" | tr ' ' '\n' | sort -nr | tr '\n' ' ')
+        echo "Sorted partitions (DESC): $sorted_parts"
+        
         for p in $sorted_parts; do
             cmd+="d\n$p\n"
-            debug_msg "Command added: Delete partition $p → Current command:\n${cmd}"
+            echo -e "[Command draft]\n$cmd"
         done
         
-        debug_msg "Commands to be executed:\n$(echo -e "$cmd" | sed 's/^/  /')"
-        echo -e "${cmd}w\n" | sudo /sbin/fdisk "$dev"
-        debug_msg "Execution completed: $dev"
+        echo -e "\nFinal command sequence:"
+        echo -e "${cmd}w\n" | sed 's/^/  /'
+        
+        # Uncomment to execute
+        # echo -e "${cmd}w\n" | sudo fdisk "$dev"
     done
   
   fi
