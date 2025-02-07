@@ -465,7 +465,7 @@ EOF
 # Create tinycore-mshell and xTCRP together in grub boot. Merge Re-install boot entries without USB/SATA distinction and fix KP bug.
 # 2025.02.06 v1.2.1.1 
 # Renewal of SynoDisk bootloader injection function
-# 2025.02.07 1.2.1.2 
+# 2025.02.07 v1.2.1.2 
 # RSynoDisk with Bootloader Injection Supports NVMe DISK
     
 function showlastupdate() {
@@ -595,7 +595,7 @@ function showlastupdate() {
 # 2025.02.06 v1.2.1.1 
 # Renewal of SynoDisk bootloader injection function
 
-# 2025.02.07 1.2.1.2 
+# 2025.02.07 v1.2.1.2 
 # RSynoDisk with Bootloader Injection Supports NVMe DISK
 
 EOF
